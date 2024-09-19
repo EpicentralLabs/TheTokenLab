@@ -1,0 +1,227 @@
+/* Navbar wrapper styles */
+.navbar-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 60px 100px; /* Increased top padding and added side padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Navbar container styles */
+.navbar {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Styles for the navbar logo */
+.navbar-logo img {
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Styles for the navbar menu */
+.navbar-menu {
+    display: flex;
+    gap: 1.5rem;
+}
+
+/* Styles for navbar items */
+.navbar-item {
+    color: #ffffff;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover effect for navbar items */
+.navbar-item:hover {
+    color: #00FFA3;
+}
+
+/* Styles for the glow effect */
+.glow-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Styles for the glow effect before */
+.glow-effect::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 255, 163, 0.3) 0%, rgba(0, 255, 163, 0) 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+/* Hover effect for the glow effect */
+.glow-effect:hover::before {
+    opacity: 1;
+}
+
+/* Styles for the right side of the navbar */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Styles for the Connect Wallet button container */
+.connect-wallet-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Styles for the menu icon */
+.menu-icon {
+    display: none; /* Hide by default */
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    position: relative;
+}
+
+.menu-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.menu-icon .line {
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+/* Hamburger to X animation */
+.menu-icon .line:nth-child(1) {
+    transform: translateY(0) rotate(0);
+}
+
+.menu-icon .line:nth-child(2) {
+    opacity: 1;
+}
+
+.menu-icon .line:nth-child(3) {
+    transform: translateY(0) rotate(0);
+}
+
+.menu-icon .line.open:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.menu-icon .line.open:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-icon .line.open:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+    .navbar-wrapper {
+        padding: 20px 15px; /* Increased top and bottom padding */
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar {
+        width: auto;
+    }
+
+    .navbar-container {
+        justify-content: flex-start;
+        width: auto;
+    }
+
+    .navbar-logo img {
+        height: 30px; /* Adjust the logo size if needed */
+    }
+
+    .navbar-menu {
+        display: flex;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: rgba(18, 18, 18, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        flex-direction: column;
+        padding: 1rem;
+        margin-top: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1000;
+    }
+
+    .navbar-menu.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .navbar-item {
+        padding: 0.75rem 1rem;
+    }
+
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Increased gap to provide more space */
+    }
+
+    .connect-wallet-container {
+        order: 1;
+    }
+
+    .menu-icon {
+        display: block; /* Show only on mobile */
+        order: 2;
+        width: 24px;
+        height: 24px;
+        padding: 5px; /* Add padding to increase touch area */
+        margin-right: -5px; /* Offset the padding to align with the edge */
+    }
+
+    .menu-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Ensure the X icon is fully visible when menu is open */
+    .menu-icon .line.open:nth-child(1) {
+        transform: translateY(5px) rotate(45deg);
+    }
+
+    .menu-icon .line.open:nth-child(3) {
+        transform: translateY(-5px) rotate(-45deg);
+    }
+
+    /* Adjust the Connect Wallet button for mobile */
+    .connect-wallet-container button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}

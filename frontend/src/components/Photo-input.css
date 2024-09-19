@@ -1,0 +1,195 @@
+/* Import custom fonts */
+@import url('./fonts/fonts.css');
+
+/* Container for the entire photo input section */
+.container {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 0;
+  width: 400px;
+}
+
+/* Styling for the photo input box */
+.photo-input-box {
+  letter-spacing: 0.25rem;
+  position: relative;
+  font-family: p-thin;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+}
+
+
+
+/* Styling for the photo input label */
+.photo-input-label {
+  font-family: p-thin;
+  font-size: 1rem;
+  position: relative;
+  letter-spacing: 1.5px;
+  width: 200px;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  margin-right: 30px;
+}
+
+/* Container for the photo input element */
+.photo-input-container {
+  font-family: p-thin;
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 350px;
+  height: 150px;
+  justify-content: flex-start;
+}
+
+/* Styling for the custom file input area */
+.custom-file-input {
+  width: 300px;
+  height: 150px;
+  border: 2px dashed #4b4b4b;
+  border-radius: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.25s ease-in-out;
+  overflow: hidden;
+}
+
+/* Hover effect for the custom file input area */
+.custom-file-input:hover {
+  border-color: #00FFA3;
+}
+
+/* Styling for the upload icon */
+.upload-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Styling for the upload text */
+.upload-text {
+  font-family: p-light;
+  font-size: 0.875rem;
+  color: #ffffff;
+}
+
+/* Hide the default file input */
+.hidden-input {
+  display: none;
+}
+
+/* Styling for the image preview */
+.preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Styling for the info bubble */
+.info-bubble {
+  font-family: p-thin;
+  font-size: small;
+  background-color: #121212;
+  border: 1px solid #808080;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background-color 0.2s ease-in-out, opacity 1s ease-in-out;
+  cursor: pointer;
+}
+
+/* Hover effect for the info bubble */
+.info-bubble:hover {
+  background-color: #00FFA3;
+  opacity: 1;
+}
+
+/* Show tooltip on info bubble hover */
+.info-bubble:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Styling for the tooltip */
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  left: 25px;
+  font-family: p-thin;
+  font-size: small;
+  background-color: #333;
+  color: #ffffff;
+  text-align: center;
+  border-radius: 0.6rem;
+  padding: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out;
+  white-space: nowrap;
+}
+
+/* Styling for photo input error messages */
+.photo-input-error {
+  font-family: p-thin, sans-serif;
+  font-size: 0.75rem;
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ff0000;
+  border: 1px solid #ff0000;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 10px;
+  text-align: center;
+  width: 300px; /* Match the width of the custom-file-input */
+  box-sizing: border-box;
+}
+
+/* Styling for error messages */
+.error-message {
+  color: #ff4d4f;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-family: p-thin;
+}
+
+/* Container for the image preview */
+.preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Styling for the remove button on image preview */
+.remove-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Hover effect for the remove button */
+.remove-button:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
