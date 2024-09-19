@@ -40,7 +40,7 @@ function InitializeMint({
     }
 
     // Call the fetchPrices function when the component mounts
-    fetchPrices()
+    fetchPrices().then(r => console.log('Prices fetched successfully'))
   }, []) // Empty dependency array ensures this effect runs only once on mount
 
   // Helper function to calculate USD value

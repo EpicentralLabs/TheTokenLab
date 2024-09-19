@@ -21,7 +21,7 @@ function ConnectWallet() {
                 setWallet(solana);
             }
         };
-        initWallet();
+        initWallet().then(r => console.log("Wallet initialized successfully"));
     }, []);
 
     // Function to handle wallet disconnection
