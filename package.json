@@ -1,6 +1,6 @@
 {
   "name": "epicentralabs",
-  "version": "1.0.0-beta",
+  "version": "1.2.0-beta",
   "private": true,
   "dependencies": {
     "@solana/web3.js": "^1.95.3",

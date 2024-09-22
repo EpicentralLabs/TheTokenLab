@@ -53,6 +53,16 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
+  const handleSolMint = () => {
+    console.log('Initializing mint with SOL payment')
+    // Add your SOL minting logic here
+  }
+
+  const handleLabsMint = () => {
+    console.log('Initializing mint with LABS payment')
+    // Add your LABS minting logic here
+  }
+
   return (
     <div className="App" style={{
       backgroundImage: `url(${process.env.PUBLIC_URL}/TheTokenLab-App_BG-Transparent.svg)`,
@@ -138,7 +148,7 @@ function App() {
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
-          {/* Initialize Mint component */}
+          {/* Update InitializeMint component */}
           <InitializeMint 
             tokenName={tokenName}
             tokenSymbol={tokenSymbol}
@@ -148,6 +158,8 @@ function App() {
             setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}
             setIsDecimalsError={setIsDecimalsError}
+            onSolMintClick={handleSolMint}
+            onLabsMintClick={handleLabsMint}
           />
           
         </header>
