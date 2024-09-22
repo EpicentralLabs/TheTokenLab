@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import ConnectWallet from './Connect-wallet';
 
-function Navbar({ walletAddress, setWalletAddress }) {
+function Navbar({ onWalletConnect }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -30,7 +30,7 @@ function Navbar({ walletAddress, setWalletAddress }) {
                     </svg>
                 </div>
                 <div className="connect-wallet-container">
-                    <ConnectWallet walletAddress={walletAddress} setWalletAddress={setWalletAddress} />
+                    <ConnectWallet onWalletConnect={onWalletConnect} />
                 </div>
             </div>
         </nav>

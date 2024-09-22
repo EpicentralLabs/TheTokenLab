@@ -35,6 +35,9 @@ function App() {
   // New state variable for image URI (hopefully this is what you meant was needed)
   const [imageURI, setImageURI] = useState('')
 
+  // New state variable for userPublicKey
+  const [userPublicKey, setUserPublicKey] = useState('')
+
   // Apply hover effect on component mount
   useEffect(() => {
     const cleanup = hoverEffect()
@@ -50,6 +53,12 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+
+  // Function to handle wallet connection
+  const handleWalletConnect = (publicKey) => {
+    setUserPublicKey(publicKey)
+    console.log('User public key:', publicKey)
+  }
 
   // Show warning message when any switch is checked
   useEffect(() => {
@@ -92,7 +101,8 @@ function App() {
     }}>
       <div className="Header-container">            
         {/* Navigation bar component now includes ConnectWallet */}
-        <Navbar />
+        {/* Navbar component with wallet connection functionality */}
+        <Navbar onWalletConnect={handleWalletConnect} />
         <header className="App-header">
           {/* Brand and slogan sections */}
           <section className="Brand-header">
@@ -181,6 +191,7 @@ function App() {
             quantity={quantity}
             decimals={decimals}
             imageURI={imageURI}  // Pass the imageURI to InitializeMint
+            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
             setIsTokenNameError={setIsTokenNameError}
             setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}
