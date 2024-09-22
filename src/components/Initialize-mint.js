@@ -10,7 +10,9 @@ function InitializeMint({
   setIsTokenNameError, 
   setIsTokenSymbolError, 
   setIsQuantityError, 
-  setIsDecimalsError 
+  setIsDecimalsError,
+  onSolMintClick,
+  onLabsMintClick
 }) {
   // State to store the prices of SOL and LABS tokens
   const [solPrice, setSolPrice] = useState(null)
@@ -53,7 +55,7 @@ function InitializeMint({
 
   const [showError, setShowError] = useState(false)
 
-  const handleInitializeMint = () => {
+  const handleInitializeMint = (paymentType) => {
     let hasError = false;
 
     if (!tokenName.trim()) {
@@ -77,8 +79,12 @@ function InitializeMint({
       setShowError(true)
     } else {
       setShowError(false)
-      // Proceed with minting logic here
-      console.log('Initializing mint...')
+      // Call the appropriate function based on payment type
+      if (paymentType === 'SOL') {
+        onSolMintClick()
+      } else if (paymentType === 'LABS') {
+        onLabsMintClick()
+      }
     }
   }
 
@@ -96,13 +102,13 @@ function InitializeMint({
       <h2 className="initialize-mint-title">Initialize Mint:</h2>
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
-        <button className="initialize-mint-button" onClick={handleInitializeMint}>
+        <button className="initialize-mint-button" onClick={() => handleInitializeMint('SOL')}>
           0.05 SOL
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
-        <button className="initialize-mint-button" onClick={handleInitializeMint}>
+        <button className="initialize-mint-button" onClick={() => handleInitializeMint('LABS')}>
           <span>5,000 LABS</span>
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
         </button>

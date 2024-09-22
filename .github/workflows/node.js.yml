@@ -119,7 +119,6 @@ jobs:
           embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           embed-description: |
             🎉 The build was successful! 🎉
-            **Total Build Time:** ${{ env.TOTAL_TIME }} seconds
             **Repository:** `${{ github.repository }}`
             **Branch:** `${{ github.ref }}`
           embed-color: 3066993
