@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./Connect-wallet.css";
-// Remove this line: import phantomIcon from "../assets/PhantomWallet_ICON_Transparent.png";
 
-function ConnectWallet() {
+function ConnectWallet({ walletAddress, setWalletAddress }) {
     // State variables for wallet connection and UI control
-    const [wallet, setWallet] = useState(null);
     const [connected, setConnected] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
-    const [walletAddress, setWalletAddress] = useState("");
     const [showWalletOptions, setShowWalletOptions] = useState(false);
     const [showDisconnectOption, setShowDisconnectOption] = useState(false);
+    const [wallet, setWallet] = useState(null);
 
     // Effect hook to initialize wallet on component mount
     useEffect(() => {

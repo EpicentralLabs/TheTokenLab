@@ -5,29 +5,36 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    padding: 60px 100px; /* Increased top padding and added side padding */
+    padding: 20px 40px; /* Reduced overall padding */
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background-color: transparent; /* Changed from rgba(18, 18, 18, 0.8) to transparent */
 }
 
 /* Navbar container styles */
 .navbar {
     display: flex;
     align-items: center;
+    margin-top: 10px;
 }
 
 .navbar-container {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 /* Styles for the navbar logo */
+.navbar-logo {
+    margin-left: 40px; /* Added extra space on the left side of the logo */
+}
+
 .navbar-logo img {
     height: 35px;
     width: auto;
     object-fit: contain;
+    margin-right: 20px; /* Add some space after the logo */
 }
 
 /* Styles for the navbar menu */
@@ -46,13 +53,39 @@
     transition: all 0.3s ease;
     padding: 0.5rem 1rem;
     border-radius: 25px;
-    position: relative;
-    overflow: hidden;
 }
 
 /* Hover effect for navbar items */
 .navbar-item:hover {
     color: #00FFA3;
+}
+
+/* Styles for the right side of the navbar */
+.navbar-right {
+    margin-left: auto;
+    margin-right: 40px; /* Added extra space on the right side of the Connect Wallet button */
+}
+
+/* Styles for the Connect Wallet button container */
+.connect-wallet-container {
+    display: flex;
+    align-items: center;
+}
+
+/* You may need to adjust the ConnectWallet component styles as well */
+.CWButton {
+    background-color: #00FFA3;
+    color: #121212;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.CWButton:hover {
+    background-color: #00cc82;
 }
 
 /* Styles for the glow effect */
@@ -78,19 +111,6 @@
 /* Hover effect for the glow effect */
 .glow-effect:hover::before {
     opacity: 1;
-}
-
-/* Styles for the right side of the navbar */
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-/* Styles for the Connect Wallet button container */
-.connect-wallet-container {
-    display: flex;
-    align-items: center;
 }
 
 /* Styles for the menu icon */
@@ -140,7 +160,7 @@
 /* Media query for mobile devices */
 @media (max-width: 768px) {
     .navbar-wrapper {
-        padding: 20px 15px; /* Increased top and bottom padding */
+        padding: 20px 20px; /* Further reduce padding on mobile */
         flex-wrap: nowrap;
         justify-content: space-between;
         align-items: center;
@@ -161,8 +181,8 @@
 
     .navbar-menu {
         display: flex;
-        position: absolute;
-        top: 100%;
+        position: fixed;
+        top: 80px; /* Adjust this value based on your navbar height */
         left: 0;
         right: 0;
         background-color: rgba(18, 18, 18, 0.95);
@@ -170,11 +190,14 @@
         -webkit-backdrop-filter: blur(10px);
         flex-direction: column;
         padding: 1rem;
-        margin-top: 10px;
+        margin-top: 0;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
         z-index: 1000;
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+        text-align: center; /* Center the dropdown menu text */
     }
 
     .navbar-menu.active {
@@ -223,5 +246,32 @@
     .connect-wallet-container button {
         padding: 8px 12px;
         font-size: 0.9rem;
+    }
+
+    /* Style for input boxes within the navbar menu */
+    .navbar-menu input[type="text"],
+    .navbar-menu input[type="number"] {
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 8px;
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+/* Media query for responsiveness */
+@media (max-width: 1200px) {
+    .navbar-wrapper {
+        padding: 20px 20px;
+    }
+    .navbar-logo {
+        margin-left: 20px;
+    }
+    .navbar-right {
+        margin-right: 20px;
     }
 }

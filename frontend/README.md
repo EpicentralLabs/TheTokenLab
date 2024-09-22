@@ -1,6 +1,6 @@
 # The Token Lab by Epicentral Labs
 
-The Token Lab is a frontend user interface project developed by Epicentral Labs. It provides a platform for creating and managing tokens on the Solana blockchain.
+The Token Lab is a frontend user interface project developed by Epicentral Labs. It provides a platform for creating (also known as minting) and managing tokens on the Solana blockchain.
 
 ## Getting Started
 

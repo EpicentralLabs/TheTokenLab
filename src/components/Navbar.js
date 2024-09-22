@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import ConnectWallet from './Connect-wallet';
 
-const Navbar = () => {
+function Navbar({ walletAddress, setWalletAddress }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -10,19 +10,17 @@ const Navbar = () => {
     };
 
     return (
-        <div className="navbar-wrapper">
-            <nav className="navbar">
-                <div className="navbar-container">
-                    <a href="/" className="navbar-logo">
-                        <img src="/NavbarLogo.png" alt="The Token Lab Logo" />
-                    </a>
-                    <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`} style={{display: 'flex'}}>
-                        <a href="/" className="navbar-item glow-effect">Home</a>
-                        <a href="/docs" className="navbar-item glow-effect">Docs</a>
-                        <a href="/dao" className="navbar-item glow-effect">DAO</a>
-                    </div>
+        <nav className="navbar">
+            <div className="navbar-container">
+                <a href="/" className="navbar-logo">
+                    <img src="/NavbarLogo.png" alt="The Token Lab Logo" />
+                </a>
+                <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`} style={{display: 'flex'}}>
+                    <a href="/" className="navbar-item glow-effect">Home</a>
+                    <a href="/docs" className="navbar-item glow-effect">Docs</a>
+                    <a href="/dao" className="navbar-item glow-effect">DAO</a>
                 </div>
-            </nav>
+            </div>
             <div className="navbar-right">
                 <div className="menu-icon" onClick={toggleMenu}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,11 +30,11 @@ const Navbar = () => {
                     </svg>
                 </div>
                 <div className="connect-wallet-container">
-                    <ConnectWallet />
+                    <ConnectWallet walletAddress={walletAddress} setWalletAddress={setWalletAddress} />
                 </div>
             </div>
-        </div>
+        </nav>
     );
-};
+}
 
 export default Navbar;
