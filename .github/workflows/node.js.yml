@@ -46,8 +46,20 @@ jobs:
       - name: Run Lint and Capture Output
         id: lint
         run: |
+          echo "Running lint..."
           lint_output=$(npm run lint 2>&1) || true
-          escaped_lint_output=$(echo "$lint_output" | sed 's/\*/\\\*/g; s/`/\\`/g')
+          
+          # Clean the lint output to avoid issues with GitHub Actions environment variables
+          cleaned_lint_output=$(echo "$lint_output" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//') # Trim whitespace
+          
+          # Escape special characters for Discord
+          escaped_lint_output=$(echo "$cleaned_lint_output" | sed 's/\*/\\*/g; s/`/\\`/g')
+          
+          # Debug the outputs
+          echo "Escaped Lint Output:"
+          echo "$escaped_lint_output"
+          
+          # Set environment variables
           echo "escaped_lint_output=$escaped_lint_output" >> $GITHUB_ENV
           echo "lint_output<<EOF" >> $GITHUB_ENV
           echo "$lint_output" >> $GITHUB_ENV
@@ -59,7 +71,7 @@ jobs:
           echo "Original Lint Output:"
           echo "${{ env.lint_output }}"
   
-  
+
   build_and_test:
     needs: lint
     runs-on: ubuntu-latest
