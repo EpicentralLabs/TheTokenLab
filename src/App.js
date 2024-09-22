@@ -62,7 +62,6 @@ function App() {
 
       await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
-      // Add your SOL minting logic here after preliminary checks pass
 
     } catch (error) {
       console.error(`SOL minting failed: ${error.message}`);
@@ -72,10 +71,7 @@ function App() {
 
   const handleLabsMint = async () => {
     console.log('Initializing mint with LABS payment')
-    // Add your LABS minting logic here
-
     try {
-      // Add your LABS minting logic here
 
       await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
