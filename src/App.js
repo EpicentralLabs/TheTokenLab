@@ -20,14 +20,23 @@ import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 
 function App() {
-  const [tokenName, setTokenName] = useState('')
-  const [tokenSymbol, setTokenSymbol] = useState('')
-  const [quantity, setQuantity] = useState('')
-  const [decimals, setDecimals] = useState('')
-  const [isTokenNameError, setIsTokenNameError] = useState(false)
-  const [isTokenSymbolError, setIsTokenSymbolError] = useState(false)
-  const [isQuantityError, setIsQuantityError] = useState(false)
-  const [isDecimalsError, setIsDecimalsError] = useState(false)
+  // State for token details
+  const [tokenName, setTokenName] = useState('') // Stores the name of the token
+  const [tokenSymbol, setTokenSymbol] = useState('') // Stores the symbol of the token
+  const [quantity, setQuantity] = useState('') // Stores the quantity of tokens to mint
+  const [decimals, setDecimals] = useState('') // Stores the number of decimal places for the token
+
+  // State for input validation errors
+  const [isTokenNameError, setIsTokenNameError] = useState(false) // Tracks if there's an error in the token name input
+  const [isTokenSymbolError, setIsTokenSymbolError] = useState(false) // Tracks if there's an error in the token symbol input
+  const [isQuantityError, setIsQuantityError] = useState(false) // Tracks if there's an error in the quantity input
+  const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
+
+  // New state variable for image URI (hopefully this is what you meant was needed)
+  const [imageURI, setImageURI] = useState('')
+
+  // New state variable for userPublicKey
+  const [userPublicKey, setUserPublicKey] = useState('')
 
   // Apply hover effect on component mount
   useEffect(() => {
@@ -36,10 +45,20 @@ function App() {
   }, [])
 
   // State variables for switch components and warning message
+  // State for mint authority switch
   const [mintChecked, setMintChecked] = useState(false)
+  // State for freeze authority switch
   const [freezeChecked, setFreezeChecked] = useState(false)
+  // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
+  // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+
+  // Function to handle wallet connection
+  const handleWalletConnect = (publicKey) => {
+    setUserPublicKey(publicKey)
+    console.log('User public key:', publicKey)
+  }
 
   // Show warning message when any switch is checked
   useEffect(() => {
@@ -63,6 +82,14 @@ function App() {
     // Add your LABS minting logic here
   }
 
+  // Function to handle changes in the image URI (IF any changes occur or are needed)
+  const handleImageURIChange = (uri) => {
+    // Update the imageURI state with the new URI
+    setImageURI(uri)
+    // Log the updated URI to the console for debugging
+    console.log('Image URI updated:', uri)
+  }
+
   return (
     <div className="App" style={{
       backgroundImage: `url(${process.env.PUBLIC_URL}/TheTokenLab-App_BG-Transparent.svg)`,
@@ -74,7 +101,8 @@ function App() {
     }}>
       <div className="Header-container">            
         {/* Navigation bar component now includes ConnectWallet */}
-        <Navbar />
+        {/* Navbar component with wallet connection functionality */}
+        <Navbar onWalletConnect={handleWalletConnect} />
         <header className="App-header">
           {/* Brand and slogan sections */}
           <section className="Brand-header">
@@ -127,7 +155,15 @@ function App() {
             </div>
             <div className="Input-List">
               {/* Photo upload input */}
-              <h1><PhotoInput /></h1>
+              <h1>
+                {/* PhotoInput component for uploading and handling image files */}
+                <PhotoInput 
+                  // Callback function when a file is uploaded
+                  onFileUpload={(file) => console.log('File uploaded:', file)} 
+                  // Callback function to handle changes in the image URI
+                  onImageURIChange={handleImageURIChange}
+                />
+              </h1>
             </div>
           </section>
           
@@ -154,6 +190,8 @@ function App() {
             tokenSymbol={tokenSymbol}
             quantity={quantity}
             decimals={decimals}
+            imageURI={imageURI}  // Pass the imageURI to InitializeMint
+            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
             setIsTokenNameError={setIsTokenNameError}
             setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}

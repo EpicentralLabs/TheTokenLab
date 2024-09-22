@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./Connect-wallet.css";
 
-function ConnectWallet({ walletAddress, setWalletAddress }) {
+function ConnectWallet({ onWalletConnect }) {
     // State variables for wallet connection and UI control
-    const [connected, setConnected] = useState(false);
-    const [isConnecting, setIsConnecting] = useState(false);
-    const [showWalletOptions, setShowWalletOptions] = useState(false);
-    const [showDisconnectOption, setShowDisconnectOption] = useState(false);
-    const [wallet, setWallet] = useState(null);
+    const [connected, setConnected] = useState(false);          // Tracks if wallet is connected
+    const [isConnecting, setIsConnecting] = useState(false);    // Indicates if connection is in progress
+    const [showWalletOptions, setShowWalletOptions] = useState(false);  // Controls display of wallet options
+    const [showDisconnectOption, setShowDisconnectOption] = useState(false);  // Controls display of disconnect option
+    const [wallet, setWallet] = useState(null);                 // Stores the wallet instance
+    const [walletAddress, setWalletAddress] = useState("");     // Stores the connected wallet's address
 
     // Effect hook to initialize wallet on component mount
     useEffect(() => {
@@ -48,7 +49,9 @@ function ConnectWallet({ walletAddress, setWalletAddress }) {
         try {
             const { publicKey } = await wallet.connect({ onlyIfTrusted: false });
             setConnected(true);
-            setWalletAddress(publicKey.toString());
+            const address = publicKey.toString();
+            setWalletAddress(address);
+            onWalletConnect(address); // Pass the address to the parent component
         } catch (error) {
             console.error("Failed to connect wallet:", error);
         } finally {
