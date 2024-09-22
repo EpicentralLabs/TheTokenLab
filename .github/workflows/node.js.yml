@@ -54,5 +54,5 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts
-          path: workflows/dist/
+          name: warnings-log
+          path: .github/warnings.log
