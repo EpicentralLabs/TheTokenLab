@@ -39,9 +39,13 @@ function App() {
   }, [])
 
   // State variables for switch components and warning message
+  // State for mint authority switch
   const [mintChecked, setMintChecked] = useState(false)
+  // State for freeze authority switch
   const [freezeChecked, setFreezeChecked] = useState(false)
+  // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
+  // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
   // Show warning message when any switch is checked
