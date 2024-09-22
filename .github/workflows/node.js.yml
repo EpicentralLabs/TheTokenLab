@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "master", "staging", "v1.1.1.0-beta"]
+    branches: [ "master", "staging"]
   pull_request:
     branches: [ "master", "staging" ]
 
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x]  # You could add other versions here if needed
+        node-version: [22.x]
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -47,5 +47,5 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: warnings-log
-          path: .github/warnings.log
+            name: build-artifacts
+            path: dist
