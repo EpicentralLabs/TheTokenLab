@@ -45,8 +45,8 @@ const expectedUrl = clusterApiUrl(network);
 logger.debug(`Connected to: ${expectedUrl}`);
 const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
 
-const MINT_DECIMALS = 9;
-const FEE_AMOUNT = 0.05 * LAMPORTS_PER_SOL;
+const decimals = 9;
+const FEE_quantity = 0.05 * LAMPORTS_PER_SOL;
 if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('devnet')) {
     throw new Error('This application is set to production but is connected to the devnet cluster.');
 }
@@ -62,16 +62,16 @@ END OF CONSTANTS
 // Handle mint and transfer logic
 app.post('/api/mint', async (req, res) => {
     try {
-        const { ticker, userPublicKey, amount, imageURI, freezeAuthority} = req.body;
+        const { tokenName, tokenSymbol,  userPublicKey, quantity, imageURI, freezeChecked, mintChecked, immutableChecked, decimals,  } = req.body;
 
         // Check for required fields
-        if (!ticker || !userPublicKey || !amount || !imageURI) {
+        if (!tokenSymbol || !userPublicKey || !quantity || !imageURI) {
             return res.status(400).json({ success: false, message: 'Required fields are missing.' });
         }
 
         // Resolve the image path (assuming imageURI is the CID)
         const imagePath = path.join(__dirname, imageURI);
-        logger.info('Received data:', { imagePath, ticker, userPublicKey, amount, imageURI });
+        logger.info('Received data:', { tokenName, tokenSymbol,  userPublicKey, quantity, imageURI, freezeChecked, mintChecked, immutableChecked, decimals, imagePath });
 
         // Initialize PublicKey and check for errors
         let userKey;
@@ -90,13 +90,13 @@ app.post('/api/mint', async (req, res) => {
         }
 
         // Perform preliminary checks
-        await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, MINT_DECIMALS);
+        await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
         // Create a new mint
         const mint = Keypair.generate(); // Generate a new mint Keypair
-        const symbol = ticker.toUpperCase();
+        const symbol = tokenSymbol.toUpperCase();
         const name = `${symbol} Token`;
-        const description = `This is a token for ${symbol} with a total supply of ${amount}.`;
+        const description = `This is a token for ${symbol} with a total supply of ${quantity}.`;
 
         // Upload image and JSON metadata
         const imageCid = await uploadImageAndPinJSON(
@@ -104,8 +104,8 @@ app.post('/api/mint', async (req, res) => {
             process.env.PINATA_API_KEY,
             process.env.PINATA_SECRET_API_KEY,
             process.env.PINATA_BEARER_TOKEN,
-            ticker.toUpperCase(),
-            ticker.toUpperCase(),
+            tokenSymbol.toUpperCase(),
+            tokenSymbol.toUpperCase(),
             description
         );
 
@@ -114,11 +114,10 @@ app.post('/api/mint', async (req, res) => {
         logger.info(`Updated Token Metadata URI: ${updatedMetadataUri}`);
 
         // Create new mint on the blockchain
-        const mintAddress = await createNewMint(payer, mint, updatedMetadataUri, symbol, name, freezeAuthority);
-
+        const mintAddress = await createNewMint(payer, mint, updatedMetadataUri, quantity, tokenSymbol, tokenName, freezeChecked, mintChecked, immutableChecked, decimals);
         // Mint tokens
-        logger.info(`Minting ${amount} tokens to the payer token account.`);
-        const payerTokenAccount = await mintTokens(connection, mintAddress, amount, payer);
+        logger.info(`Minting ${quantity} tokens to the payer token account.`);
+        const payerTokenAccount = await mintTokens(connection, mintAddress, quantity, payer);
 
         // Create or get user's token account
         const userTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -134,7 +133,7 @@ app.post('/api/mint', async (req, res) => {
                 payerTokenAccount.address,
                 userTokenAccount.address,
                 payer.publicKey,
-                amount * Math.pow(10, MINT_DECIMALS)
+                quantity * Math.pow(10, decimals)
             )
         );
 

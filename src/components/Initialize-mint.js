@@ -46,9 +46,9 @@ function InitializeMint({
   }, []) // Empty dependency array ensures this effect runs only once on mount
 
   // Helper function to calculate USD value
-  const calculateUsdValue = (amount, price) => {
+  const calculateUsdValue = (quantity, price) => {
     if (price) {
-      return (amount * price).toFixed(2) // Return USD value with 2 decimal places
+      return (quantity * price).toFixed(2) // Return USD value with 2 decimal places
     }
     return '...' // Return placeholder if price is not available
   }

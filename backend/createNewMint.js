@@ -62,7 +62,7 @@ export async function createNewMint(payer, updatedMetadataUri, symbol, name) {
             mint: mintSigner.publicKey,
             token: tokenPDA,
             authority: payer.publicKey,
-            amount: 1,
+            quantity: 1,
             tokenOwner: payer.publicKey,
             splTokenProgram: SPL_TOKEN_2022_PROGRAM_ID,
             tokenStandard: TokenStandard.Fungible,

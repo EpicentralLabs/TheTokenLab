@@ -19,8 +19,8 @@ export async function logBalances(connection, payer, payerPublicKey, userPublicK
         const payerBalance = await connection.getTokenAccountBalance(payerTokenAccount.address);
         const userBalance = await connection.getTokenAccountBalance(userTokenAccount.address);
 
-        logger.info(`Payer's token account balance: ${payerBalance.value.uiAmountString} tokens`);
-        logger.info(`User's token account balance: ${userBalance.value.uiAmountString} tokens`);
+        logger.info(`Payer's token account balance: ${payerBalance.value.uiquantityString} tokens`);
+        logger.info(`User's token account balance: ${userBalance.value.uiquantityString} tokens`);
     } catch (error) {
         logger.error(`Error logging balances: ${error.message}`);
     }
@@ -37,11 +37,11 @@ export async function logBalances(connection, payer, payerPublicKey, userPublicK
                         mint: accountInfo.data.parsed.info.mint,
                         owner: accountInfo.data.parsed.info.owner,
                         state: accountInfo.data.parsed.info.state,
-                        tokenAmount: {
-                            amount: accountInfo.data.parsed.info.tokenAmount.amount,
-                            decimals: accountInfo.data.parsed.info.tokenAmount.decimals,
-                            uiAmount: accountInfo.data.parsed.info.tokenAmount.uiAmount,
-                            uiAmountString: accountInfo.data.parsed.info.tokenAmount.uiAmountString
+                        tokenquantity: {
+                            quantity: accountInfo.data.parsed.info.tokenquantity.quantity,
+                            decimals: accountInfo.data.parsed.info.tokenquantity.decimals,
+                            uiquantity: accountInfo.data.parsed.info.tokenquantity.uiquantity,
+                            uiquantityString: accountInfo.data.parsed.info.tokenquantity.uiquantityString
                         }
                     }
                 },
