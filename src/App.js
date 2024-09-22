@@ -53,8 +53,15 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
-  // Add this new state variable
-  const [walletAddress, setWalletAddress] = useState("")
+  const handleSolMint = () => {
+    console.log('Initializing mint with SOL payment')
+    // Add your SOL minting logic here
+  }
+
+  const handleLabsMint = () => {
+    console.log('Initializing mint with LABS payment')
+    // Add your LABS minting logic here
+  }
 
   return (
     <div className="App" style={{
@@ -66,8 +73,8 @@ function App() {
       minHeight: '100vh'
     }}>
       <div className="Header-container">            
-        {/* Pass walletAddress and setWalletAddress to Navbar */}
-        <Navbar walletAddress={walletAddress} setWalletAddress={setWalletAddress} />
+        {/* Navigation bar component now includes ConnectWallet */}
+        <Navbar />
         <header className="App-header">
           {/* Brand and slogan sections */}
           <section className="Brand-header">
@@ -141,7 +148,7 @@ function App() {
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
-          {/* Initialize Mint component */}
+          {/* Update InitializeMint component */}
           <InitializeMint 
             tokenName={tokenName}
             tokenSymbol={tokenSymbol}
@@ -151,6 +158,8 @@ function App() {
             setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}
             setIsDecimalsError={setIsDecimalsError}
+            onSolMintClick={handleSolMint}
+            onLabsMintClick={handleLabsMint}
           />
           
         </header>
