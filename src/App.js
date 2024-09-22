@@ -32,6 +32,9 @@ function App() {
   const [isQuantityError, setIsQuantityError] = useState(false) // Tracks if there's an error in the quantity input
   const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
 
+  // New state variable for image URI (hopefully this is what you meant was needed)
+  const [imageURI, setImageURI] = useState('')
+
   // Apply hover effect on component mount
   useEffect(() => {
     const cleanup = hoverEffect()
@@ -68,6 +71,14 @@ function App() {
   const handleLabsMint = () => {
     console.log('Initializing mint with LABS payment')
     // Add your LABS minting logic here
+  }
+
+  // Function to handle changes in the image URI (IF any changes occur or are needed)
+  const handleImageURIChange = (uri) => {
+    // Update the imageURI state with the new URI
+    setImageURI(uri)
+    // Log the updated URI to the console for debugging
+    console.log('Image URI updated:', uri)
   }
 
   return (
@@ -134,7 +145,15 @@ function App() {
             </div>
             <div className="Input-List">
               {/* Photo upload input */}
-              <h1><PhotoInput /></h1>
+              <h1>
+                {/* PhotoInput component for uploading and handling image files */}
+                <PhotoInput 
+                  // Callback function when a file is uploaded
+                  onFileUpload={(file) => console.log('File uploaded:', file)} 
+                  // Callback function to handle changes in the image URI
+                  onImageURIChange={handleImageURIChange}
+                />
+              </h1>
             </div>
           </section>
           
@@ -161,6 +180,7 @@ function App() {
             tokenSymbol={tokenSymbol}
             quantity={quantity}
             decimals={decimals}
+            imageURI={imageURI}  // Pass the imageURI to InitializeMint
             setIsTokenNameError={setIsTokenNameError}
             setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}

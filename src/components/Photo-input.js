@@ -22,7 +22,7 @@ const logMessage = (level, message) => {
 };
 
 
-function PhotoInput({ onFileUpload })
+function PhotoInput({ onFileUpload, onImageURIChange })
 {
     // State variables for photo, preview URL, and error message
     const [photo, setPhoto] = useState('');
@@ -75,6 +75,9 @@ function PhotoInput({ onFileUpload })
 
                     if (onFileUpload) {
                         onFileUpload(URL.createObjectURL(file));
+                    }
+                    if (onImageURIChange) {
+                        onImageURIChange(URL.createObjectURL(file));
                     }
                 }
             };
