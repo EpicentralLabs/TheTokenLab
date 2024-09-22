@@ -18,7 +18,8 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
-import {preliminaryChecks} from 'backend/checks';
+import logger from "../backend/logger";
+import {clusterApiUrl, Connection} from "@solana/web3.js";
 
 function App() {
   // State for token details
@@ -55,10 +56,21 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
+  const { PUBLIC_URL, REACT_APP_BACKEND_PORT, APP_ENV } = process.env;
+  const backendUrl = `${PUBLIC_URL}:${REACT_APP_BACKEND_PORT}`;
+
+// Set the network based on the environment
+  const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
+
+// Create a connection to the Solana cluster
+  const connection = new Connection(clusterApiUrl(network), 'confirmed');
+
+// Store the expected URL for the cluster
+  const expectedUrl = clusterApiUrl(network);
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
     setUserPublicKey(publicKey)
-    console.log('User public key:', publicKey)
+    logger.info('User public key:', publicKey)
   }
 
   // Show warning message when any switch is checked
@@ -73,33 +85,55 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
-  const handleSolMint = async () => {
-    console.log('Initializing mint with SOL payment');
 
+
+
+  const mintTokens = async (paymentType) => {
+    logger.info(`Initializing mint with ${paymentType} payment`);
     try {
-        // Add your SOL minting logic here
+      const mintData = {
+        tokenName,
+        tokenSymbol,
+        userPublicKey,
+        quantity,
+        imageURI,
+        freezeChecked,
+        mintChecked,
+        immutableChecked,
+        decimals,
+        paymentType,
+      };
 
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+      const response = await fetch(`http://${process.env.PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mintData),
+      });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Minting failed');
+      }
+
+      logger.info('Mint successful!', result);
+      alert(`Mint successful! Mint Address: ${result.mintAddress}\nToken Account: ${result.tokenAccount}\n${result.metadataUploadOutput}`);
 
     } catch (error) {
-      console.error(`SOL minting failed: ${error.message}`);
+      logger.error(`${paymentType} minting failed: ${error.message}`);
+      alert(`Minting failed: ${error.message}`);
     }
   };
 
+  const handleSolMint = () => {
+    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+  };
 
-  const handleLabsMint = async () => {
-    console.log('Initializing mint with LABS payment')
-    try {
-
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
-
-      // Add your LABS minting logic here after preliminary checks pass
-    }
-    catch (error) {
-      console.error(`LABS minting failed: ${error.message}`);
-    }
-  }
+  const handleLabsMint = () => {
+    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
+  };
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
@@ -178,7 +212,7 @@ function App() {
                 {/* PhotoInput component for uploading and handling image files */}
                 <PhotoInput 
                   // Callback function when a file is uploaded
-                  onFileUpload={(file) => console.log('File uploaded:', file)} 
+                  onFileUpload={(file) => logger.info('File uploaded:', file)} 
                   // Callback function to handle changes in the image URI
                   onImageURIChange={handleImageURIChange}
                 />
