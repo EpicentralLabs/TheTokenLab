@@ -53,6 +53,9 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
+  // Add this new state variable
+  const [walletAddress, setWalletAddress] = useState("")
+
   return (
     <div className="App" style={{
       backgroundImage: `url(${process.env.PUBLIC_URL}/TheTokenLab-App_BG-Transparent.svg)`,
@@ -63,8 +66,8 @@ function App() {
       minHeight: '100vh'
     }}>
       <div className="Header-container">            
-        {/* Navigation bar component now includes ConnectWallet */}
-        <Navbar />
+        {/* Pass walletAddress and setWalletAddress to Navbar */}
+        <Navbar walletAddress={walletAddress} setWalletAddress={setWalletAddress} />
         <header className="App-header">
           {/* Brand and slogan sections */}
           <section className="Brand-header">
