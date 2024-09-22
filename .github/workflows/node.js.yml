@@ -19,9 +19,10 @@ jobs:
           embed-title: "🚀 GitHub Action Has Started on Branch: ${{ github.ref_name }} 🌿"
           embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           embed-description: |
-            You can see the build job here:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
+            🎉 You can see the build job here: [View Build](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) 
+
+            **Commit:** `${{ github.sha }}`
+            **Branch:** `${{ github.ref_name }}`
           embed-color: 15105570
           embed-timestamp: ${{ github.event.time }}
           embed-footer: "EpicentralLabs"
@@ -46,6 +47,9 @@ jobs:
         id: lint
         run: |
           lint_output=$(npm run lint 2>&1) || true
+          # Escape special characters for Discord
+          escaped_lint_output=$(echo "$lint_output" | sed 's/\*/\\\*/g; s/`/\\`/g')
+          echo "escaped_lint_output=$escaped_lint_output" >> $GITHUB_ENV
           echo "lint_output<<EOF" >> $GITHUB_ENV
           echo "$lint_output" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -94,11 +98,9 @@ jobs:
             🎉 The build has been successful! 🎉
             
             **Linting Results:**
-            ${{
-              env.lint_output
-                .replace(/\*\*/g, '\\*\\*') // Escape double asterisks
-                .replace(/`/g, '\\`') // Escape backticks
-            }}
+            \`\`\`
+            ${{ env.escaped_lint_output }}
+            \`\`\`
           embed-color: 3066993
           embed-timestamp: ${{ github.run_at }}
           embed-fields: '[{"name": "Repository", "value": "${{ github.repository }}", "inline": true},{"name": "Branch", "value": "${{ github.ref }}", "inline": true},{"name": "Commit", "value": "${{ github.sha }}", "inline": true}]'
