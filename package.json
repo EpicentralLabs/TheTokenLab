@@ -32,7 +32,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "react-scripts start && node server.mjs",
+    "start": "react-scripts start && node backend/server.mjs",
     "build": "react-scripts build 2> .github/warnings.log || true",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
