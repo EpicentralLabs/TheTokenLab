@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "master", "staging" ]
+    branches: [ "master", "staging", "v1.1.1.0-beta"]
   pull_request:
     branches: [ "master", "staging" ]
 
