@@ -20,14 +20,17 @@ import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 
 function App() {
-  const [tokenName, setTokenName] = useState('')
-  const [tokenSymbol, setTokenSymbol] = useState('')
-  const [quantity, setQuantity] = useState('')
-  const [decimals, setDecimals] = useState('')
-  const [isTokenNameError, setIsTokenNameError] = useState(false)
-  const [isTokenSymbolError, setIsTokenSymbolError] = useState(false)
-  const [isQuantityError, setIsQuantityError] = useState(false)
-  const [isDecimalsError, setIsDecimalsError] = useState(false)
+  // State for token details
+  const [tokenName, setTokenName] = useState('') // Stores the name of the token
+  const [tokenSymbol, setTokenSymbol] = useState('') // Stores the symbol of the token
+  const [quantity, setQuantity] = useState('') // Stores the quantity of tokens to mint
+  const [decimals, setDecimals] = useState('') // Stores the number of decimal places for the token
+
+  // State for input validation errors
+  const [isTokenNameError, setIsTokenNameError] = useState(false) // Tracks if there's an error in the token name input
+  const [isTokenSymbolError, setIsTokenSymbolError] = useState(false) // Tracks if there's an error in the token symbol input
+  const [isQuantityError, setIsQuantityError] = useState(false) // Tracks if there's an error in the quantity input
+  const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
 
   // Apply hover effect on component mount
   useEffect(() => {
