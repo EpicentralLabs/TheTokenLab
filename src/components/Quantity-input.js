@@ -29,7 +29,7 @@ function QuantityInput({ quantity, setQuantity, isError }) {
                     />
                     {/* Info bubble with tooltip */}
                     <div className="info-bubble">
-                        <div className="tooltip">The amount of tokens you wish to mint.</div>
+                        <div className="tooltip">The quantity of tokens you wish to mint.</div>
                     </div>
                 </div>
             </div>

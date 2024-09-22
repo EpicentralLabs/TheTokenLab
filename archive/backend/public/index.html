@@ -12,8 +12,8 @@
     <h1 class="text-2xl font-bold mb-6">Token Minting</h1>
     <form id="mintForm" class="space-y-4">
         <div>
-            <label for="ticker" class="block text-sm font-medium text-gray-700">Ticker:</label>
-            <input type="text" id="ticker" name="ticker" required
+            <label for="tokenSymbol" class="block text-sm font-medium text-gray-700">tokenSymbol:</label>
+            <input type="text" id="tokenSymbol" name="tokenSymbol" required
                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
         </div>
 
@@ -24,8 +24,8 @@
         </div>
 
         <div>
-            <label for="amount" class="block text-sm font-medium text-gray-700">Amount:</label>
-            <input type="number" id="amount" name="amount" min="1" required
+            <label for="quantity" class="block text-sm font-medium text-gray-700">quantity:</label>
+            <input type="number" id="quantity" name="quantity" min="1" required
                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
         </div>
 
@@ -79,9 +79,9 @@
     document.getElementById('mintForm').addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const ticker = document.getElementById('ticker').value;
+        const tokenSymbol = document.getElementById('tokenSymbol').value;
         const userPublicKey = document.getElementById('userPublicKey').value;
-        const amount = document.getElementById('amount').value;
+        const quantity = document.getElementById('quantity').value;
         const image = document.getElementById('image').files[0];
 
         const responseMessage = document.getElementById('responseMessage');
@@ -113,9 +113,9 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ticker,
+                    tokenSymbol,
                     userPublicKey,
-                    amount,
+                    quantity,
                     imageURI: ipfsData.uri
                 }),
             });

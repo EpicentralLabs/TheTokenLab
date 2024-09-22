@@ -16,7 +16,7 @@ export async function checkAccountExists(publicKey, connection, logger) {
     }
 }
 
-export async function preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, MINT_DECIMALS) {
+export async function preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals) {
     try {
         const devnetUrl = clusterApiUrl('devnet');
         logger.info(`Devnet URL: ${devnetUrl}`);
@@ -49,7 +49,7 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
 
         // Create mint
         logger.info(`Creating mint with payer: ${payer.publicKey.toBase58()}`);
-        const mint = await createMint(connection, payer, payer.publicKey, payer.publicKey, MINT_DECIMALS);
+        const mint = await createMint(connection, payer, payer.publicKey, payer.publicKey, decimals);
         logger.info(`Mint created: ${mint.toBase58()}`);
 
         // Create or get payer token account
