@@ -517,7 +517,7 @@ async function logBalances(payerPublicKey, userPublicKey, mint) {
     }
 }
 // Handle mint and transfer logic
-app.post('/mint', async (req, res) => {
+app.post('/api/mint', async (req, res) => {
     try {
         const { ticker, userPublicKey, amount, imageURI } = req.body;
 
@@ -632,6 +632,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-app.listen(3000, () => {
+app.listen(3001, () => {
     logger.info('Server is running on port 3000');
 });
