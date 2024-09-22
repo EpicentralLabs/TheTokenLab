@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/update_token_metadata.ts",
+    "start_backend": "ts-node src/update_token_metadata.ts",
     "start_server": "node server.mjs",
     "start:dev": "nodemon server.mjs",
     "start:dev:ts": "ts-node-dev src/update_token_metadata.ts",
