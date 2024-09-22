@@ -17,11 +17,13 @@ body {
   cursor: default; /* Default cursor style */
   overflow-y: auto; /* Enable vertical scrolling */
   overflow-x: hidden; /* Prevent horizontal scrolling */
+  min-height: 100vh;
 }
 
 /* Customize scrollbar for Webkit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
   width: 8px; /* Set scrollbar width */
+  display: none;
 }
 
 ::-webkit-scrollbar-track {
@@ -41,4 +43,10 @@ body {
 * {
   scrollbar-width: thin; /* Use a thin scrollbar */
   scrollbar-color: #333 #1e1e1e; /* Set thumb and track colors */
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
