@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, {useEffect, useState} from 'react'
 import './App.css'
 import BrandHeader from './components/Brand-header'
 import SubHeader from './components/Sub-header'
 import TokenLabTitle from './components/TokenLab-header'
 import Navbar from './components/Navbar'
 import SloganHeader from './components/Slogan-header'
-import { hoverEffect } from './effects-js/hoverEffect'
+import {hoverEffect} from './effects-js/hoverEffect'
 import TokenNameList from './components/Name-input'
 import TokenSymbolList from './components/Symbol-input'
 import QuantityInput from './components/Quantity-input'
@@ -18,6 +18,7 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
+import {preliminaryChecks} from 'backend/checks';
 
 function App() {
   const [tokenName, setTokenName] = useState('')
@@ -53,14 +54,36 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
-  const handleSolMint = () => {
-    console.log('Initializing mint with SOL payment')
-    // Add your SOL minting logic here
-  }
+  const handleSolMint = async () => {
+    console.log('Initializing mint with SOL payment');
 
-  const handleLabsMint = () => {
+    try {
+        // Add your SOL minting logic here
+
+      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+
+      // Add your SOL minting logic here after preliminary checks pass
+
+    } catch (error) {
+      console.error(`SOL minting failed: ${error.message}`);
+    }
+  };
+
+
+  const handleLabsMint = async () => {
     console.log('Initializing mint with LABS payment')
     // Add your LABS minting logic here
+
+    try {
+      // Add your LABS minting logic here
+
+      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+
+      // Add your LABS minting logic here after preliminary checks pass
+    }
+    catch (error) {
+      console.error(`LABS minting failed: ${error.message}`);
+    }
   }
 
   return (
