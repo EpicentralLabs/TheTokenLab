@@ -34,7 +34,7 @@ jobs:
     needs: starting-build-notification
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [ 22.x ]
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -44,32 +44,23 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Run Lint and Capture Output
-        id: lint
         run: |
           echo "Running lint..."
           lint_output=$(npm run lint 2>&1) || true
-          
-          # Clean the lint output to avoid issues with GitHub Actions environment variables
-          cleaned_lint_output=$(echo "$lint_output" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//') # Trim whitespace
-          
-          # Escape special characters for Discord
-          escaped_lint_output=$(echo "$cleaned_lint_output" | sed 's/\*/\\*/g; s/`/\\`/g')
-          
-          # Debug the outputs
-          echo "Escaped Lint Output:"
-          echo "$escaped_lint_output"
-          
-          # Set environment variables
-          echo "escaped_lint_output=$escaped_lint_output" >> $GITHUB_ENV
-          echo "lint_output<<EOF" >> $GITHUB_ENV
-          echo "$lint_output" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      - name: Debug Environment Variables
-        run: |
-          echo "Escaped Lint Output:"
-          echo "${{ env.escaped_lint_output }}"
-          echo "Original Lint Output:"
-          echo "${{ env.lint_output }}"
+          echo "$lint_output" > lint_output.${{ github.ref_name }}.${{ github.sha }}.txt
+      - name: Upload Lint Output to Discord
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          username: "EpicentralLabs Build Bot"
+          avatar-url: https://pbs.twimg.com/profile_images/1808887488229814272/J60RpS-L_400x400.jpg
+          embed-title: "Lint Results for Branch: ${{ github.ref_name }} 📝"
+          embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          embed-description: "The linting results are attached below."
+          embed-color: 3066993
+          embed-footer: "EpicentralLabs"
+          embed-footer-icon: https://pbs.twimg.com/profile_images/1808887488229814272/J60RpS-L_400x400.jpg
+          filename: lint_output.${{ github.ref_name }}.${{ github.sha }}.txt
   
 
   build_and_test:
@@ -113,12 +104,7 @@ jobs:
           embed-title: "Build Successful on Branch: ${{ github.ref_name }} 🎉✨"
           embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           embed-description: |
-            🎉 The build has been successful! 🎉
-            
-            **Linting Results:**
-            \`\`\`
-            ${{ env.escaped_lint_output }}
-            \`\`\`
+            🎉 The build was successful! 🎉
           embed-color: 3066993
           embed-timestamp: ${{ github.run_at }}
           embed-fields: '[{"name": "Repository", "value": "${{ github.repository }}", "inline": true},{"name": "Branch", "value": "${{ github.ref }}", "inline": true},{"name": "Commit", "value": "${{ github.sha }}", "inline": true}]'
@@ -127,7 +113,7 @@ jobs:
           embed-thumbnail: https://pbs.twimg.com/profile_images/1808887488229814272/J60RpS-L_400x400.jpg
 
       - name: Discord Build Failure Notification
-        if: failure()
+        if:  ${{ failure() }}
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
@@ -138,8 +124,9 @@ jobs:
           embed-description: |
             The build has failed! 🛑
             Please check the logs to see what went wrong.
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
+            Commit: `${{ github.sha }}`
+            Branch: `${{ github.ref_name }}`
+            Run ID: `${{ github.run_id }}`
           embed-color: 15158332
           embed-footer: "EpicentralLabs"
           embed-footer-icon: https://pbs.twimg.com/profile_images/1808887488229814272/J60RpS-L_400x400.jpg
