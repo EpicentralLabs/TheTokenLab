@@ -23,7 +23,9 @@ END OF IMPORTS
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 const cors = require('cors');
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+    origin: `${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}`
+}));
 
 /*
 Constants
