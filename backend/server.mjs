@@ -20,12 +20,7 @@ import {mintTokens} from "./mintTokens.js";
 END OF IMPORTS
  */
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-const cors = require('cors');
-app.use(cors({
-    origin: `${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}`
-}));
+
 
 /*
 Constants
@@ -59,6 +54,12 @@ if (connection.rpcEndpoint !== expectedUrl) {
 }
 const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+const cors = require('cors');
+app.use(cors({
+    origin: `${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}`
+}));
 /*
 END OF CONSTANTS
  */
