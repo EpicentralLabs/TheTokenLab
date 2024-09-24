@@ -4,7 +4,8 @@ import './InitalizingMint-message.css'
 function InitalizingMintMessage() {
   return (
     <div className="initializing-mint-message fade-in">
-      Initializing mint... Please confirm any signatures when your wallet pops up!
+      <h3 className="initializing-mint-title">Initializing Mint...</h3>
+      <p className="initializing-mint-subtitle">Please be sure to confirm wallet signatures.</p>
     </div>
   )
 }
