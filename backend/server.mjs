@@ -10,18 +10,17 @@ import multer from 'multer';
 /*
 Modularized Imports
 */
-import { preliminaryChecks } from './checks.js';
-import { logBalances } from './logBalances.js';
-import logger from './logger.js';
-import { uploadImageAndPinJSON } from './ipfs.js';
-import { createNewMint } from './createNewMint.js';
-import {mintTokens} from "./mintTokens.js";
+import { preliminaryChecks } from './checks.mjs';
+import { logBalances } from './logBalances.mjs';
+import logger from './logger.mjs';
+import { uploadImageAndPinJSON } from './ipfs.mjs';
+import { createNewMint } from './createNewMint.mjs';
+import {mintTokens} from "./mintTokens.mjs";
 /*
 END OF IMPORTS
  */
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 /*
 Constants
@@ -55,23 +54,70 @@ if (connection.rpcEndpoint !== expectedUrl) {
 }
 const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+import cors from 'cors';
+
+const allowedOrigin = `${process.env.PUBLIC_URL || 'http://localhost'}:${process.env.BACKEND_PORT || '3001'}`;
+
+app.use(cors({
+    origin: allowedOrigin,
+}));
 /*
 END OF CONSTANTS
  */
 
-// Handle mint and transfer logic
+
 app.post('/api/mint', async (req, res) => {
     try {
-        const { tokenName, tokenSymbol,  userPublicKey, quantity, imageURI, freezeChecked, mintChecked, immutableChecked, decimals,  } = req.body;
+        const {
+            tokenName,
+            tokenSymbol,
+            userPublicKey,
+            quantity,
+            imageURI,
+            freezeChecked,
+            mintChecked,
+            immutableChecked,
+            decimals,
+            paymentType
+        } = req.body;
 
-        // Check for required fields
-        if (!tokenSymbol || !userPublicKey || !quantity || !imageURI) {
-            return res.status(400).json({ success: false, message: 'Required fields are missing.' });
+        // Validate paymentType
+        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
+            return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
         }
 
-        // Resolve the image path (assuming imageURI is the CID)
+        const missingFields = [];
+        if (!tokenName) missingFields.push('tokenName');
+        if (!tokenSymbol) missingFields.push('tokenSymbol');
+        if (!userPublicKey) missingFields.push('userPublicKey');
+        if (!quantity) missingFields.push('quantity');
+        if (!imageURI) missingFields.push('imageURI');
+        if (typeof freezeChecked === 'undefined') missingFields.push('freezeChecked');
+        if (typeof mintChecked === 'undefined') missingFields.push('mintChecked');
+        if (typeof immutableChecked === 'undefined') missingFields.push('immutableChecked');
+        if (typeof decimals === 'undefined') missingFields.push('decimals');
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Required fields are missing: ' + missingFields.join(', ')
+            });
+        }
+
         const imagePath = path.join(__dirname, imageURI);
-        logger.info('Received data:', { tokenName, tokenSymbol,  userPublicKey, quantity, imageURI, freezeChecked, mintChecked, immutableChecked, decimals, imagePath });
+        logger.info('Received data:', {
+            tokenName,
+            tokenSymbol,
+            userPublicKey,
+            quantity,
+            imageURI,
+            freezeChecked,
+            mintChecked,
+            immutableChecked,
+            decimals,
+            imagePath
+        });
 
         // Initialize PublicKey and check for errors
         let userKey;
@@ -93,9 +139,8 @@ app.post('/api/mint', async (req, res) => {
         await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
         // Create a new mint
-        const mint = Keypair.generate(); // Generate a new mint Keypair
+        const mint = Keypair.generate();
         const symbol = tokenSymbol.toUpperCase();
-        const name = `${symbol} Token`;
         const description = `This is a token for ${symbol} with a total supply of ${quantity}.`;
 
         // Upload image and JSON metadata
@@ -114,10 +159,21 @@ app.post('/api/mint', async (req, res) => {
         logger.info(`Updated Token Metadata URI: ${updatedMetadataUri}`);
 
         // Create new mint on the blockchain
-        const mintAddress = await createNewMint(payer, mint, updatedMetadataUri, quantity, tokenSymbol, tokenName, freezeChecked, mintChecked, immutableChecked, decimals);
-        // Mint tokens
-        logger.info(`Minting ${quantity} tokens to the payer token account.`);
-        const payerTokenAccount = await mintTokens(connection, mintAddress, quantity, payer);
+        const mintAddress = await createNewMint(
+            payer,
+            mint,
+            updatedMetadataUri,
+            quantity,
+            tokenSymbol,
+            tokenName,
+            freezeChecked,
+            mintChecked,
+            immutableChecked,
+            decimals
+        );
+
+        // Use the same mintTokens function for both payment types
+        const payerTokenAccount = await mintTokens(connection, mintAddress, quantity, payer, decimals);
 
         // Create or get user's token account
         const userTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -157,6 +213,7 @@ app.post('/api/mint', async (req, res) => {
         res.status(500).json({ error: 'An error occurred' });
     }
 });
+
 app.post('/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) {

@@ -1,5 +1,4 @@
-// logger.js
-import winston from 'winston';
+import winston from "winston";
 
 const logger = winston.createLogger({
     level: 'debug',

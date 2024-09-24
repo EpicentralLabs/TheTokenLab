@@ -20,6 +20,7 @@ import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 //import {preliminaryChecks} from 'backend/checks';
 
+
 function App() {
   // State for token details
   const [tokenName, setTokenName] = useState('') // Stores the name of the token
@@ -55,6 +56,11 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
+  const { PUBLIC_URL, BACKEND_PORT, APP_ENV } = process.env;
+  const backendUrl = `${PUBLIC_URL}:${BACKEND_PORT}`;
+
+  const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
+
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
     setUserPublicKey(publicKey)
@@ -73,20 +79,53 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
-  const handleSolMint = async () => {
-    console.log('Initializing mint with SOL payment');
 
+
+
+  const mintTokens = async (paymentType) => {
+    console.log(`Initializing mint with ${paymentType} payment`);
     try {
-        // Add your SOL minting logic here
+      const mintData = {
+        tokenName,
+        tokenSymbol,
+        userPublicKey,
+        quantity,
+        imageURI,
+        freezeChecked,
+        mintChecked,
+        immutableChecked,
+        decimals,
+        paymentType,
+      };
 
-      //await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
+      // eslint-disable-next-line no-undef
+      const response = await fetch(`https://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mintData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Minting failed');
+      }
+
+      console.log('Mint successful!', result);
+      alert(`Mint successful! Mint Address: ${result.mintAddress}\nToken Account: ${result.tokenAccount}\n${result.metadataUploadOutput}`);
 
     } catch (error) {
-      console.error(`SOL minting failed: ${error.message}`);
+      console.log(`${paymentType} minting failed: ${error.message}`);
+      alert(`Minting failed: ${error.message}`);
     }
   };
 
+  const handleSolMint = () => {
+    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+  };
 
   const handleLabsMint = async () => {
     console.log('Initializing mint with LABS payment')
@@ -100,6 +139,7 @@ function App() {
       console.error(`LABS minting failed: ${error.message}`);
     }
   }
+
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
