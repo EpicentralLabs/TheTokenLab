@@ -33,8 +33,18 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
             throw new Error('Payer account does not exist.');
         }
 
+        // Initialize userPublicKey as a PublicKey object
+        let userKey;
+        try {
+            userKey = new PublicKey(userPublicKey);
+            logger.info(`User Public Key: ${userKey.toBase58()}`);
+        } catch (error) {
+            logger.error('Error initializing PublicKey:', error.message);
+            throw new Error('Invalid user public key.');
+        }
+
         // Check if user account exists
-        const userExists = await checkAccountExists(userPublicKey, connection, logger);
+        const userExists = await checkAccountExists(userKey, connection, logger);
         if (!userExists) {
             throw new Error('User account does not exist.');
         }
@@ -44,7 +54,7 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
         logger.info(`Payer balance: ${payerBalance}`);
 
         // Log user balance
-        const userBalance = await connection.getBalance(userPublicKey);
+        const userBalance = await connection.getBalance(userKey);
         logger.info(`User balance: ${userBalance}`);
 
         // Create mint
@@ -68,7 +78,7 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
             connection,
             payer,
             mint,
-            userPublicKey
+            userKey
         );
         logger.info(`User token account address: ${userTokenAccount.address.toBase58()}`);
 
