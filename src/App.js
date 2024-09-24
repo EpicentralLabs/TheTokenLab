@@ -18,8 +18,6 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
-import logger from "../backend/logger";
-import {clusterApiUrl, Connection} from "@solana/web3.js";
 
 function App() {
   // State for token details
@@ -56,21 +54,15 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
-  const { PUBLIC_URL, REACT_APP_BACKEND_PORT, APP_ENV } = process.env;
-  const backendUrl = `${PUBLIC_URL}:${REACT_APP_BACKEND_PORT}`;
+  const { PUBLIC_URL, BACKEND_PORT, APP_ENV } = process.env;
+  const backendUrl = `${PUBLIC_URL}:${BACKEND_PORT}`;
 
-// Set the network based on the environment
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
-// Create a connection to the Solana cluster
-  const connection = new Connection(clusterApiUrl(network), 'confirmed');
-
-// Store the expected URL for the cluster
-  const expectedUrl = clusterApiUrl(network);
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
     setUserPublicKey(publicKey)
-    logger.info('User public key:', publicKey)
+    console.log('User public key:', publicKey)
   }
 
   // Show warning message when any switch is checked
@@ -89,7 +81,7 @@ function App() {
 
 
   const mintTokens = async (paymentType) => {
-    logger.info(`Initializing mint with ${paymentType} payment`);
+    console.log(`Initializing mint with ${paymentType} payment`);
     try {
       const mintData = {
         tokenName,
@@ -104,7 +96,8 @@ function App() {
         paymentType,
       };
 
-      const response = await fetch(`http://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+      // eslint-disable-next-line no-undef
+      const response = await fetch(`https://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,11 +111,11 @@ function App() {
         throw new Error(result.message || 'Minting failed');
       }
 
-      logger.info('Mint successful!', result);
+      console.log('Mint successful!', result);
       alert(`Mint successful! Mint Address: ${result.mintAddress}\nToken Account: ${result.tokenAccount}\n${result.metadataUploadOutput}`);
 
     } catch (error) {
-      logger.error(`${paymentType} minting failed: ${error.message}`);
+      console.log(`${paymentType} minting failed: ${error.message}`);
       alert(`Minting failed: ${error.message}`);
     }
   };
@@ -212,7 +205,7 @@ function App() {
                 {/* PhotoInput component for uploading and handling image files */}
                 <PhotoInput 
                   // Callback function when a file is uploaded
-                  onFileUpload={(file) => logger.info('File uploaded:', file)} 
+                  onFileUpload={(file) => console.log('File uploaded:', file)} 
                   // Callback function to handle changes in the image URI
                   onImageURIChange={handleImageURIChange}
                 />
