@@ -2,6 +2,7 @@
   "name": "epicentralabs",
   "version": "1.2.0-beta",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@metaplex-foundation/mpl-toolbox": "^0.9.4",
@@ -33,7 +34,9 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "react-scripts start && node backend/server.mjs",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend": "react-scripts start",
+    "backend": "node backend/server.mjs",
     "build": "react-scripts build 2> .github/warnings.log || true",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
@@ -44,15 +47,19 @@
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"
   },
   "devDependencies": {
+    "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/plugin-transform-runtime": "^7.25.4",
     "@babel/preset-env": "^7.25.4",
+    "@babel/preset-react": "^7.24.7",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@types/react": "^18.3.6",
     "@types/react-dom": "^18.3.0",
+    "babel-loader": "^9.2.1",
+    "concurrently": "^9.0.1",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
     "eslint-define-config": "^2.1.0",
