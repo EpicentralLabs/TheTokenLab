@@ -61,7 +61,6 @@
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "nodemon": "3.1.4",
-    "tsx": "^3.1.4",
-    "nodemon": "3.1.4"
+    "tsx": "^3.1.4"
   }
 }
