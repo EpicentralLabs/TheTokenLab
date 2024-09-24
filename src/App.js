@@ -33,11 +33,9 @@ function App() {
   const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
 
   // New state variable for image URI (hopefully this is what you meant was needed)
-  const [imageURI, setImageURI] = useState('')
-
-  // New state variable for userPublicKey
-  const [userPublicKey, setUserPublicKey] = useState('')
-
+  const [imageURI, setImageURI] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [userPublicKey, setUserPublicKey] = useState('');
   // Apply hover effect on component mount
   useEffect(() => {
     const cleanup = hoverEffect()
@@ -54,9 +52,7 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
-  const { PUBLIC_URL, BACKEND_PORT, APP_ENV } = process.env;
-  const backendUrl = `${PUBLIC_URL}:${BACKEND_PORT}`;
-
+  let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
   // Function to handle wallet connection
@@ -82,43 +78,57 @@ function App() {
 
   const mintTokens = async (paymentType) => {
     console.log(`Initializing mint with ${paymentType} payment`);
-    try {
-      const mintData = {
-        tokenName,
-        tokenSymbol,
-        userPublicKey,
-        quantity,
-        imageURI,
-        freezeChecked,
-        mintChecked,
-        immutableChecked,
-        decimals,
-        paymentType,
-      };
+    if (!imageFile) {
+      alert('Please select an image file to upload.');
+      return;
+    }
 
-      // eslint-disable-next-line no-undef
-      const response = await fetch(`https://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+    // Validate other inputs before proceeding
+    if (!validateInputs()) {
+      return; // If validation fails, exit the function
+    }
+
+    const mintData = new FormData();
+    mintData.append('tokenName', tokenName);
+    mintData.append('tokenSymbol', tokenSymbol);
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', quantity);
+    mintData.append('freezeChecked', freezeChecked);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('immutableChecked', immutableChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+    mintData.append('file', imageFile);
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/mint`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(mintData),
+        body: mintData,
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
+        const result = await response.json();
         throw new Error(result.message || 'Minting failed');
       }
 
+      const result = await response.json();
       console.log('Mint successful!', result);
       alert(`Mint successful! Mint Address: ${result.mintAddress}\nToken Account: ${result.tokenAccount}\n${result.metadataUploadOutput}`);
-
     } catch (error) {
-      console.log(`${paymentType} minting failed: ${error.message}`);
+      console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
     }
   };
+
+  const validateInputs = () => {
+    if (!tokenName || !tokenSymbol || !quantity || !decimals) {
+      alert('All fields are required.');
+      return false;
+    }
+    return true;
+  };
+
+
 
   const handleSolMint = () => {
     mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
