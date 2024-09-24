@@ -18,7 +18,7 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
-import {preliminaryChecks} from 'backend/checks';
+//import {preliminaryChecks} from 'backend/checks';
 
 function App() {
   // State for token details
@@ -79,7 +79,7 @@ function App() {
     try {
         // Add your SOL minting logic here
 
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+      //await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
 
     } catch (error) {
@@ -92,7 +92,7 @@ function App() {
     console.log('Initializing mint with LABS payment')
     try {
 
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+      //await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
       // Add your LABS minting logic here after preliminary checks pass
     }
