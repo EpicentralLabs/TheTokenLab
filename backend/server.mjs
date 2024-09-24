@@ -17,6 +17,8 @@ import { uploadImageAndPinJSON } from './ipfs.mjs';
 import { createNewMint } from './createNewMint.mjs';
 import {mintTokens} from "./mintTokens.mjs";
 import cors from 'cors';
+import fs from "fs";
+import crypto from 'crypto';
 
 /*
 END OF IMPORTS
@@ -28,15 +30,39 @@ END OF IMPORTS
 Constants
  */
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+            console.log(`Created upload directory: ${uploadPath}`);
+        }
+        console.log(`Uploading file to: ${uploadPath}`);
+        cb(null, uploadPath);
     },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
+    filename: (req, file, cb) => {
+        const hashedName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
+        console.log(`Generated filename: ${hashedName} for original file: ${file.originalname}`);
+        cb(null, hashedName);
     }
 });
+// Initialize multer with the storage configuration
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // Limit files to 5 MB
+    },
+    fileFilter: (req, file, cb) => {
+        const fileTypes = /jpeg|jpg|png|gif/; // Allowed file types
+        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = fileTypes.test(file.mimetype);
 
-const upload = multer({ storage: storage });
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Error: File upload only supports the following filetypes - ' + fileTypes));
+    },
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -222,17 +248,30 @@ app.post('/api/mint', async (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-        res.json({ uri: `/uploads/${req.file.filename}` });
-    } catch (err) {
-        console.error('Error uploading file:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+    console.log('Received file upload request.');
 
+    if (!req.file) {
+        console.error('No file uploaded.');
+        return res.status(400).send('No file uploaded.');
+    }
+
+    console.log('File uploaded successfully:', {
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        storedName: req.file.filename,
+        path: `/uploads/${req.file.filename}`
+    });
+
+    res.json({
+        message: 'File uploaded successfully!',
+        filename: req.file.filename,
+        path: `/uploads/${req.file.filename}`
+    });
+    const filePath = path.join('uploads', req.file.filename);
+    console.log('File path:', filePath);
+    return res.json({ path: filePath });
+});
 if (process.env.APP_ENV !== 'production') {
     app.get('/', (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'index.html'));
