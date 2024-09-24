@@ -18,6 +18,8 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
+//import {preliminaryChecks} from 'backend/checks';
+
 
 function App() {
   // State for token details
@@ -96,6 +98,7 @@ function App() {
         paymentType,
       };
 
+
       // eslint-disable-next-line no-undef
       const response = await fetch(`https://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
         method: 'POST',
@@ -124,9 +127,19 @@ function App() {
     mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
   };
 
-  const handleLabsMint = () => {
-    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
-  };
+  const handleLabsMint = async () => {
+    console.log('Initializing mint with LABS payment')
+    try {
+
+      //await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+
+      // Add your LABS minting logic here after preliminary checks pass
+    }
+    catch (error) {
+      console.error(`LABS minting failed: ${error.message}`);
+    }
+  }
+
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {

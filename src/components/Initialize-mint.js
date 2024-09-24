@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
+import SuccessMessage from './InitalizingMint-message'
 
 function InitializeMint({ 
   tokenName, 
@@ -54,6 +55,7 @@ function InitializeMint({
   }
 
   const [showError, setShowError] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const handleInitializeMint = (paymentType) => {
     let hasError = false;
@@ -77,8 +79,10 @@ function InitializeMint({
 
     if (hasError) {
       setShowError(true)
+      setShowSuccess(false)
     } else {
       setShowError(false)
+      setShowSuccess(true)
       // Call the appropriate function based on payment type
       if (paymentType === 'SOL') {
         onSolMintClick()
@@ -88,13 +92,14 @@ function InitializeMint({
     }
   }
 
-  // Reset error states when inputs change
+  // Reset error and success states when inputs change
   useEffect(() => {
     setIsTokenNameError(false)
     setIsTokenSymbolError(false)
     setIsQuantityError(false)
     setIsDecimalsError(false)
     setShowError(false)
+    setShowSuccess(false)
   }, [tokenName, tokenSymbol, quantity, decimals])
 
   return (
@@ -114,6 +119,7 @@ function InitializeMint({
         </button>
       </div>
       {showError && <ErrorMessage />}
+      {showSuccess && <SuccessMessage />}
     </div>
   )
 }
