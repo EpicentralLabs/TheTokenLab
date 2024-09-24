@@ -16,6 +16,8 @@ import logger from './logger.mjs';
 import { uploadImageAndPinJSON } from './ipfs.mjs';
 import { createNewMint } from './createNewMint.mjs';
 import {mintTokens} from "./mintTokens.mjs";
+import cors from 'cors';
+
 /*
 END OF IMPORTS
  */
@@ -56,13 +58,15 @@ const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-import cors from 'cors';
-
-const allowedOrigin = `${process.env.PUBLIC_URL || 'http://localhost'}:${process.env.BACKEND_PORT || '3001'}`;
+const allowedOrigin = 'http://localhost:3000';
 
 app.use(cors({
     origin: allowedOrigin,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+app.options('*', cors());
 /*
 END OF CONSTANTS
  */
@@ -209,8 +213,11 @@ app.post('/api/mint', async (req, res) => {
         });
 
     } catch (error) {
-        logger.error(`Error processing /mint request: ${error.message}`);
-        res.status(500).json({ error: 'An error occurred' });
+        logger.error(`Error processing /mint request: ${error.message}`, {
+            stack: error.stack,
+            requestBody: req.body,
+        });
+        res.status(500).json({ error: 'An error occurred during the minting process.' });
     }
 });
 
