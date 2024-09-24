@@ -1,4 +1,4 @@
-// checks.js
+// checks.mjs
 import { PublicKey } from '@solana/web3.js'; // Ensure you import relevant dependencies
 
 export async function checkAccountExists(publicKey, connection, logger) {

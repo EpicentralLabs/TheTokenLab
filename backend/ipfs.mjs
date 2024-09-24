@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
-import logger from "./logger";
+import logger from "./logger.mjs";
 
 export async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretApiKey) {
     const formData = new FormData();

@@ -1,4 +1,4 @@
-import logger from "./logger";
+import logger from "./logger.mjs";
 import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 
 export async function mintTokens(connection, mint, quantity, payer, decimals, paymentType) {
