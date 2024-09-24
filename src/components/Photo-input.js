@@ -1,18 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
-
+import $ from 'jquery';
+import 'dotenv/config';
 
 function PhotoInput({ onFileUpload, onImageURIChange }) {
-    // State variables for photo, preview URL, error message, and image file
     const [photo, setPhoto] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
+    const [imageFile, setImageFile] = useState(null); // Added state for image file
     const [error, setError] = useState('');
-    const [imageFile, setImageFile] = useState(null); // State variable for the image file
-    const [imageURI, setImageURI] = useState(''); // State variable for the image URI
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        // Cleanup URL object to prevent memory leaks
         return () => {
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
@@ -23,7 +21,7 @@ function PhotoInput({ onFileUpload, onImageURIChange }) {
     const validateImage = (file) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
-            setError('Only JPEG, PNG, and WebP images are supported');
+            setError(`Unsupported file type: ${file.type}. Only JPEG, PNG, and WebP are supported.`);
             return false;
         }
         if (file.size > 2 * 1024 * 1024) {
@@ -33,31 +31,58 @@ function PhotoInput({ onFileUpload, onImageURIChange }) {
         return true;
     };
 
-    const handlePhotoChange = (e) => {
+    const uploadFile = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await $.ajax({
+                url: `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/upload`,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+            });
+
+            console.log('File uploaded successfully:', response);
+            setImageFile(file); // Set imageFile state with the uploaded file
+            return response;
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            setError('Error uploading file');
+            throw error;
+        }
+    };
+
+    const handlePhotoChange = async (e) => {
         const file = e.target.files[0];
         console.log('File selected:', file ? file.name : 'No file selected');
 
         if (!file) {
             setError('No file selected');
             console.error('No file selected');
-            return; // Exit early if no file is selected
+            return;
         }
 
-        // Validate the image
+        setError('');
+
         if (!validateImage(file)) {
             console.error('Validation failed');
-            return; // Stop further processing if validation fails
+            return;
         }
 
         const img = new Image();
+        img.src = URL.createObjectURL(file);
+
         img.onerror = () => {
             setError('Invalid image file');
             console.error('Invalid image file');
+            URL.revokeObjectURL(img.src);
         };
 
-        img.onload = () => {
+        img.onload = async () => {
             console.log(`Image dimensions: ${img.width}x${img.height}`);
-            // Check image dimensions
+
             if (img.width < 100 || img.height < 100) {
                 setError('Image should be minimum 100 x 100 pixels');
                 console.error('Image dimensions too small.');
@@ -65,48 +90,48 @@ function PhotoInput({ onFileUpload, onImageURIChange }) {
                 setError('Image maximum 1000 x 1000 pixels');
                 console.error('Image dimensions too large.');
             } else {
-                // If all checks pass, update state
-                setError('');
                 setPhoto(file.name);
-                setImageFile(file); // Update the file state here
-
+                setImageFile(file); // Ensure to set the imageFile state
                 const fileURL = URL.createObjectURL(file);
                 setPreviewUrl(fileURL);
-                setImageURI(fileURL); // Update the URI state
                 console.log('Image passed validation and preview URL set');
 
-                if (onFileUpload) {
-                    onFileUpload(file); // Notify parent with file object
-                }
-                if (onImageURIChange) {
-                    onImageURIChange(fileURL); // Notify parent with image URI
+                try {
+                    const result = await uploadFile(file);
+                    console.log('File uploaded successfully:', result);
+
+                    if (onFileUpload && result.path) {
+                        onFileUpload(result.path);
+                    }
+
+                    if (onImageURIChange) {
+                        onImageURIChange(fileURL);
+                    }
+                } catch (err) {
+                    setError('Failed to upload file');
+                    console.error('File upload error:', err);
+                } finally {
+                    URL.revokeObjectURL(fileURL);
                 }
             }
         };
-
-        // Set the image source
-        const fileURL = URL.createObjectURL(file);
-        img.src = fileURL; // Set the src for the image to trigger onload
     };
 
-    // Handler for clicking the custom file input area
     const handleClick = () => {
         fileInputRef.current.click();
         console.log('File input clicked');
     };
 
-    // Handler for removing the selected image
     const handleRemove = () => {
         setPhoto('');
         setPreviewUrl('');
         setError('');
-        setImageFile(null); // Clear the image file state
-        setImageURI(''); // Clear the image URI state
+        setImageFile(null); // Reset imageFile state
         if (fileInputRef.current) {
-            fileInputRef.current.value = ''; // Reset file input
+            fileInputRef.current.value = null;
         }
         if (onFileUpload) {
-            onFileUpload(null); // Notify parent component of removal
+            onFileUpload(null);
             console.log('Cleared photo in parent component');
         }
     };
@@ -121,7 +146,7 @@ function PhotoInput({ onFileUpload, onImageURIChange }) {
                             <div className="preview-container">
                                 <img src={previewUrl} alt="Preview" className="preview" />
                                 <button className="remove-button" onClick={(e) => {
-                                    e.stopPropagation(); // Prevent click from triggering file input
+                                    e.stopPropagation();
                                     handleRemove();
                                 }}>
                                     ✖
@@ -143,11 +168,9 @@ function PhotoInput({ onFileUpload, onImageURIChange }) {
                         onChange={handlePhotoChange}
                         accept="image/jpeg,image/png,image/webp"
                     />
-                    <div className="info-bubble">
-                        <div className="tooltip">Provide an image for your token. (Min: 100 x 100 px | Max: 1000 x 1000 px | Max: 2MB size)</div>
-                    </div>
+                    {error && <div className="error">{error}</div>}
+                    <div className="tooltip">Maximum size: 2MB, Dimensions: 100x100 to 1000x1000</div>
                 </div>
-                {error && <div className="photo-input-error">{error}</div>}
             </div>
         </div>
     );
