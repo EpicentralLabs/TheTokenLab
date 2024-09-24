@@ -18,6 +18,8 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
+import 'dotenv/config';
+import {cleanupOldFiles} from '../backend/garbage-collection.mjs';
 
 function App() {
   // State for token details
@@ -36,10 +38,11 @@ function App() {
   const [imageURI, setImageURI] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [userPublicKey, setUserPublicKey] = useState('');
+
+
   // Apply hover effect on component mount
   useEffect(() => {
-    const cleanup = hoverEffect()
-    return cleanup
+    return hoverEffect()
   }, [])
 
   // State variables for switch components and warning message
@@ -75,9 +78,11 @@ function App() {
 
 
 
-
   const mintTokens = async (paymentType) => {
     console.log(`Initializing mint with ${paymentType} payment`);
+    console.log('Current imageFile state:', imageFile); // Log the current state
+
+    // Check if an image file is selected
     if (!imageFile) {
       alert('Please select an image file to upload.');
       return;
@@ -88,6 +93,7 @@ function App() {
       return; // If validation fails, exit the function
     }
 
+    // Create FormData for the API request
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
@@ -98,8 +104,9 @@ function App() {
     mintData.append('immutableChecked', immutableChecked);
     mintData.append('decimals', decimals);
     mintData.append('paymentType', paymentType);
-    mintData.append('file', imageFile);
+    mintData.append('file', imageFile); // Add image file here
 
+    // Make the POST request to the /mint endpoint
     try {
       const response = await fetch(`http://localhost:3001/api/mint`, {
         method: 'POST',
@@ -120,8 +127,24 @@ function App() {
     }
   };
 
+  function setInputErrors(errors) {
+    setIsTokenNameError(errors.tokenName);
+    setIsTokenSymbolError(errors.tokenSymbol);
+    setIsQuantityError(errors.quantity);
+    setIsDecimalsError(errors.decimals);
+  }
+
   const validateInputs = () => {
-    if (!tokenName || !tokenSymbol || !quantity || !decimals) {
+    let errors = {
+      tokenName: !tokenName,
+      tokenSymbol: !tokenSymbol,
+      quantity: !quantity,
+      decimals: !decimals,
+    };
+
+    setInputErrors(errors);
+
+    if (Object.values(errors).includes(true)) {
       alert('All fields are required.');
       return false;
     }
@@ -129,12 +152,13 @@ function App() {
   };
 
 
-
   const handleSolMint = () => {
+    console.log('Current imageFile state:', imageFile);
     mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
   };
 
   const handleLabsMint = () => {
+    console.log('Current imageFile state:', imageFile);
     mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
   };
 
