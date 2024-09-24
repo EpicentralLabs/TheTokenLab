@@ -12,8 +12,8 @@ To create a new branch:
 
 1. Ensure you're on the latest version of the main branch:
    ```
-   git checkout main
-   git pull origin main
+   git checkout master
+   git pull origin master
    ```
 
 2. Create a new branch with a descriptive name following semantic versioning:

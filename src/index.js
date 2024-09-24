@@ -1,7 +1,7 @@
 // Import necessary dependencies
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import App from './App.js';
 import './index.css';
 
 // Render the App component inside React's StrictMode
