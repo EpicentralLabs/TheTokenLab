@@ -20,6 +20,7 @@ import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import 'dotenv/config';
 import {cleanupOldFiles} from '../backend/garbage-collection.mjs';
+import {pathToFileURL} from "url";
 
 function App() {
   // State for token details
@@ -39,7 +40,7 @@ function App() {
   const [imageFile, setImageFile] = useState(null); // To store the uploaded image file
 
   const [userPublicKey, setUserPublicKey] = useState('');
-
+  const [onFileUpload, setOnFileUpload] = useState('');
 
   // Apply hover effect on component mount
   useEffect(() => {
@@ -55,7 +56,6 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
-  const [file, setLocalImageFile] = useState(null);
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
@@ -80,32 +80,48 @@ function App() {
 
 
 
+
   const mintTokens = async (paymentType) => {
     console.log(`Initializing mint with ${paymentType} payment`);
+    console.log('Current imageFile state:', imageFile); // Log the current state
 
-    // Ensure localImageFile is the actual file object
-    if (!file) {
-      alert('Please select an image file to upload!');
-      return;
+    // Ensure that you are correctly obtaining the path from the imageFile
+    const imagePath = imageFile;
+    // Validate other inputs before proceeding
+    if (!validateInputs()) {
+      return; // If validation fails, exit the function
     }
 
     // Create FormData for the API request
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('tokenName', tokenName);
-    formData.append('tokenSymbol', tokenSymbol);
-    formData.append('paymentType', paymentType);
-    formData.append('userPublicKey', userPublicKey);
-    formData.append('quantity', quantity);
-    formData.append('freezeChecked', freezeChecked);
-    formData.append('mintChecked', mintChecked);
-    formData.append('immutableChecked', immutableChecked);
-    formData.append('decimals', decimals);
+    const mintData = new FormData();
+    mintData.append('tokenName', tokenName);
+    mintData.append('tokenSymbol', tokenSymbol);
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', quantity);
+    mintData.append('freezeChecked', freezeChecked);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('immutableChecked', immutableChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+    mintData.append('imagePath', imagePath); // Append the image path to the FormData
+
+    console.log('Mint data being sent:', {
+      tokenName,
+      tokenSymbol,
+      userPublicKey,
+      quantity,
+      freezeChecked,
+      mintChecked,
+      immutableChecked,
+      decimals,
+      paymentType,
+      imagePath,
+    });
 
     try {
       const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
         method: 'POST',
-        body: formData,
+        body: mintData,
       });
 
       if (!response.ok) {
@@ -120,8 +136,29 @@ function App() {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
     }
-  };
+  };  function setInputErrors(errors) {
+    setIsTokenNameError(errors.tokenName);
+    setIsTokenSymbolError(errors.tokenSymbol);
+    setIsQuantityError(errors.quantity);
+    setIsDecimalsError(errors.decimals);
+  }
 
+  const validateInputs = () => {
+    let errors = {
+      tokenName: !tokenName,
+      tokenSymbol: !tokenSymbol,
+      quantity: !quantity,
+      decimals: !decimals,
+    };
+
+    setInputErrors(errors);
+
+    if (Object.values(errors).includes(true)) {
+      alert('All fields are required.');
+      return false;
+    }
+    return true;
+  };
 
 
   const handleSolMint = () => {
@@ -136,7 +173,9 @@ function App() {
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
+    // Update the imageURI state with the new URI
     setImageURI(uri)
+    // Log the updated URI to the console for debugging
     console.log('Image URI updated:', uri)
   }
 
@@ -208,9 +247,12 @@ function App() {
               <h1>
                 {/* PhotoInput component for uploading and handling image files */}
                 <PhotoInput
-                    onFileUpload={(file) => console.log('File uploaded:', file)}
-                    setImageFile={setLocalImageFile} // Pass the local image file state
+                    onFileUpload={(file) => {
+                      console.log('File uploaded:', file);
+                      setImageFile(file); // Update state with uploaded file path
+                    }}
                     onImageURIChange={handleImageURIChange}
+                    pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
             </div>

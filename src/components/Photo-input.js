@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
+import $ from 'jquery';
 import 'dotenv/config';
 
-function PhotoInput({ onFileUpload, onImageURIChange, setImageFile: setParentImageFile }) {
+function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
-    const [localImageFile, setLocalImageFile] = useState(null);
     const [error, setError] = useState('');
+    const [imagePath, setImagePath] = useState(''); // New state for storing image path
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -32,96 +33,112 @@ function PhotoInput({ onFileUpload, onImageURIChange, setImageFile: setParentIma
 
     const uploadFile = async (file) => {
         const formData = new FormData();
-        formData.append('file', file); // Append the actual file to the form data
+        formData.append('file', file);
 
         try {
-            const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/upload`, {
-                method: 'POST',
-                body: formData,
+            const response = await $.ajax({
+                url: `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/upload`,
+                type: 'POST',
+                data: formData,
+                processData: false, // Don't process the data
+                contentType: false, // Don't set content type; jQuery will set it automatically
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            console.log('File uploaded successfully:', data);
-            return data.path;
+            console.log('File uploaded successfully:', response);
+            return response; // Return the result for the caller function to use
         } catch (error) {
             console.error('Error uploading file:', error);
             setError('Error uploading file');
-            throw error;
+            throw error; // Re-throw error to be caught in the caller function
         }
     };
 
     const handlePhotoChange = async (e) => {
         const file = e.target.files[0];
+        console.log('File selected:', file ? file.name : 'No file selected');
 
         if (!file) {
             setError('No file selected');
-            return;
+            console.error('No file selected');
+            return; // Exit early if no file is selected
         }
 
+        // Clear previous errors
         setError('');
 
+        // Validate the image
         if (!validateImage(file)) {
-            return; // Exit if validation fails
+            console.error('Validation failed');
+            return; // Stop further processing if validation fails
         }
 
         const img = new Image();
-        img.src = URL.createObjectURL(file);
+        img.src = URL.createObjectURL(file); // Set the image source to trigger onload
 
         img.onerror = () => {
             setError('Invalid image file');
-            URL.revokeObjectURL(img.src);
+            console.error('Invalid image file');
+            URL.revokeObjectURL(img.src); // Clean up object URL
         };
 
         img.onload = async () => {
-            // Validate image dimensions
+            console.log(`Image dimensions: ${img.width}x${img.height}`);
+
+            // Check image dimensions
             if (img.width < 100 || img.height < 100) {
                 setError('Image should be minimum 100 x 100 pixels');
-                return;
+                console.error('Image dimensions too small.');
             } else if (img.width > 1000 || img.height > 1000) {
                 setError('Image maximum 1000 x 1000 pixels');
-                return;
-            }
+                console.error('Image dimensions too large.');
+            } else {
+                // If all checks pass, update state
+                setPhoto(file.name);
+                const fileURL = URL.createObjectURL(file);
+                setPreviewUrl(fileURL);
+                console.log('Image passed validation and preview URL set');
 
-            setPhoto(file.name);
-            setLocalImageFile(file);
-            const fileURL = URL.createObjectURL(file);
-            setPreviewUrl(fileURL);
+                try {
+                    // Upload the image to the server
+                    const result = await uploadFile(file);
+                    console.log('File uploaded successfully:', result);
 
-            try {
-                const uploadedPath = await uploadFile(file);
-                console.log('Uploaded path received:', uploadedPath);
-                setParentImageFile(uploadedPath); // Call the parent function to set the image path
-                onFileUpload(uploadedPath); // Call parent function with uploaded file path
-                onImageURIChange(fileURL); // Update the image URI
-            } catch (err) {
-                console.error('Failed to upload file:', err);
-                setError('Failed to upload file');
-            } finally {
-                URL.revokeObjectURL(fileURL);
+                    setImagePath(result.path);
+                    if (onFileUpload && result.path) {
+                        onFileUpload(result.path); // Assuming result contains the file path as `result.path`
+                    }
+
+                    // Notify parent with image URI
+                    if (onImageURIChange) {
+                        onImageURIChange(fileURL);
+                    }
+                } catch (err) {
+                    setError('Failed to upload file');
+                    console.error('File upload error:', err);
+                } finally {
+                    URL.revokeObjectURL(fileURL); // Clean up object URL after upload
+                }
             }
         };
-
-        img.src = URL.createObjectURL(file); // Trigger the loading of the image
     };
 
     const handleClick = () => {
         fileInputRef.current.click();
+        console.log('File input clicked');
     };
 
     const handleRemove = () => {
         setPhoto('');
         setPreviewUrl('');
         setError('');
-        setLocalImageFile(null);
+        setImagePath(''); // Clear the image path state
         if (fileInputRef.current) {
-            fileInputRef.current.value = null;
+            fileInputRef.current.value = null; // Reset file input correctly
         }
-        onFileUpload(null); // Clear the file upload in parent component
-        setParentImageFile(null); // Clear the parent image file state
+        if (onFileUpload) {
+            onFileUpload(null); // Notify parent component of removal
+            console.log('Cleared photo in parent component');
+        }
     };
 
     return (
@@ -134,7 +151,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, setImageFile: setParentIma
                             <div className="preview-container">
                                 <img src={previewUrl} alt="Preview" className="preview" />
                                 <button className="remove-button" onClick={(e) => {
-                                    e.stopPropagation();
+                                    e.stopPropagation(); // Prevent click from triggering file input
                                     handleRemove();
                                 }}>
                                     ✖
