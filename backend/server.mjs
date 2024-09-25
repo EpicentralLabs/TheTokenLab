@@ -83,7 +83,7 @@ const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-const allowedOrigin = 'http://localhost:3000';
+const allowedOrigin = 'http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_FRONTEND_PORT}';
 
 app.use(cors({
     origin: allowedOrigin,
@@ -97,17 +97,25 @@ END OF CONSTANTS
  */
 
 
-app.post('/api/mint', upload.single('file'), async (req, res) => {
-    try {
-        const imageFile = req.file;
-        let imageURI = '';
+app.post('/api/mint', async (req, res) => {
+    const { imagePath } = req.body;
 
-        if (imageFile) {
-            imageURI = imageFile.path;
-        } else {
-            return res.status(400).json({ success: false, message: 'No image file uploaded.' });
+    try {
+        // Ensure that an image path is provided
+        if (!imagePath) {
+            return res.status(400).json({ success: false, message: 'No image path provided.' });
         }
 
+        // Construct the full path to the image
+        const fullPath = path.resolve(__dirname, 'backend', imagePath);
+        console.log('Image Path:', fullPath);
+
+        // Check if the file exists
+        if (!fs.existsSync(fullPath)) {
+            return res.status(400).json({ success: false, message: 'Image file does not exist at the provided path.' });
+        }
+        const imageURI = path.resolve(fullPath);
+        console.log('Image URI:', imageURI);
         const {
             tokenName,
             tokenSymbol,
