@@ -71,6 +71,8 @@ const connection = new Connection(clusterApiUrl(network), 'confirmed');
 const expectedUrl = clusterApiUrl(network);
 logger.debug(`Connected to: ${expectedUrl}`);
 const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('devnet')) {
@@ -83,7 +85,7 @@ const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-const allowedOrigin = 'http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_FRONTEND_PORT}';
+const allowedOrigin = 'http://localhost:3000';
 
 app.use(cors({
     origin: allowedOrigin,
@@ -97,24 +99,25 @@ END OF CONSTANTS
  */
 
 
-app.post('/api/mint', async (req, res) => {
+app.post('/api/mint', upload.single('imagePath'), async (req, res) => {
     const { imagePath } = req.body;
-
     try {
-        // Ensure that an image path is provided
+        // Log the received request body
+        // console.log('Full Request Object:', req);
+        console.log('Received /mint request:', req.body);
+        // Check for imagePath
         if (!imagePath) {
             return res.status(400).json({ success: false, message: 'No image path provided.' });
         }
 
-        // Construct the full path to the image
-        const fullPath = path.resolve(__dirname, 'backend', imagePath);
-        console.log('Image Path:', fullPath);
+        const fullPath = path.join(__dirname, 'backend', imagePath);
+        console.log('Image Path from Request:', imagePath);
+        console.log('Constructed Full Path:', fullPath);
+        console.log('Received /mint request:');
 
-        // Check if the file exists
-        if (!fs.existsSync(fullPath)) {
-            return res.status(400).json({ success: false, message: 'Image file does not exist at the provided path.' });
-        }
-        const imageURI = path.resolve(fullPath);
+
+
+        const imageURI = fullPath; // Use fullPath directly
         console.log('Image URI:', imageURI);
         const {
             tokenName,
@@ -128,8 +131,18 @@ app.post('/api/mint', async (req, res) => {
             paymentType
         } = req.body;
             console.log(req.body)
-        // Validate paymentType
-        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
+        console.table({
+            TokenName: tokenName,
+            TokenSymbol: tokenSymbol,
+            UserPublicKey: userPublicKey,
+            Quantity: quantity,
+            FreezeChecked: freezeChecked,
+            MintChecked: mintChecked,
+            ImmutableChecked: immutableChecked,
+            Decimals: decimals,
+            PaymentType: paymentType,
+            ImagePath: imagePath
+        });        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
             return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
         }
 
