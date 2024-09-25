@@ -82,6 +82,10 @@ function App() {
 
 
   const mintTokens = async (paymentType) => {
+    if (!userPublicKey){
+        alert('Please connect your wallet first');
+        return;
+    }
     console.log(`Initializing mint with ${paymentType} payment`);
     console.log('Current imageFile state:', imageFile); // Log the current state
 
