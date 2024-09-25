@@ -72,8 +72,7 @@ const expectedUrl = clusterApiUrl(network);
 logger.debug(`Connected to: ${expectedUrl}`);
 const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
 
-const decimals = 9;
-const FEE_quantity = 0.05 * LAMPORTS_PER_SOL;
+
 if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('devnet')) {
     throw new Error('This application is set to production but is connected to the devnet cluster.');
 }
@@ -98,21 +97,29 @@ END OF CONSTANTS
  */
 
 
-app.post('/api/mint', async (req, res) => {
+app.post('/api/mint', upload.single('file'), async (req, res) => {
     try {
+        const imageFile = req.file;
+        let imageURI = '';
+
+        if (imageFile) {
+            imageURI = imageFile.path;
+        } else {
+            return res.status(400).json({ success: false, message: 'No image file uploaded.' });
+        }
+
         const {
             tokenName,
             tokenSymbol,
             userPublicKey,
             quantity,
-            imageURI,
             freezeChecked,
             mintChecked,
             immutableChecked,
             decimals,
             paymentType
         } = req.body;
-
+            console.log(req.body)
         // Validate paymentType
         if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
             return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
@@ -128,6 +135,7 @@ app.post('/api/mint', async (req, res) => {
         if (typeof mintChecked === 'undefined') missingFields.push('mintChecked');
         if (typeof immutableChecked === 'undefined') missingFields.push('immutableChecked');
         if (typeof decimals === 'undefined') missingFields.push('decimals');
+
         if (missingFields.length > 0) {
             return res.status(400).json({
                 success: false,
@@ -135,7 +143,6 @@ app.post('/api/mint', async (req, res) => {
             });
         }
 
-        const imagePath = path.join(__dirname, imageURI);
         logger.info('Received data:', {
             tokenName,
             tokenSymbol,
@@ -145,8 +152,7 @@ app.post('/api/mint', async (req, res) => {
             freezeChecked,
             mintChecked,
             immutableChecked,
-            decimals,
-            imagePath
+            decimals
         });
 
         // Initialize PublicKey and check for errors
@@ -158,7 +164,9 @@ app.post('/api/mint', async (req, res) => {
             logger.error('Error initializing PublicKey:', error.message);
             return res.status(400).json({ success: false, message: 'Invalid user public key.' });
         }
-
+        const payer = {
+            publicKey: userKey,
+        };
         // Check if payer is defined and has publicKey
         if (!payer || !payer.publicKey) {
             logger.error('Payer is not properly initialized.');
@@ -175,7 +183,7 @@ app.post('/api/mint', async (req, res) => {
 
         // Upload image and JSON metadata
         const imageCid = await uploadImageAndPinJSON(
-            imagePath,
+            imageURI,
             process.env.PINATA_API_KEY,
             process.env.PINATA_SECRET_API_KEY,
             process.env.PINATA_BEARER_TOKEN,
@@ -231,7 +239,7 @@ app.post('/api/mint', async (req, res) => {
         await logBalances(connection, payer, payer.publicKey, userPublicKey, mint);
 
         // Respond with success
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Mint and transfer successful!',
             mintAddress: mintAddress.toBase58(),
             tokenAccount: payerTokenAccount.address.toBase58(),
@@ -243,7 +251,7 @@ app.post('/api/mint', async (req, res) => {
             stack: error.stack,
             requestBody: req.body,
         });
-        res.status(500).json({ error: 'An error occurred during the minting process.' });
+        return res.status(500).json({ error: 'An error occurred during the minting process.' });
     }
 });
 
@@ -263,20 +271,23 @@ app.post('/upload', upload.single('file'), (req, res) => {
         path: `/uploads/${req.file.filename}`
     });
 
-    res.json({
+    const filePath = path.join('uploads', req.file.filename);
+    console.log('File path:', filePath);
+
+    // Respond with the successful upload details
+    return res.json({
         message: 'File uploaded successfully!',
         filename: req.file.filename,
         path: `/uploads/${req.file.filename}`
     });
-    const filePath = path.join('uploads', req.file.filename);
-    console.log('File path:', filePath);
-    return res.json({ path: filePath });
 });
+
 if (process.env.APP_ENV !== 'production') {
     app.get('/', (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'index.html'));
     });
 }
+
 
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);

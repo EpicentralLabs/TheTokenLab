@@ -35,8 +35,9 @@ function App() {
   const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
 
   // New state variable for image URI (hopefully this is what you meant was needed)
-  const [imageURI, setImageURI] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const [imageURI, setImageURI] = useState(''); // To store the image URI
+  const [imageFile, setImageFile] = useState(null); // To store the uploaded image file
+
   const [userPublicKey, setUserPublicKey] = useState('');
 
 
@@ -54,6 +55,7 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+  const [file, setLocalImageFile] = useState(null);
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
@@ -80,37 +82,30 @@ function App() {
 
   const mintTokens = async (paymentType) => {
     console.log(`Initializing mint with ${paymentType} payment`);
-    console.log('Current imageFile state:', imageFile); // Log the current state
 
-    // Check if an image file is selected
-    if (!imageFile) {
-      alert('Please select an image file to upload.');
+    // Ensure localImageFile is the actual file object
+    if (!file) {
+      alert('Please select an image file to upload!');
       return;
     }
 
-    // Validate other inputs before proceeding
-    if (!validateInputs()) {
-      return; // If validation fails, exit the function
-    }
-
     // Create FormData for the API request
-    const mintData = new FormData();
-    mintData.append('tokenName', tokenName);
-    mintData.append('tokenSymbol', tokenSymbol);
-    mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', quantity);
-    mintData.append('freezeChecked', freezeChecked);
-    mintData.append('mintChecked', mintChecked);
-    mintData.append('immutableChecked', immutableChecked);
-    mintData.append('decimals', decimals);
-    mintData.append('paymentType', paymentType);
-    mintData.append('file', imageFile); // Add image file here
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('tokenName', tokenName);
+    formData.append('tokenSymbol', tokenSymbol);
+    formData.append('paymentType', paymentType);
+    formData.append('userPublicKey', userPublicKey);
+    formData.append('quantity', quantity);
+    formData.append('freezeChecked', freezeChecked);
+    formData.append('mintChecked', mintChecked);
+    formData.append('immutableChecked', immutableChecked);
+    formData.append('decimals', decimals);
 
-    // Make the POST request to the /mint endpoint
     try {
-      const response = await fetch(`http://localhost:3001/api/mint`, {
+      const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
         method: 'POST',
-        body: mintData,
+        body: formData,
       });
 
       if (!response.ok) {
@@ -127,29 +122,6 @@ function App() {
     }
   };
 
-  function setInputErrors(errors) {
-    setIsTokenNameError(errors.tokenName);
-    setIsTokenSymbolError(errors.tokenSymbol);
-    setIsQuantityError(errors.quantity);
-    setIsDecimalsError(errors.decimals);
-  }
-
-  const validateInputs = () => {
-    let errors = {
-      tokenName: !tokenName,
-      tokenSymbol: !tokenSymbol,
-      quantity: !quantity,
-      decimals: !decimals,
-    };
-
-    setInputErrors(errors);
-
-    if (Object.values(errors).includes(true)) {
-      alert('All fields are required.');
-      return false;
-    }
-    return true;
-  };
 
 
   const handleSolMint = () => {
@@ -164,9 +136,7 @@ function App() {
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
-    // Update the imageURI state with the new URI
     setImageURI(uri)
-    // Log the updated URI to the console for debugging
     console.log('Image URI updated:', uri)
   }
 
@@ -237,11 +207,10 @@ function App() {
               {/* Photo upload input */}
               <h1>
                 {/* PhotoInput component for uploading and handling image files */}
-                <PhotoInput 
-                  // Callback function when a file is uploaded
-                  onFileUpload={(file) => console.log('File uploaded:', file)} 
-                  // Callback function to handle changes in the image URI
-                  onImageURIChange={handleImageURIChange}
+                <PhotoInput
+                    onFileUpload={(file) => console.log('File uploaded:', file)}
+                    setImageFile={setLocalImageFile} // Pass the local image file state
+                    onImageURIChange={handleImageURIChange}
                 />
               </h1>
             </div>
