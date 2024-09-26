@@ -1,17 +1,13 @@
-// checks.mjs
-import { PublicKey } from '@solana/web3.js'; // Ensure you import relevant dependencies
+import { PublicKey } from '@solana/web3.js';
 
-export async function checkAccountExists(publicKey, connection, logger) {
+export async function checkAccountExists(userPublicKey, connection, logger) {
     try {
-        if (!(publicKey instanceof PublicKey)) {
-            throw new Error('Invalid publicKey parameter. It should be an instance of PublicKey.');
-        }
-        const accountInfo = await connection.getAccountInfo(publicKey);
-        logger.info(`Account info for ${publicKey.toBase58()}: ${JSON.stringify(accountInfo, null, 2)}`);
-
+        const userPublicKeyObj = new PublicKey(userPublicKey);
+        const accountInfo = await connection.getAccountInfo(userPublicKeyObj);
+        logger.info(`Account info for ${userPublicKeyObj.toBase58()}: ${JSON.stringify(accountInfo, null, 2)}`);
         return accountInfo !== null;
     } catch (error) {
-        logger.error(`Failed to check account existence for ${publicKey.toBase58()}: ${error.message}`);
+        logger.error(`Failed to check account existence for ${userPublicKey}: ${error.message}`);
         return false;
     }
 }
