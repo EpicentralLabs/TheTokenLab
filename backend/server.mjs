@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction} from '@solana/web3.js';
+import {clusterApiUrl, Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction} from '@solana/web3.js';
 import {createMint, createTransferInstruction, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
 import 'dotenv/config';
 import '@pinata/sdk';
@@ -10,11 +10,11 @@ import multer from 'multer';
 /*
 Modularized Imports
 */
-import { preliminaryChecks } from './checks.mjs';
-import { logBalances } from './logBalances.mjs';
+import {preliminaryChecks} from './checks.mjs';
+import {logBalances} from './logBalances.mjs';
 import logger from './logger.mjs';
-import { uploadImageAndPinJSON } from './ipfs.mjs';
-import { createNewMint } from './createNewMint.mjs';
+import {uploadImageAndPinJSON} from './ipfs.mjs';
+import {createNewMint} from './createNewMint.mjs';
 import {mintTokens} from "./mintTokens.mjs";
 import cors from 'cors';
 import fs from "fs";
@@ -63,6 +63,7 @@ const upload = multer({
     },
 });
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -72,8 +73,7 @@ const expectedUrl = clusterApiUrl(network);
 logger.debug(`Connected to: ${expectedUrl}`);
 const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+app.use(bodyParser.json());
 
 if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('devnet')) {
     throw new Error('This application is set to production but is connected to the devnet cluster.');
@@ -83,7 +83,6 @@ if (connection.rpcEndpoint !== expectedUrl) {
 }
 const port = process.env.BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
-app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 const allowedOrigin = 'http://localhost:3000';
 
@@ -99,27 +98,12 @@ END OF CONSTANTS
  */
 
 
-app.post('/api/mint', upload.single('imagePath'), async (req, res) => {
-    const { imagePath } = req.body;
+app.post('/api/mint', async (req, res) => {
     try {
-        // Log the received request body
-        // console.log('Full Request Object:', req);
-        console.log('Received /mint request:', req.body);
-        // Check for imagePath
-        if (!imagePath) {
-            return res.status(400).json({ success: false, message: 'No image path provided.' });
-        }
+        console.log('Received /mint request body:', req.body);
 
-        const fullPath = path.join(__dirname, 'backend', imagePath);
-        console.log('Image Path from Request:', imagePath);
-        console.log('Constructed Full Path:', fullPath);
-        console.log('Received /mint request:');
-
-
-
-        const imageURI = fullPath; // Use fullPath directly
-        console.log('Image URI:', imageURI);
         const {
+            imagePath,
             tokenName,
             tokenSymbol,
             userPublicKey,
@@ -130,28 +114,30 @@ app.post('/api/mint', upload.single('imagePath'), async (req, res) => {
             decimals,
             paymentType
         } = req.body;
-            console.log(req.body)
-        console.table({
-            TokenName: tokenName,
-            TokenSymbol: tokenSymbol,
-            UserPublicKey: userPublicKey,
-            Quantity: quantity,
-            FreezeChecked: freezeChecked,
-            MintChecked: mintChecked,
-            ImmutableChecked: immutableChecked,
-            Decimals: decimals,
-            PaymentType: paymentType,
-            ImagePath: imagePath
-        });        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
-            return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
+
+        if (!PublicKey.isOnCurve(userPublicKey)) {
+            return res.status(400).json({message: 'Invalid user public key.'});
+        }
+        // Verify that imagePath exists in the request
+        if (!imagePath) {
+            return res.status(400).json({message: 'Image path is missing.'});
         }
 
+        // Construct full path for image on server
+        const fullPath = path.join(__dirname, imagePath);
+        console.log('Constructed Full Path:', fullPath);
+
+        // Check if the file exists at the given path
+        if (!fs.existsSync(fullPath)) {
+            return res.status(400).json({message: 'File not found at the specified path.'});
+        }
+
+        // Validate all other required fields
         const missingFields = [];
         if (!tokenName) missingFields.push('tokenName');
         if (!tokenSymbol) missingFields.push('tokenSymbol');
         if (!userPublicKey) missingFields.push('userPublicKey');
         if (!quantity) missingFields.push('quantity');
-        if (!imageURI) missingFields.push('imageURI');
         if (typeof freezeChecked === 'undefined') missingFields.push('freezeChecked');
         if (typeof mintChecked === 'undefined') missingFields.push('mintChecked');
         if (typeof immutableChecked === 'undefined') missingFields.push('immutableChecked');
@@ -164,115 +150,100 @@ app.post('/api/mint', upload.single('imagePath'), async (req, res) => {
             });
         }
 
-        logger.info('Received data:', {
-            tokenName,
-            tokenSymbol,
-            userPublicKey,
-            quantity,
-            imageURI,
-            freezeChecked,
-            mintChecked,
-            immutableChecked,
-            decimals
-        });
-
-        // Initialize PublicKey and check for errors
-        let userKey;
-        try {
-            userKey = new PublicKey(userPublicKey);
-            logger.info('User PublicKey:', userKey.toBase58());
-        } catch (error) {
-            logger.error('Error initializing PublicKey:', error.message);
-            return res.status(400).json({ success: false, message: 'Invalid user public key.' });
-        }
-        const payer = {
-            publicKey: userKey,
-        };
-        // Check if payer is defined and has publicKey
-        if (!payer || !payer.publicKey) {
-            logger.error('Payer is not properly initialized.');
-            return res.status(500).json({ success: false, message: 'Payer is not properly initialized.' });
+        // Check for valid payment type
+        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
+            return res.status(400).json({success: false, message: 'Invalid payment type. Must be SOL or LABS.'});
         }
 
-        // Perform preliminary checks
+        // Correctly create the payer as a Keypair
+        const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
+
+
+        // Preliminary checks
         await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
-        // Create a new mint
-        const mint = Keypair.generate();
-        const symbol = tokenSymbol.toUpperCase();
-        const description = `This is a token for ${symbol} with a total supply of ${quantity}.`;
+        const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
 
-        // Upload image and JSON metadata
+        // Upload image and pin metadata to IPFS via Pinata
         const imageCid = await uploadImageAndPinJSON(
-            imageURI,
+            fullPath,
             process.env.PINATA_API_KEY,
             process.env.PINATA_SECRET_API_KEY,
             process.env.PINATA_BEARER_TOKEN,
             tokenSymbol.toUpperCase(),
-            tokenSymbol.toUpperCase(),
+            tokenName,
             description
         );
 
-        // Construct updated metadata URI
+        // Construct the URI with the image CID
         const updatedMetadataUri = `https://gateway.pinata.cloud/ipfs/${imageCid}`;
-        logger.info(`Updated Token Metadata URI: ${updatedMetadataUri}`);
+        console.log(`Updated Token Metadata URI: ${updatedMetadataUri}`);
 
-        // Create new mint on the blockchain
-        const mintAddress = await createNewMint(
-            payer,
-            mint,
-            updatedMetadataUri,
-            quantity,
-            tokenSymbol,
-            tokenName,
-            freezeChecked,
-            mintChecked,
-            immutableChecked,
-            decimals
-        );
+        try {
+            // Create the mint on the blockchain
+            const mintAddress = await createNewMint(
+                payer,
+                updatedMetadataUri,
+                tokenSymbol,
+                tokenName,
+                decimals,
+                quantity,
+                freezeChecked,
+                mintChecked,
+                immutableChecked
+            );
 
-        // Use the same mintTokens function for both payment types
-        const payerTokenAccount = await mintTokens(connection, mintAddress, quantity, payer, decimals);
+            // Ensure that mintAddress is a PublicKey
+            const mintPublicKey = new PublicKey(mintAddress);
 
-        // Create or get user's token account
-        const userTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            payer,
-            mintAddress,
-            userKey
-        );
+            // Mint tokens and confirm the transaction
+            const payerTokenAccount = await mintTokens(connection, paymentType, mintPublicKey, quantity, payer, decimals);
 
-        // Create transfer transaction
-        const transferTx = new Transaction().add(
-            createTransferInstruction(
-                payerTokenAccount.address,
-                userTokenAccount.address,
-                payer.publicKey,
-                quantity * Math.pow(10, decimals)
-            )
-        );
+            // Create user's token account or get the existing one
+            const userTokenAccount = await getOrCreateAssociatedTokenAccount(
+                connection,
+                payer,
+                mintPublicKey,
+                userPublicKey
+            );
 
-        // Send and confirm transfer transaction
-        logger.info('Sending transfer transaction...');
-        const signature = await sendAndConfirmTransaction(connection, transferTx, [payer]);
-        logger.info(`Transfer confirmed with signature: ${signature}`);
+            // Create and send the transfer transaction
+            const transferTx = new Transaction().add(
+                createTransferInstruction(
+                    payerTokenAccount.address,
+                    userTokenAccount.address,
+                    payer.publicKey,
+                    quantity * Math.pow(10, decimals)
+                )
+            );
 
-        await logBalances(connection, payer, payer.publicKey, userPublicKey, mint);
+            const signature = await sendAndConfirmTransaction(connection, transferTx, [payer]);
+            console.log(`Transfer confirmed with signature: ${signature}`);
 
-        // Respond with success
-        return res.status(200).json({
-            message: 'Mint and transfer successful!',
-            mintAddress: mintAddress.toBase58(),
-            tokenAccount: payerTokenAccount.address.toBase58(),
-            metadataUploadOutput: 'Metadata uploaded successfully.'
-        });
+            // Log the balances after the transfer
+            await logBalances(connection, payer, payer.publicKey, userPublicKey, mintPublicKey);
 
+            // Respond with success
+            return res.status(200).json({
+                message: 'Mint and transfer successful!',
+                mintAddress: mintPublicKey.toBase58(),
+                tokenAccount: payerTokenAccount.address.toBase58(),
+                metadataUploadOutput: 'Metadata uploaded successfully.'
+            });
+
+        } catch (error) {
+            console.error(`Error processing /mint request: ${error.message}`, {
+                stack: error.stack,
+                requestBody: req.body,
+            });
+            return res.status(500).json({error: 'An error occurred during the minting process.'});
+        }
     } catch (error) {
-        logger.error(`Error processing /mint request: ${error.message}`, {
+        console.error(`Error processing /mint request: ${error.message}`, {
             stack: error.stack,
             requestBody: req.body,
         });
-        return res.status(500).json({ error: 'An error occurred during the minting process.' });
+        return res.status(500).json({error: 'An error occurred during the minting process.'});
     }
 });
 
