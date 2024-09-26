@@ -19,8 +19,7 @@ import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import 'dotenv/config';
-import {cleanupOldFiles} from '../backend/garbage-collection.mjs';
-import {pathToFileURL} from "url";
+
 
 function App() {
   // State for token details
@@ -87,13 +86,10 @@ function App() {
         return;
     }
     console.log(`Initializing mint with ${paymentType} payment`);
-    console.log('Current imageFile state:', imageFile); // Log the current state
 
-    // Ensure that you are correctly obtaining the path from the imageFile
     const imagePath = imageFile;
-    // Validate other inputs before proceeding
     if (!validateInputs()) {
-      return; // If validation fails, exit the function
+      return;
     }
 
     // Create FormData for the API request
@@ -107,7 +103,7 @@ function App() {
     mintData.append('immutableChecked', immutableChecked);
     mintData.append('decimals', decimals);
     mintData.append('paymentType', paymentType);
-    mintData.append('imagePath', imagePath); // Append the image path to the FormData
+    mintData.append('imagePath', imagePath);
 
     console.log('Mint data being sent:', {
       tokenName,
@@ -125,12 +121,27 @@ function App() {
     try {
       const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
         method: 'POST',
-        body: mintData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenName: tokenName,
+          tokenSymbol: tokenSymbol,
+          userPublicKey: userPublicKey,
+          quantity: quantity,
+          freezeChecked: freezeChecked,
+          mintChecked: mintChecked,
+          immutableChecked: immutableChecked,
+          decimals: decimals,
+          imagePath: imagePath,
+          paymentType: paymentType,
+        }),
       });
+      const data = await response.json();
+
 
       if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || 'Minting failed');
+        throw new Error(data.message || 'Minting failed');
       }
 
       const result = await response.json();
@@ -140,7 +151,8 @@ function App() {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
     }
-  };  function setInputErrors(errors) {
+  };
+  function setInputErrors(errors) {
     setIsTokenNameError(errors.tokenName);
     setIsTokenSymbolError(errors.tokenSymbol);
     setIsQuantityError(errors.quantity);
