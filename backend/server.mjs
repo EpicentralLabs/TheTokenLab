@@ -103,7 +103,6 @@ app.post('/api/mint', async (req, res) => {
         console.log('Received /mint request body:', req.body);
 
         const {
-            imagePath,
             tokenName,
             tokenSymbol,
             userPublicKey,
@@ -112,31 +111,44 @@ app.post('/api/mint', async (req, res) => {
             mintChecked,
             immutableChecked,
             decimals,
-            paymentType
+            paymentType,
+            imagePath,
         } = req.body;
 
-        if (!PublicKey.isOnCurve(userPublicKey)) {
-            return res.status(400).json({message: 'Invalid user public key.'});
-        }
-        // Verify that imagePath exists in the request
-        if (!imagePath) {
-            return res.status(400).json({message: 'Image path is missing.'});
+        // Validate userPublicKey
+        let userPublicKeyInstance;
+        try {
+            userPublicKeyInstance = new PublicKey(userPublicKey);
+        } catch (err) {
+            return res.status(400).json({ message: 'Invalid user public key.' });
         }
 
-        // Construct full path for image on server
+        // Validate decimals
+        const parsedDecimals = parseInt(decimals, 10);
+        if (isNaN(parsedDecimals) || parsedDecimals < 0 || parsedDecimals > 6) {
+            return res.status(400).json({ message: 'Decimals must be a non-negative integer and less than or equal to 6.' });
+        }
+        if (!PublicKey.isOnCurve(userPublicKeyInstance)) {
+            return res.status(400).json({ message: 'User public key is not on the curve.' });
+        }
+
+        // Validate image path
+        if (!imagePath) {
+            return res.status(400).json({ message: 'Image path is missing.' });
+        }
+
         const fullPath = path.join(__dirname, imagePath);
         console.log('Constructed Full Path:', fullPath);
 
-        // Check if the file exists at the given path
         if (!fs.existsSync(fullPath)) {
-            return res.status(400).json({message: 'File not found at the specified path.'});
+            return res.status(400).json({ message: 'File not found at the specified path.' });
         }
 
-        // Validate all other required fields
+        // Validate required fields
         const missingFields = [];
         if (!tokenName) missingFields.push('tokenName');
         if (!tokenSymbol) missingFields.push('tokenSymbol');
-        if (!userPublicKey) missingFields.push('userPublicKey');
+        if (!userPublicKeyInstance) missingFields.push('userPublicKey');
         if (!quantity) missingFields.push('quantity');
         if (typeof freezeChecked === 'undefined') missingFields.push('freezeChecked');
         if (typeof mintChecked === 'undefined') missingFields.push('mintChecked');
@@ -150,21 +162,18 @@ app.post('/api/mint', async (req, res) => {
             });
         }
 
-        // Check for valid payment type
-        if (!paymentType || !['SOL', 'LABS'].includes(paymentType)) {
-            return res.status(400).json({success: false, message: 'Invalid payment type. Must be SOL or LABS.'});
+        if (!['SOL', 'LABS'].includes(paymentType)) {
+            return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
         }
 
-        // Correctly create the payer as a Keypair
+        console.log('Fetching payer keypair...');
         const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
+        console.log('Starting preliminary checks...');
 
-
-        // Preliminary checks
-        await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+        await preliminaryChecks(userPublicKeyInstance, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
         const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
 
-        // Upload image and pin metadata to IPFS via Pinata
         const imageCid = await uploadImageAndPinJSON(
             fullPath,
             process.env.PINATA_API_KEY,
@@ -175,55 +184,55 @@ app.post('/api/mint', async (req, res) => {
             description
         );
 
-        // Construct the URI with the image CID
         const updatedMetadataUri = `https://gateway.pinata.cloud/ipfs/${imageCid}`;
         console.log(`Updated Token Metadata URI: ${updatedMetadataUri}`);
 
         try {
-            // Create the mint on the blockchain
+            console.log('Invoking createNewMint.js');
             const mintAddress = await createNewMint(
                 payer,
                 updatedMetadataUri,
                 tokenSymbol,
                 tokenName,
-                decimals,
+                parsedDecimals,
                 quantity,
                 freezeChecked,
+                userPublicKey,
                 mintChecked,
                 immutableChecked
             );
+            console.log(`Mint Address from createNewMint: ${mintAddress}`);
 
-            // Ensure that mintAddress is a PublicKey
-            const mintPublicKey = new PublicKey(mintAddress);
+            if (!mintAddress) {
+                throw new Error("Mint address is undefined or null");
+            }
+            const mintPublicKey = new PublicKey(mintAddress); // Ensure this is correct
 
-            // Mint tokens and confirm the transaction
-            const payerTokenAccount = await mintTokens(connection, paymentType, mintPublicKey, quantity, payer, decimals);
+            const payerTokenAccount = await mintTokens(connection, mintPublicKey, quantity, payer, parsedDecimals);
 
-            // Create user's token account or get the existing one
+            console.info(`Creating user token account for mint: ${mintPublicKey.toBase58()} with user: ${userPublicKeyInstance.toBase58()}`);
             const userTokenAccount = await getOrCreateAssociatedTokenAccount(
                 connection,
                 payer,
                 mintPublicKey,
-                userPublicKey
+                userPublicKeyInstance
             );
+            console.info(`User token account created or retrieved: ${userTokenAccount.address.toBase58()}`);
 
-            // Create and send the transfer transaction
             const transferTx = new Transaction().add(
                 createTransferInstruction(
                     payerTokenAccount.address,
                     userTokenAccount.address,
                     payer.publicKey,
-                    quantity * Math.pow(10, decimals)
+                    quantity * Math.pow(10, parsedDecimals)
                 )
             );
 
             const signature = await sendAndConfirmTransaction(connection, transferTx, [payer]);
             console.log(`Transfer confirmed with signature: ${signature}`);
 
-            // Log the balances after the transfer
-            await logBalances(connection, payer, payer.publicKey, userPublicKey, mintPublicKey);
+            await logBalances(connection, payer, payer.publicKey, userPublicKeyInstance, mintPublicKey);
 
-            // Respond with success
             return res.status(200).json({
                 message: 'Mint and transfer successful!',
                 mintAddress: mintPublicKey.toBase58(),
@@ -232,18 +241,18 @@ app.post('/api/mint', async (req, res) => {
             });
 
         } catch (error) {
-            console.error(`Error processing /mint request: ${error.message}`, {
+            console.error(`Error processing /mint request during minting: ${error.message}`, {
                 stack: error.stack,
                 requestBody: req.body,
             });
-            return res.status(500).json({error: 'An error occurred during the minting process.'});
+            return res.status(500).json({ error: 'An error occurred during the minting process.' });
         }
     } catch (error) {
         console.error(`Error processing /mint request: ${error.message}`, {
             stack: error.stack,
             requestBody: req.body,
         });
-        return res.status(500).json({error: 'An error occurred during the minting process.'});
+        return res.status(500).json({ error: 'An error occurred during the minting process.' });
     }
 });
 
