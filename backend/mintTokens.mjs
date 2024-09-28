@@ -1,10 +1,16 @@
 import logger from "./logger.mjs";
-import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount, mintTo, getMint } from "@solana/spl-token";
+import 'dotenv/config';
 
 export async function mintTokens(connection, mint, quantity, payer, decimals, paymentType) {
     try {
+        const systemAuthority = process.env.MINTING_ADDRESS ? new PublicKey(process.env.MINTING_ADDRESS) : null;
+        if (!systemAuthority) {
+            throw new Error('System authority is not defined or missing publicKey');
+        }
+
         logger.info('Payer:', payer.publicKey.toBase58());
-        logger.info('Mint:', mint.toBase58());
+        logger.info('Mint:', mint);
         logger.info('Quantity:', quantity);
         logger.info('Payment Type:', paymentType);
 
@@ -12,7 +18,12 @@ export async function mintTokens(connection, mint, quantity, payer, decimals, pa
             throw new Error('Payer is not defined or missing publicKey');
         }
 
-        const payerTokenAccount = await getOrCreateAssociatedTokenAccount(connection, payer, mint, payer.publicKey, decimals);
+        const mintInfo = await getMint(connection, mint);
+        if (mintInfo.mintAuthority.toBase58() !== systemAuthority.toBase58()) {
+            throw new Error('System does not hold the mint authority');
+        }
+
+        const payerTokenAccount = await getOrCreateAssociatedTokenAccount(connection, payer, mint, payer.publicKey);
         logger.info('Payer Token Account:', payerTokenAccount.address.toBase58());
 
         await mintTo(
@@ -20,7 +31,7 @@ export async function mintTokens(connection, mint, quantity, payer, decimals, pa
             payer,
             mint,
             payerTokenAccount.address,
-            payer.publicKey,
+            systemAuthority,
             quantity * Math.pow(10, decimals)
         );
 

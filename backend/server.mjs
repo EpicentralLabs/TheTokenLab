@@ -1,34 +1,30 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {clusterApiUrl, Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction} from '@solana/web3.js';
-import {createMint, createTransferInstruction, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
+import { clusterApiUrl, Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction } from '@solana/web3.js';
+import { createMint, createTransferInstruction, getOrCreateAssociatedTokenAccount } from '@solana/spl-token';
 import 'dotenv/config';
-import '@pinata/sdk';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 import path from 'path';
 import multer from 'multer';
+
 /*
 Modularized Imports
 */
-import {preliminaryChecks} from './checks.mjs';
-import {logBalances} from './logBalances.mjs';
+import { preliminaryChecks } from './checks.mjs';
+import { logBalances } from './logBalances.mjs';
 import logger from './logger.mjs';
-import {uploadImageAndPinJSON} from './ipfs.mjs';
-import {createNewMint} from './createNewMint.mjs';
-import {mintTokens} from "./mintTokens.mjs";
+import { uploadImageAndPinJSON } from './ipfs.mjs';
+import { createNewMint } from './createNewMint.mjs';
+import { mintTokens } from './mintTokens.mjs';
 import cors from 'cors';
 import fs from "fs";
 import crypto from 'crypto';
 
 /*
 END OF IMPORTS
- */
+*/
 
-
-
-/*
-Constants
- */
+// File upload handling
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, 'uploads');
@@ -45,7 +41,7 @@ const storage = multer.diskStorage({
         cb(null, hashedName);
     }
 });
-// Initialize multer with the storage configuration
+
 const upload = multer({
     storage,
     limits: {
@@ -63,7 +59,6 @@ const upload = multer({
     },
 });
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -71,7 +66,7 @@ const network = process.env.APP_ENV === 'production' ? 'mainnet-beta' : 'devnet'
 const connection = new Connection(clusterApiUrl(network), 'confirmed');
 const expectedUrl = clusterApiUrl(network);
 logger.debug(`Connected to: ${expectedUrl}`);
-const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
+
 app.use(express.json());
 app.use(bodyParser.json());
 
@@ -81,7 +76,8 @@ if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('dev
 if (connection.rpcEndpoint !== expectedUrl) {
     throw new Error(`Unexpected RPC endpoint: Expected ${expectedUrl}, but got ${connection.rpcEndpoint}.`);
 }
-const port = process.env.BACKEND_PORT || 3001;
+
+const port = process.env.REACT_APP_BACKEND_PORT || 3001;
 logger.info(`Backend is running on port ${port}`);
 app.use(express.static(path.join(__dirname, 'public')));
 const allowedOrigin = 'http://localhost:3000';
@@ -93,15 +89,12 @@ app.use(cors({
 }));
 
 app.options('*', cors());
+
 /*
-END OF CONSTANTS
- */
-
-
+Endpoint for minting tokens
+*/
 app.post('/api/mint', async (req, res) => {
     try {
-        console.log('Received /mint request body:', req.body);
-
         const {
             tokenName,
             tokenSymbol,
@@ -128,6 +121,7 @@ app.post('/api/mint', async (req, res) => {
         if (isNaN(parsedDecimals) || parsedDecimals < 0 || parsedDecimals > 6) {
             return res.status(400).json({ message: 'Decimals must be a non-negative integer and less than or equal to 6.' });
         }
+
         if (!PublicKey.isOnCurve(userPublicKeyInstance)) {
             return res.status(400).json({ message: 'User public key is not on the curve.' });
         }
@@ -138,8 +132,6 @@ app.post('/api/mint', async (req, res) => {
         }
 
         const fullPath = path.join(__dirname, imagePath);
-        console.log('Constructed Full Path:', fullPath);
-
         if (!fs.existsSync(fullPath)) {
             return res.status(400).json({ message: 'File not found at the specified path.' });
         }
@@ -162,18 +154,19 @@ app.post('/api/mint', async (req, res) => {
             });
         }
 
+        // Ensure paymentType is valid
         if (!['SOL', 'LABS'].includes(paymentType)) {
             return res.status(400).json({ success: false, message: 'Invalid payment type. Must be SOL or LABS.' });
         }
 
-        console.log('Fetching payer keypair...');
+        // Construct the payer keypair using SOLANA_PRIVATE_KEY
         const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
-        console.log('Starting preliminary checks...');
 
+        // Run preliminary checks (if any)
         await preliminaryChecks(userPublicKeyInstance, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
 
+        // Upload image to Pinata and pin JSON metadata
         const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
-
         const imageCid = await uploadImageAndPinJSON(
             fullPath,
             process.env.PINATA_API_KEY,
@@ -188,7 +181,7 @@ app.post('/api/mint', async (req, res) => {
         console.log(`Updated Token Metadata URI: ${updatedMetadataUri}`);
 
         try {
-            console.log('Invoking createNewMint.js');
+            // Create a new mint
             const mintAddress = await createNewMint(
                 payer,
                 updatedMetadataUri,
@@ -201,24 +194,27 @@ app.post('/api/mint', async (req, res) => {
                 mintChecked,
                 immutableChecked
             );
-            console.log(`Mint Address from createNewMint: ${mintAddress}`);
+            const mintPublicKey = new PublicKey(mintAddress);
 
-            if (!mintAddress) {
-                throw new Error("Mint address is undefined or null");
-            }
-            const mintPublicKey = new PublicKey(mintAddress); // Ensure this is correct
+            // Mint the tokens to the payer's account
+            const payerTokenAccount = await mintTokens(
+                connection,
+                mintPublicKey,  // Mint public key
+                quantity,
+                payer,
+                parsedDecimals,
+                paymentType
+            );
 
-            const payerTokenAccount = await mintTokens(connection, mintPublicKey, quantity, payer, parsedDecimals);
-
-            console.info(`Creating user token account for mint: ${mintPublicKey.toBase58()} with user: ${userPublicKeyInstance.toBase58()}`);
+            // Create or get the user's token account
             const userTokenAccount = await getOrCreateAssociatedTokenAccount(
                 connection,
                 payer,
                 mintPublicKey,
                 userPublicKeyInstance
             );
-            console.info(`User token account created or retrieved: ${userTokenAccount.address.toBase58()}`);
 
+            // Transfer tokens to the user's account
             const transferTx = new Transaction().add(
                 createTransferInstruction(
                     payerTokenAccount.address,
@@ -227,10 +223,10 @@ app.post('/api/mint', async (req, res) => {
                     quantity * Math.pow(10, parsedDecimals)
                 )
             );
-
             const signature = await sendAndConfirmTransaction(connection, transferTx, [payer]);
             console.log(`Transfer confirmed with signature: ${signature}`);
 
+            // Log balances
             await logBalances(connection, payer, payer.publicKey, userPublicKeyInstance, mintPublicKey);
 
             return res.status(200).json({
@@ -241,54 +237,14 @@ app.post('/api/mint', async (req, res) => {
             });
 
         } catch (error) {
-            console.error(`Error processing /mint request during minting: ${error.message}`, {
-                stack: error.stack,
-                requestBody: req.body,
-            });
+            console.error(`Error processing /mint request during minting: ${error.message}`);
             return res.status(500).json({ error: 'An error occurred during the minting process.' });
         }
     } catch (error) {
-        console.error(`Error processing /mint request: ${error.message}`, {
-            stack: error.stack,
-            requestBody: req.body,
-        });
+        console.error(`Error processing /mint request: ${error.message}`);
         return res.status(500).json({ error: 'An error occurred during the minting process.' });
     }
 });
-
-app.post('/upload', upload.single('file'), (req, res) => {
-    console.log('Received file upload request.');
-
-    if (!req.file) {
-        console.error('No file uploaded.');
-        return res.status(400).send('No file uploaded.');
-    }
-
-    console.log('File uploaded successfully:', {
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        storedName: req.file.filename,
-        path: `/uploads/${req.file.filename}`
-    });
-
-    const filePath = path.join('uploads', req.file.filename);
-    console.log('File path:', filePath);
-
-    // Respond with the successful upload details
-    return res.json({
-        message: 'File uploaded successfully!',
-        filename: req.file.filename,
-        path: `/uploads/${req.file.filename}`
-    });
-});
-
-if (process.env.APP_ENV !== 'production') {
-    app.get('/', (req, res) => {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    });
-}
-
 
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
