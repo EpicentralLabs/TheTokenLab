@@ -8,8 +8,8 @@ import {
     Transaction
 } from '@solana/web3.js';
 import { createInitializeMintInstruction } from '@solana/spl-token';
-import * as mplTokenMetadata from '@metaplex-foundation/mpl-token-metadata';
-
+import * as mplTokenMetadata from "@metaplex-foundation/mpl-token-metadata";
+const { createCreateMetadataAccountV3Instruction } = mplTokenMetadata;
 const TOKEN_METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 export async function createNewMint(
@@ -29,7 +29,7 @@ export async function createNewMint(
 
     const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
     const mintLamports = await connection.getMinimumBalanceForRentExemption(82);
-    const mintSigner = Keypair.generate();
+    const mintSigner = systemAuthority;
 
     try {
         const userPublicKeyInstance = new PublicKey(userPublicKey);
@@ -37,13 +37,13 @@ export async function createNewMint(
         const mintTransaction = new Transaction().add(
             SystemProgram.createAccount({
                 fromPubkey: payer.publicKey,
-                newAccountPubkey: mintSigner.publicKey,
+                newAccountPubkey: mintSigner,
                 lamports: mintLamports,
                 space: 82,
                 programId: SPL_TOKEN_PROGRAM_ID,
             }),
             createInitializeMintInstruction(
-                mintSigner.publicKey,
+                mintSigner,
                 parsedDecimals,
                 systemAuthority, // Set systemAuthority as the mint authority
                 freezeChecked ? systemAuthority : null, // Optional freeze authority
@@ -57,16 +57,16 @@ export async function createNewMint(
             [
                 Buffer.from('metadata'),
                 TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-                mintSigner.publicKey.toBuffer(),
+                mintSigner.toBuffer(),
             ],
             TOKEN_METADATA_PROGRAM_ID
         );
 
         const metadataTransaction = new Transaction().add(
-            mplTokenMetadata.createCreateMetadataAccountV2Instruction(
+            createCreateMetadataAccountV3Instruction(
                 {
                     metadata: metadataAccount,
-                    mint: mintSigner.publicKey,
+                    mint: mintSigner,
                     mintAuthority: systemAuthority,
                     payer: payer.publicKey,
                     updateAuthority: systemAuthority
@@ -77,7 +77,7 @@ export async function createNewMint(
                             name: tokenName,
                             symbol: tokenSymbol,
                             uri: updatedMetadataUri,
-                            sellerFeeBasisPoints: 500,
+                            sellerFeeBasisPoints: 0,
                             creators: null,
                             collection: null,
                             uses: null,
@@ -90,7 +90,7 @@ export async function createNewMint(
 
         const metadataSignature = await sendAndConfirmTransaction(connection, metadataTransaction, [payer], { commitment: 'confirmed' });
 
-        return mintSigner.publicKey.toBase58();
+        return mintSigner.toBase58();
     } catch (error) {
         throw new Error(`Error during mint creation: ${error.message}`);
     }
