@@ -21,23 +21,36 @@ async function checkConnection() {
     }
 }
 
-async function createMetadata() {
+export async function createMetadata(
+    tokenName: string,
+    tokenSymbol: string,
+    userPublicKeyInstance: PublicKey,
+    updatedMetadataUri: string,
+    payer: PublicKey,
+    parsedDecimals: number,
+    quantity: number,
+    freezeChecked: boolean,
+    mintChecked: boolean,
+    immutableChecked: boolean,
+    tokenMintAccount: PublicKey
+) {
     await checkConnection();
 
     const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-    const tokenMintAccount = new PublicKey("YguxhPjmtoEHZySRo8B3BwLC8Rj2EzCgjMxUjPzMjZT");
 
+
+    // Metadata details (using parameters)
     const metadataData = {
-        name: "OPTIC",
-        symbol: "OPTICAL",
-        uri: "https://gateway.pinata.cloud/ipfs/bafkreicvlfjmmthfdgoitrzyaqdnihfwmnb42bks3f5gwfu5mgalxnumu4",
+        name: tokenName,
+        symbol: tokenSymbol,
+        uri: updatedMetadataUri,
         sellerFeeBasisPoints: 0,
         creators: null,
         collection: null,
         uses: null,
     };
 
-    const metadataPDAAndBump = PublicKey.findProgramAddressSync(
+    const [metadataPDA] = PublicKey.findProgramAddressSync(
         [
             Buffer.from("metadata"),
             TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -45,8 +58,6 @@ async function createMetadata() {
         ],
         TOKEN_METADATA_PROGRAM_ID
     );
-
-    const metadataPDA = metadataPDAAndBump[0];
 
     const metadataAccountInfo = await connection.getAccountInfo(metadataPDA);
     if (metadataAccountInfo) {
@@ -69,10 +80,11 @@ async function createMetadata() {
                 createMetadataAccountArgsV3: {
                     collectionDetails: null,
                     data: metadataData,
-                    isMutable: true,
+                    isMutable: !immutableChecked,
                 },
             }
         );
+
     transaction.add(createMetadataAccountInstruction);
 
     const transactionSignature = await sendAndConfirmTransaction(
@@ -89,6 +101,3 @@ async function createMetadata() {
 
     console.log(`✅ Transaction confirmed, explorer link is: ${transactionLink}!`);
 }
-
-
-createMetadata().catch(console.error);

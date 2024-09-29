@@ -9,8 +9,8 @@ const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
 console.log(`🔑 Loaded our keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
 
-async function mintToken(quantity) {
-    const tokenMint = await createMint(connection, user, user.publicKey, null, 6);
+export async function mintToken(parsedDecimals: number, quantity: number): Promise<PublicKey> {
+    const tokenMint = await createMint(connection, user, user.publicKey, null, parsedDecimals);
     const link = getExplorerLink("address", tokenMint.toString(), "devnet");
     console.log(`✅ Finished! Created token mint: ${link}`);
 
@@ -27,12 +27,12 @@ async function mintToken(quantity) {
         tokenMint,
         userTokenAccount.address,
         user.publicKey,
+        // @ts-ignore
         [],
         quantity
     );
 
     console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
-}
 
-const quantityToMint = 100;
-mintToken(quantityToMint).catch(console.error);
+    return tokenMint;
+}

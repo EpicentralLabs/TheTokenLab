@@ -1,9 +1,11 @@
+// @ts-ignore
 import FormData from 'form-data';
+// @ts-ignore
 import fs from 'fs';
 import fetch from 'node-fetch';
 import logger from './logger';
 
-// Define an interface for the response data from Pinata
+
 interface PinataResponse {
     IpfsHash?: string; // Optional property for the uploaded image's CID
 }
@@ -89,7 +91,8 @@ export async function uploadImageAndPinJSON(
         const uriData = await jsonRes.json();
         logger.info(`Metadata uploaded successfully: ${JSON.stringify(uriData, null, 2)}`);
 
-        return uriData.IpfsHash; // Ensure this property is defined in the response structure
+        // @ts-ignore
+        return uriData.IpfsHash;
     } catch (error) {
         logger.error(`Error uploading image and JSON to Pinata: ${error.message}`);
         throw error;
