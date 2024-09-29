@@ -6,15 +6,13 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as path from 'path';
 
-
 const router = Router();
 
 // File upload handling
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, 'backend', 'uploads');
+        const uploadPath = path.join(__dirname, '..', '..', 'uploads');
 
-        // Check if the upload directory exists
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
             console.log(`📁 Created upload directory: ${uploadPath}`);
@@ -29,13 +27,14 @@ const storage = multer.diskStorage({
     }
 });
 
+
 const upload = multer({
     storage,
     limits: {
         fileSize: 5 * 1024 * 1024,
     },
     fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-        const fileTypes = /jpeg|jpg|png|gif/;
+        const fileTypes = /jpeg|jpg|png|gif|webp/;
         const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = fileTypes.test(file.mimetype);
 
@@ -49,17 +48,27 @@ const upload = multer({
 });
 
 // Define the /upload route
+// @ts-ignore
 router.post('/', upload.single('file'), (req: Request, res: Response) => {
     if (req.file) {
         console.log(`✅ File uploaded successfully: ${req.file.originalname}`);
-        res.status(200).json({
+        return res.status(200).json({
             message: 'File uploaded successfully!',
-            filePath: req.file.path,
+            path: `/uploads/${req.file.filename}`,
         });
     } else {
         console.error('❌ Error: File upload failed!');
-        res.status(400).json({ message: 'File upload failed!' });
+        return res.status(400).json({ message: 'File upload failed!' });
     }
+});
+
+// Error handling middleware
+// @ts-ignore
+router.use((err: any, req: Request, res: Response, next: any) => {
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+    }
+    next(err);
 });
 
 export default router;
