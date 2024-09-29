@@ -2,7 +2,6 @@
   "name": "epicentralabs",
   "version": "1.4.0-beta",
   "private": true,
-  "type": "module",
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@metaplex-foundation/mpl-toolbox": "^0.9.4",
@@ -13,7 +12,6 @@
     "@solana/spl-token": "^0.4.8",
     "@solana/spl-token-metadata": "^0.1.5",
     "@solana/web3.js": "^1.95.3",
-    "@types/node": "^22.1.0",
     "axios": "^1.7.7",
     "body-parser": "^1.20.2",
     "bs58": "^6.0.0",
@@ -26,12 +24,11 @@
     "jquery": "^3.7.1",
     "moralis": "^2.27.1",
     "multer": "^1.4.5-lts.1",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "notistack": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "0.9.5",
-    "ts-node": "^10.9.2",
     "winston": "^3.14.2"
   },
   "scripts": {
@@ -39,14 +36,11 @@
     "lint:fix": "eslint . --fix",
     "start": "concurrently \"npm run frontend\" \"npm run backend\"",
     "frontend": "react-scripts start",
-    "backend": "node backend/server.mjs",
+    "build-backend": "tsc",
+    "backend": "npm run build-backend && node dist/server.js",
     "build": "react-scripts build 2> .github/warnings.log || true",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "start_backend": "ts-node src/update_token_metadata.ts",
-    "start_server": "node server.mjs",
-    "start:dev": "nodemon server.mjs",
-    "start:dev:ts": "ts-node-dev src/update_token_metadata.ts",
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"
   },
   "devDependencies": {
@@ -59,8 +53,15 @@
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.7.4",
+    "@types/node-fetch": "^2.6.11",
     "@types/react": "^18.3.6",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
     "babel-loader": "^9.2.1",
     "concurrently": "^9.0.1",
     "eslint": "^8.57.1",
@@ -72,6 +73,8 @@
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "nodemon": "3.1.4",
-    "tsx": "^3.1.4"
+    "ts-node": "^10.9.2",
+    "tsx": "^3.1.4",
+    "typescript": "^5.6.2"
   }
 }
