@@ -37,6 +37,8 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         imagePath,
     } = req.body;
 
+    console.log('ℹ️ Request received:', req.body);
+
     let userPublicKeyInstance: PublicKey;
     let parsedDecimals: number;
     let fullPath: string;
@@ -52,6 +54,8 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         if (typeof mintChecked === 'undefined') missingFields.push('mintChecked');
         if (typeof immutableChecked === 'undefined') missingFields.push('immutableChecked');
         if (typeof decimals === 'undefined') missingFields.push('decimals');
+        if (!paymentType) missingFields.push('paymentType');
+        if (!imagePath) missingFields.push('imagePath');
 
         if (missingFields.length > 0) {
             console.error('❌ Validation Error: Required fields are missing: ' + missingFields.join(', '));
@@ -60,8 +64,13 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 message: 'Required fields are missing: ' + missingFields.join(', '),
             });
         }
+
         console.log('✅ All required fields validated.');
 
+        if (!imagePath) {
+            console.error('❌ Validation Error: Invalid image path:', imagePath);
+            return res.status(400).json({ message: 'Invalid image path provided.' });
+        }
         // 2. Validate payment type
         if (!['SOL', 'LABS'].includes(paymentType)) {
             console.error('❌ Validation Error: Invalid payment type. Must be SOL or LABS.');
@@ -87,7 +96,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         console.log('✅ Decimals validated:', parsedDecimals);
 
         // 5. Validate image path
-        fullPath = path.join(__dirname, imagePath);
+        fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
         if (!fs.existsSync(fullPath)) {
             console.error('❌ Validation Error: File not found at the specified path:', fullPath);
             return res.status(400).json({message: 'File not found at the specified path.'});
