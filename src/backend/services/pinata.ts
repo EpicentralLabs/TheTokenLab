@@ -78,8 +78,6 @@ export async function uploadImageAndPinJSON(
             description: description || 'No Description Provided',
             image: imageUrl,
             external_url: imageUrl,
-            dao: process.env.METADATA_DAO || 'LABS DAO',
-            type: 'fungible',
         };
 
         logger.info(`JSON Metadata: ${JSON.stringify(contractUriJSON, null, 2)}`);
