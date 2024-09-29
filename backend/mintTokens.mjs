@@ -1,6 +1,7 @@
 import logger from "./logger.mjs";
 import { getOrCreateAssociatedTokenAccount, mintTo, getMint } from "@solana/spl-token";
 import 'dotenv/config';
+import {PublicKey} from "@solana/web3.js";
 
 export async function mintTokens(connection, mint, quantity, payer, decimals, paymentType) {
     try {
