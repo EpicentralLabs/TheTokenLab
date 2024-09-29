@@ -1,4 +1,4 @@
-import { createMint, mintTo, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import { createMint, mintTo, getOrCreateAssociatedTokenAccount, Account } from "@solana/spl-token";
 import "dotenv/config";
 import { getKeypairFromEnvironment, getExplorerLink } from "@solana-developers/helpers";
 import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
@@ -9,7 +9,7 @@ const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
 console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
 
-export async function mintToken(parsedDecimals: number, quantity: number, publicKey: PublicKey): Promise<PublicKey> {
+export async function mintToken(parsedDecimals: number, quantity: number, publicKey: PublicKey): Promise<{ tokenMint: PublicKey; userTokenAccount: PublicKey }> {
     let tokenMint: PublicKey;
 
     try {
@@ -17,15 +17,11 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
         const link = getExplorerLink("address", tokenMint.toString(), "devnet");
         console.log(`✅ Finished! Created token mint: ${link}`);
     } catch (error) {
-        if (error instanceof Error) {
-            console.error(`❌ Error: Failed to create token mint. ${error.message}`);
-        } else {
-            console.error(`❌ Error: Failed to create token mint. ${error}`);
-        }
+        console.error(`❌ Error: Failed to create token mint. ${error instanceof Error ? error.message : error}`);
         throw new Error('Token mint creation failed.');
     }
 
-    let userTokenAccount: any;
+    let userTokenAccount: Account;
 
     try {
         userTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -36,11 +32,7 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
         );
         console.log(`📦 User token account created or retrieved: ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
-        if (error instanceof Error) {
-            console.error(`❌ Error: Failed to get or create associated token account. ${error.message}`);
-        } else {
-            console.error(`❌ Error: Failed to get or create associated token account. ${error}`);
-        }
+        console.error(`❌ Error: Failed to get or create associated token account. ${error instanceof Error ? error.message : error}`);
         throw new Error('Failed to get or create user token account.');
     }
 
@@ -56,15 +48,9 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
         );
         console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
-        if (error instanceof Error) {
-            console.error(`❌ Error: Failed to mint tokens. ${error.message}`);
-        } else {
-            console.error(`❌ Error: Failed to mint tokens. ${error}`);
-        }
+        console.error(`❌ Error: Failed to mint tokens. ${error instanceof Error ? error.message : error}`);
         throw new Error('Token minting failed.');
     }
 
-
-
-    return tokenMint;
+    return { tokenMint, userTokenAccount: userTokenAccount.address };
 }
