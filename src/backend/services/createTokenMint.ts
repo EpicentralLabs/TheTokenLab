@@ -13,7 +13,14 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     let tokenMint: PublicKey;
 
     try {
-        tokenMint = await createMint(connection, user, user.publicKey, null, parsedDecimals);
+        tokenMint = await createMint(
+            connection,
+            user,
+            user.publicKey,
+            null,
+            parsedDecimals
+        );
+
         const link = getExplorerLink("address", tokenMint.toString(), "devnet");
         console.log(`✅ Finished! Created token mint: ${link}`);
     } catch (error) {
