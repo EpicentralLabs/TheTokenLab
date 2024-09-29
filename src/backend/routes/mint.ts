@@ -1,11 +1,12 @@
 import express, { Request, Response, Router } from 'express';
-import { PublicKey, Keypair } from '@solana/web3.js';
+import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { mintToken } from '../services/createTokenMint';
 import { createMetadata } from '../services/createTokenMetadata';
 import { uploadImageToPinata, uploadImageAndPinJSON } from "../services/pinata";
-
+import {chargeMintingFee} from "../services/mintingFee";
+import {fetchPrices} from "../services/priceService";
 const router: Router = express.Router();
 
 interface MintRequestBody {
@@ -20,6 +21,7 @@ interface MintRequestBody {
     paymentType: string;
     imagePath: string;
 }
+
 
 // Define the /api/mint endpoint
 // @ts-ignore
@@ -43,6 +45,8 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
     let parsedDecimals: number;
     let fullPath: string;
     let payer: Keypair;
+
+    const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
     try {
         // 1. Validate required fields
@@ -120,7 +124,22 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return res.status(500).json({message: 'Failed to initialize payer keypair.'});
         }
 
-        // 7. Upload image and metadata to Pinata
+        try {
+            const { solPrice, labsPrice } = await fetchPrices();
+            const mintingFee = paymentType === 'SOL' ? 0.01 * solPrice * 10 ** 9 : 100;
+            await chargeMintingFee(connection, payer, userPublicKeyInstance, paymentType, mintingFee);
+
+            console.log(`✅ Minting fee charged successfully.\n` +
+                `-----------------------------------------\n` +
+                `Minting Fee: ${mintingFee} ${paymentType === 'SOL' ? 'LAMPORTS (SOL)' : 'LABS'}\n` +
+                `Current SOL Price: ${solPrice} USD\n` +
+                `Current LABS Price: ${labsPrice} USD\n` +
+                `-----------------------------------------`);
+        } catch (error) {
+            console.error('❌ Error: Failed to charge minting fee:', (error as Error).message || error);
+            return res.status(500).json({ message: 'Failed to charge minting fee.' });
+        }
+
         let updatedMetadataUri: string;
         try {
             const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
