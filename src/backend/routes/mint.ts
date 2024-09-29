@@ -150,9 +150,8 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return res.status(500).json({error: 'Failed to mint tokens'});
         }
 
-        // 9. Create token metadata
         try {
-            await createMetadata(
+            let transactionLink = await createMetadata(
                 tokenName,
                 tokenSymbol,
                 userPublicKeyInstance,
@@ -166,16 +165,18 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 tokenMintAccount
             );
             console.log('✅ Token metadata created for:', tokenName);
-        } catch (error) {
-            console.error('❌ Error: Failed to create token metadata:', (error as Error).message || error);
-            return res.status(500).json({error: 'Failed to create token metadata'});
-        }
 
-        // 10. Return success response after both minting and metadata creation
-        res.status(200).json({message: `Minted ${quantity} tokens with ${decimals} decimals and metadata created`});
+            return res.status(200).json({
+                message: `✅ Minted ${quantity} tokens with ${parsedDecimals} decimals and metadata created successfully. Transaction: ${transactionLink}`,
+                explorerLink: transactionLink,
+            });
+        } catch (error) {
+            console.error('❌ Error during minting or metadata creation:', (error as Error).message || error);
+            res.status(500).json({ error: 'Failed to mint tokens or create metadata.' });
+        }
     } catch (error) {
         console.error('❌ Unexpected Error:', (error as Error).message || error);
-        res.status(500).json({error: 'An unexpected error occurred'});
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
