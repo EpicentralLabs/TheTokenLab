@@ -33,11 +33,10 @@ export async function createMetadata(
     mintChecked: boolean,
     immutableChecked: boolean,
     tokenMintAccount: PublicKey
-) {
+): Promise<string> {
     await checkConnection();
 
     const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-
 
     // Metadata details (using parameters)
     const metadataData = {
@@ -62,7 +61,7 @@ export async function createMetadata(
     const metadataAccountInfo = await connection.getAccountInfo(metadataPDA);
     if (metadataAccountInfo) {
         console.log("Metadata account already exists at this address.");
-        return;
+        return ""; // Or handle the return more appropriately
     }
 
     const transaction = new Transaction();
@@ -100,4 +99,6 @@ export async function createMetadata(
     );
 
     console.log(`✅ Transaction confirmed, explorer link is: ${transactionLink}!`);
+
+    return transactionLink;
 }
