@@ -145,7 +145,20 @@ function App() {
       const data = await response.json();
 
       console.log('Mint successful!', data);
-      alert(`Mint successful! Mint Address: ${data.mintAddress}\nToken Account: ${data.tokenAccount}\n${data.metadataUploadOutput}`);
+      const { mintAddress, tokenAccount, metadataUploadOutput } = data;
+      const transactionLink = data.explorerLink;
+
+      alert(`
+        🎉 Mint Successful! 🎉
+        
+        ✅ Mint Address: ${mintAddress}
+        📦 Token Account: ${tokenAccount}
+        🏷️ Quantity Minted: ${quantity} tokens
+        🔢 Decimals: ${decimals}
+        📄 Metadata: ${metadataUploadOutput}
+       
+        🔗 Explorer Link: ${transactionLink}
+        `);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
