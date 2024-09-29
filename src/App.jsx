@@ -81,9 +81,9 @@ function App() {
 
 
   const mintTokens = async (paymentType) => {
-    if (!userPublicKey){
-        alert('Please connect your wallet first');
-        return;
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
     }
     console.log(`Initializing mint with ${paymentType} payment`);
 
@@ -137,16 +137,15 @@ function App() {
           paymentType: paymentType,
         }),
       });
-      const data = await response.json();
-
-
       if (!response.ok) {
-        throw new Error(data.message || 'Minting failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
       }
 
-      const result = await response.json();
-      console.log('Mint successful!', result);
-      alert(`Mint successful! Mint Address: ${result.mintAddress}\nToken Account: ${result.tokenAccount}\n${result.metadataUploadOutput}`);
+      const data = await response.json();
+
+      console.log('Mint successful!', data);
+      alert(`Mint successful! Mint Address: ${data.mintAddress}\nToken Account: ${data.tokenAccount}\n${data.metadataUploadOutput}`);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
