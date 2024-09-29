@@ -1,17 +1,13 @@
-// checks.js
-import { PublicKey } from '@solana/web3.js'; // Ensure you import relevant dependencies
+import { PublicKey } from '@solana/web3.js';
 
-export async function checkAccountExists(publicKey, connection, logger) {
+export async function checkAccountExists(userPublicKey, connection, logger) {
     try {
-        if (!(publicKey instanceof PublicKey)) {
-            throw new Error('Invalid publicKey parameter. It should be an instance of PublicKey.');
-        }
-        const accountInfo = await connection.getAccountInfo(publicKey);
-        logger.info(`Account info for ${publicKey.toBase58()}: ${JSON.stringify(accountInfo, null, 2)}`);
-
+        const userPublicKeyObj = new PublicKey(userPublicKey);
+        const accountInfo = await connection.getAccountInfo(userPublicKeyObj);
+        logger.info(`Account info for ${userPublicKeyObj.toBase58()}: ${JSON.stringify(accountInfo, null, 2)}`);
         return accountInfo !== null;
     } catch (error) {
-        logger.error(`Failed to check account existence for ${publicKey.toBase58()}: ${error.message}`);
+        logger.error(`Failed to check account existence for ${userPublicKey}: ${error.message}`);
         return false;
     }
 }
@@ -33,8 +29,18 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
             throw new Error('Payer account does not exist.');
         }
 
+        // Initialize userPublicKey as a PublicKey object
+        let userKey;
+        try {
+            userKey = new PublicKey(userPublicKey);
+            logger.info(`User Public Key: ${userKey.toBase58()}`);
+        } catch (error) {
+            logger.error('Error initializing PublicKey:', error.message);
+            throw new Error('Invalid user public key.');
+        }
+
         // Check if user account exists
-        const userExists = await checkAccountExists(userPublicKey, connection, logger);
+        const userExists = await checkAccountExists(userKey, connection, logger);
         if (!userExists) {
             throw new Error('User account does not exist.');
         }
@@ -44,7 +50,7 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
         logger.info(`Payer balance: ${payerBalance}`);
 
         // Log user balance
-        const userBalance = await connection.getBalance(userPublicKey);
+        const userBalance = await connection.getBalance(userKey);
         logger.info(`User balance: ${userBalance}`);
 
         // Create mint
@@ -68,7 +74,7 @@ export async function preliminaryChecks(userPublicKey, payer, connection, logger
             connection,
             payer,
             mint,
-            userPublicKey
+            userKey
         );
         logger.info(`User token account address: ${userTokenAccount.address.toBase58()}`);
 

@@ -1,9 +1,14 @@
-import FormData from "form-data";
-import fs from "fs";
-import fetch from "node-fetch";
-import logger from "./logger";
+import * as FormData from 'form-data';
+import * as fs from 'fs';
+import fetch from 'node-fetch';
+import logger from './logger';
 
-export async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretApiKey) {
+// Define an interface for the response data from Pinata
+interface PinataResponse {
+    IpfsHash?: string; // Optional property for the uploaded image's CID
+}
+
+export async function uploadImageToPinata(imagePath: string, pinataApiKey: string, pinataSecretApiKey: string): Promise<string> {
     const formData = new FormData();
     formData.append('file', fs.createReadStream(imagePath));
 
@@ -19,7 +24,7 @@ export async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretA
 
         if (!response.ok) throw new Error(`Error uploading image: ${response.statusText}`);
 
-        const responseData = await response.json();
+        const responseData: PinataResponse = await response.json(); // Cast response to PinataResponse
         if (!responseData || !responseData.IpfsHash) throw new Error(`Invalid CID data: ${JSON.stringify(responseData)}`);
 
         const imageCid = responseData.IpfsHash; // Return just the CID
@@ -31,7 +36,15 @@ export async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretA
     }
 }
 
-export async function uploadImageAndPinJSON(imagePath, pinataApiKey, pinataSecretApiKey, bearerToken, name, symbol, description) {
+export async function uploadImageAndPinJSON(
+    imagePath: string,
+    pinataApiKey: string,
+    pinataSecretApiKey: string,
+    bearerToken: string,
+    name?: string,
+    symbol?: string,
+    description?: string
+): Promise<string> {
     try {
         logger.info(`Uploading image and JSON to Pinata...`);
 
@@ -48,16 +61,16 @@ export async function uploadImageAndPinJSON(imagePath, pinataApiKey, pinataSecre
             image: imageUrl, // Correctly formatted CID
             external_url: imageUrl,
             dao: process.env.METADATA_DAO || 'LABS DAO',
-            type: "fungible",
+            type: 'fungible',
         };
 
         logger.info(`JSON Metadata: ${JSON.stringify(contractUriJSON, null, 2)}`);
 
         // Upload metadata JSON to Pinata
         const jsonRes = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-            method: "POST",
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${bearerToken}`,
+                Authorization: `Bearer ${bearerToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -65,7 +78,7 @@ export async function uploadImageAndPinJSON(imagePath, pinataApiKey, pinataSecre
                     cidVersion: 1,
                 },
                 pinataMetadata: {
-                    name: "metadata.json",
+                    name: 'metadata.json',
                 },
                 pinataContent: contractUriJSON,
             }),
@@ -76,7 +89,7 @@ export async function uploadImageAndPinJSON(imagePath, pinataApiKey, pinataSecre
         const uriData = await jsonRes.json();
         logger.info(`Metadata uploaded successfully: ${JSON.stringify(uriData, null, 2)}`);
 
-        return uriData.IpfsHash;
+        return uriData.IpfsHash; // Ensure this property is defined in the response structure
     } catch (error) {
         logger.error(`Error uploading image and JSON to Pinata: ${error.message}`);
         throw error;

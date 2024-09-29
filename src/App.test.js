@@ -1,7 +1,7 @@
 // Import necessary dependencies
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import App from './App.js';
 
 // Test case to ensure the App component renders without crashing
 it('renders without crashing', () => {

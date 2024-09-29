@@ -18,7 +18,8 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
-import {preliminaryChecks} from 'backend/checks';
+import 'dotenv/config';
+
 
 function App() {
   // State for token details
@@ -34,15 +35,15 @@ function App() {
   const [isDecimalsError, setIsDecimalsError] = useState(false) // Tracks if there's an error in the decimals input
 
   // New state variable for image URI (hopefully this is what you meant was needed)
-  const [imageURI, setImageURI] = useState('')
+  const [imageURI, setImageURI] = useState(''); // To store the image URI
+  const [imageFile, setImageFile] = useState(null); // To store the uploaded image file
 
-  // New state variable for userPublicKey
-  const [userPublicKey, setUserPublicKey] = useState('')
+  const [userPublicKey, setUserPublicKey] = useState('');
+  const [onFileUpload, setOnFileUpload] = useState('');
 
   // Apply hover effect on component mount
   useEffect(() => {
-    const cleanup = hoverEffect()
-    return cleanup
+    return hoverEffect()
   }, [])
 
   // State variables for switch components and warning message
@@ -54,6 +55,9 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+
+  let APP_ENV = process.env.REACT_APP_ENV || 'development';
+  const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
@@ -73,33 +77,127 @@ function App() {
     }
   }, [mintChecked, freezeChecked, immutableChecked])
 
-  const handleSolMint = async () => {
-    console.log('Initializing mint with SOL payment');
+
+
+
+  const mintTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    console.log(`Initializing mint with ${paymentType} payment`);
+
+    const imagePath = imageFile;
+    if (!validateInputs()) {
+      return;
+    }
+
+    // Create FormData for the API request
+    const mintData = new FormData();
+    mintData.append('tokenName', tokenName);
+    mintData.append('tokenSymbol', tokenSymbol);
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', quantity);
+    mintData.append('freezeChecked', freezeChecked);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('immutableChecked', immutableChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+    mintData.append('imagePath', imagePath);
+
+    console.log('Mint data being sent:', {
+      tokenName,
+      tokenSymbol,
+      userPublicKey,
+      quantity,
+      freezeChecked,
+      mintChecked,
+      immutableChecked,
+      decimals,
+      paymentType,
+      imagePath,
+    });
 
     try {
-        // Add your SOL minting logic here
+      const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenName: tokenName,
+          tokenSymbol: tokenSymbol,
+          userPublicKey: userPublicKey,
+          quantity: quantity,
+          freezeChecked: freezeChecked,
+          mintChecked: mintChecked,
+          immutableChecked: immutableChecked,
+          decimals: decimals,
+          imagePath: imagePath,
+          paymentType: paymentType,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
 
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
+      const data = await response.json();
 
+      console.log('Mint successful!', data);
+      const { mintAddress, tokenAccount, metadataUploadOutput } = data;
+      const transactionLink = data.explorerLink;
 
+      alert(`
+        🎉 Mint Successful! 🎉
+        
+        ✅ Mint Address: ${mintAddress}
+        📦 Token Account: ${tokenAccount}
+        🏷️ Quantity Minted: ${quantity} tokens
+        🔢 Decimals: ${decimals}
+        📄 Metadata: ${metadataUploadOutput}
+       
+        🔗 Explorer Link: ${transactionLink}
+        `);
     } catch (error) {
-      console.error(`SOL minting failed: ${error.message}`);
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
     }
+  };
+  function setInputErrors(errors) {
+    setIsTokenNameError(errors.tokenName);
+    setIsTokenSymbolError(errors.tokenSymbol);
+    setIsQuantityError(errors.quantity);
+    setIsDecimalsError(errors.decimals);
+  }
+
+  const validateInputs = () => {
+    let errors = {
+      tokenName: !tokenName,
+      tokenSymbol: !tokenSymbol,
+      quantity: !quantity,
+      decimals: !decimals,
+    };
+
+    setInputErrors(errors);
+
+    if (Object.values(errors).includes(true)) {
+      alert('All fields are required.');
+      return false;
+    }
+    return true;
   };
 
 
-  const handleLabsMint = async () => {
-    console.log('Initializing mint with LABS payment')
-    try {
+  const handleSolMint = () => {
+    console.log('Current imageFile state:', imageFile);
+    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+  };
 
-      await preliminaryChecks(userPublicKey, payer, connection, logger, clusterApiUrl, createMint, getOrCreateAssociatedTokenAccount, decimals);
-
-      // Add your LABS minting logic here after preliminary checks pass
-    }
-    catch (error) {
-      console.error(`LABS minting failed: ${error.message}`);
-    }
-  }
+  const handleLabsMint = () => {
+    console.log('Current imageFile state:', imageFile);
+    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
+  };
 
   // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
@@ -176,11 +274,13 @@ function App() {
               {/* Photo upload input */}
               <h1>
                 {/* PhotoInput component for uploading and handling image files */}
-                <PhotoInput 
-                  // Callback function when a file is uploaded
-                  onFileUpload={(file) => console.log('File uploaded:', file)} 
-                  // Callback function to handle changes in the image URI
-                  onImageURIChange={handleImageURIChange}
+                <PhotoInput
+                    onFileUpload={(file) => {
+                      console.log('File uploaded:', file);
+                      setImageFile(file); // Update state with uploaded file path
+                    }}
+                    onImageURIChange={handleImageURIChange}
+                    pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
             </div>
