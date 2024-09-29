@@ -34,8 +34,6 @@ if (connection.rpcEndpoint !== expectedUrl) {
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
 
 // CORS configuration
 const allowedOrigin: string = `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_FRONTEND_PORT}`;
