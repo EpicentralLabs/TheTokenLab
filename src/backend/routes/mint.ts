@@ -140,10 +140,12 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return res.status(500).json({message: 'Failed to upload image and metadata.'});
         }
 
-        // 8. Mint tokens
-        let tokenMintAccount;
+        let userTokenAccount: PublicKey;
+        let tokenMintAccount: PublicKey;
         try {
-            tokenMintAccount = await mintToken(parsedDecimals, Number(quantity), payer.publicKey);
+            const result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
+            tokenMintAccount = result.tokenMint;
+            userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
@@ -162,22 +164,24 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 freezeChecked,
                 mintChecked,
                 immutableChecked,
-                tokenMintAccount
+                tokenMintAccount // Pass the tokenMintAccount
             );
             console.log('✅ Token metadata created for:', tokenName);
 
             return res.status(200).json({
                 message: `✅ Minted ${quantity} tokens with ${parsedDecimals} decimals and metadata created successfully. Transaction: ${transactionLink}`,
                 explorerLink: transactionLink,
+                mintAddress: tokenMintAccount.toString(),
+                tokenAccount: userTokenAccount.toString(),
+                metadataUploadOutput: `Metadata created at: ${transactionLink}`,
             });
         } catch (error) {
             console.error('❌ Error during minting or metadata creation:', (error as Error).message || error);
-            res.status(500).json({ error: 'Failed to mint tokens or create metadata.' });
+            return res.status(500).json({ error: 'Failed to mint tokens or create metadata.' });
         }
     } catch (error) {
         console.error('❌ Unexpected Error:', (error as Error).message || error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 export default router;
