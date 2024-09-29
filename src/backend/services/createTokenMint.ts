@@ -13,7 +13,6 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     let tokenMint: PublicKey;
 
     try {
-        // 1. Create the token mint
         tokenMint = await createMint(connection, user, user.publicKey, null, parsedDecimals);
         const link = getExplorerLink("address", tokenMint.toString(), "devnet");
         console.log(`✅ Finished! Created token mint: ${link}`);
@@ -29,7 +28,6 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     let userTokenAccount: any;
 
     try {
-        // 2. Get or create the associated token account for the user
         userTokenAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             user,
@@ -47,16 +45,14 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     }
 
     try {
-        // 3. Mint tokens to the user's token account
         await mintTo(
             connection,
-            user,
-            tokenMint,
+            user, // Payer
+            tokenMint, // Mint
             userTokenAccount.address,
             user.publicKey,
-            // @ts-ignore
-            [],
-            quantity
+            BigInt(quantity),
+            [user],
         );
         console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
@@ -67,6 +63,8 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
         }
         throw new Error('Token minting failed.');
     }
+
+
 
     return tokenMint;
 }
