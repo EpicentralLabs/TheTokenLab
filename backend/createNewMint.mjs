@@ -9,6 +9,8 @@ import {
 } from '@solana/web3.js';
 import { createInitializeMintInstruction } from '@solana/spl-token';
 import * as mplTokenMetadata from "@metaplex-foundation/mpl-token-metadata";
+import logger from "./logger.mjs";
+
 const { createCreateMetadataAccountV3Instruction } = mplTokenMetadata;
 const TOKEN_METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
@@ -29,69 +31,106 @@ export async function createNewMint(
 
     const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
     const mintLamports = await connection.getMinimumBalanceForRentExemption(82);
-    const mintSigner = systemAuthority;
+    const mintSigner = Keypair.generate();
 
     try {
-        const userPublicKeyInstance = new PublicKey(userPublicKey);
-
         const mintTransaction = new Transaction().add(
             SystemProgram.createAccount({
                 fromPubkey: payer.publicKey,
-                newAccountPubkey: mintSigner,
+                newAccountPubkey: mintSigner.publicKey,
                 lamports: mintLamports,
                 space: 82,
                 programId: SPL_TOKEN_PROGRAM_ID,
             }),
             createInitializeMintInstruction(
-                mintSigner,
+                mintSigner.publicKey,
                 parsedDecimals,
-                systemAuthority, // Set systemAuthority as the mint authority
-                freezeChecked ? systemAuthority : null, // Optional freeze authority
+                systemAuthority,
+                freezeChecked ? systemAuthority : null,
                 SPL_TOKEN_PROGRAM_ID
             )
         );
 
         const mintSignature = await sendAndConfirmTransaction(connection, mintTransaction, [payer, mintSigner], { commitment: 'confirmed' });
+        console.log('Mint transaction confirmed with signature:', mintSignature);
 
-        const [metadataAccount] = await PublicKey.findProgramAddress(
-            [
-                Buffer.from('metadata'),
-                TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-                mintSigner.toBuffer(),
-            ],
-            TOKEN_METADATA_PROGRAM_ID
-        );
+        try {
+            const [metadataAccount] = PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('metadata'),
+                    TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+                    mintSigner.publicKey.toBuffer(),
+                ],
+                TOKEN_METADATA_PROGRAM_ID
+            );
 
-        const metadataTransaction = new Transaction().add(
-            createCreateMetadataAccountV3Instruction(
+            console.log('Metadata account derived:', metadataAccount.toBase58());
+
+            const metadataData = {
+                name: tokenName,
+                symbol: tokenSymbol,
+                uri: updatedMetadataUri,
+                sellerFeeBasisPoints: 0,
+                creators: null,
+                collection: null,
+                uses: null,
+            };
+            console.log("metadataData:", JSON.stringify(metadataData, null, 2));
+
+            const transaction = new Transaction();
+            const createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
                 {
                     metadata: metadataAccount,
-                    mint: mintSigner,
+                    mint: mintSigner.publicKey,
                     mintAuthority: systemAuthority,
                     payer: payer.publicKey,
-                    updateAuthority: systemAuthority
+                    updateAuthority: systemAuthority,
                 },
                 {
-                    createMetadataAccountArgsV2: {
-                        data: {
-                            name: tokenName,
-                            symbol: tokenSymbol,
-                            uri: updatedMetadataUri,
-                            sellerFeeBasisPoints: 0,
-                            creators: null,
-                            collection: null,
-                            uses: null,
-                        },
+                    createMetadataAccountArgsV3: {
+                        data: metadataData,
                         isMutable: !immutableChecked,
+                        collectionDetails: null,
                     }
                 }
-            )
-        );
+            );
 
-        const metadataSignature = await sendAndConfirmTransaction(connection, metadataTransaction, [payer], { commitment: 'confirmed' });
+            console.log('createMetadataAccountInstruction:', JSON.stringify(createMetadataAccountInstruction, null, 2));
 
-        return mintSigner.toBase58();
+            console.log("metadataAccount:", metadataAccount.toBase58());
+            console.log("mint:", mintSigner.publicKey.toBase58());
+            console.log("mintAuthority:", systemAuthority.toBase58());
+            console.log("payer:", payer.publicKey.toBase58());
+            console.log("updateAuthority:", systemAuthority.toBase58());
+
+            transaction.add(createMetadataAccountInstruction);
+
+            console.log("userPublicKey (before conversion):", userPublicKey);
+            const userPublicKeyString = new PublicKey(userPublicKey);
+            console.log("userPublicKey (after conversion):", userPublicKeyString.toBase58());
+            const signers = [payer, mintSigner, userPublicKeyString];
+            console.log("Signers before transaction:");
+            signers.forEach((signer, index) => {
+                if (signer && signer.publicKey) {
+                    console.log(`Signer ${index}:`, signer.publicKey.toBase58());
+                } else {
+                    console.error(`Signer ${index} is undefined or has no publicKey property:`, signer);
+                }
+            });
+            const metadataSignature = await sendAndConfirmTransaction(connection, transaction, signers, { commitment: 'confirmed' });
+
+            // const metadataSignature = await sendAndConfirmTransaction(connection, transaction, [payer, mintSigner, userPublicKeyString], { commitment: 'confirmed' });
+
+            console.log('Metadata transaction confirmed with signature:', metadataSignature);
+
+            return mintSigner.publicKey.toBase58();
+        } catch (error) {
+            console.error(`Error creating metadata: ${error.message}`, error);
+            throw new Error(`Metadata creation failed: ${error.message}`);
+        }
+
     } catch (error) {
-        throw new Error(`Error during mint creation: ${error.message}`);
+        console.error(`Error during mint creation: ${error.message}`, error);
+        throw new Error(`Mint creation failed: ${error.message}`);
     }
 }
