@@ -9,13 +9,11 @@ import {
 } from '@solana/web3.js';
 import { createInitializeMintInstruction } from '@solana/spl-token';
 import * as mplTokenMetadata from "@metaplex-foundation/mpl-token-metadata";
-import logger from "./logger.mjs";
 
 const { createCreateMetadataAccountV3Instruction } = mplTokenMetadata;
 const TOKEN_METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 export async function createNewMint(
-    payer,
     updatedMetadataUri,
     tokenSymbol,
     tokenName,
@@ -26,34 +24,73 @@ export async function createNewMint(
     mintChecked,
     immutableChecked
 ) {
-    const SPL_TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-    const systemAuthority = new PublicKey(process.env.MINTING_ADDRESS);
-
-    const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-    const mintLamports = await connection.getMinimumBalanceForRentExemption(82);
-    const mintSigner = Keypair.generate();
+    let connection, mintLamports, mintSigner, mintTransaction, mintSignature;
 
     try {
-        const mintTransaction = new Transaction().add(
-            SystemProgram.createAccount({
-                fromPubkey: payer.publicKey,
-                newAccountPubkey: mintSigner.publicKey,
-                lamports: mintLamports,
-                space: 82,
-                programId: SPL_TOKEN_PROGRAM_ID,
-            }),
-            createInitializeMintInstruction(
-                mintSigner.publicKey,
-                parsedDecimals,
-                systemAuthority,
-                freezeChecked ? systemAuthority : null,
-                SPL_TOKEN_PROGRAM_ID
-            )
-        );
+        const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_PRIVATE_KEY)));
+        const userPublicKeyInstance = new PublicKey(userPublicKey);
 
-        const mintSignature = await sendAndConfirmTransaction(connection, mintTransaction, [payer, mintSigner], { commitment: 'confirmed' });
-        console.log('Mint transaction confirmed with signature:', mintSignature);
+        if (!payer.publicKey || !userPublicKeyInstance.toBase58()) {
+            console.error('One or more signers are missing or invalid.');
+            return;
+        }
 
+        console.log("Payer and userPublicKey initialized successfully.");
+
+        const SPL_TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+        const systemAuthority = new PublicKey(process.env.MINTING_ADDRESS);
+
+        try {
+            connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+            console.log("Connection to Solana devnet established.");
+        } catch (error) {
+            console.error(`Failed to connect to Solana devnet: ${error.message}`);
+            throw new Error(`Failed to connect to Solana devnet: ${error.message}`);
+        }
+
+        try {
+            mintLamports = await connection.getMinimumBalanceForRentExemption(82);
+            console.log(`Minimum balance for rent exemption fetched: ${mintLamports} lamports.`);
+        } catch (error) {
+            console.error(`Failed to fetch minimum balance for rent exemption: ${error.message}`);
+            throw new Error(`Failed to fetch rent exemption: ${error.message}`);
+        }
+
+        mintSigner = Keypair.generate();
+
+        // Mint Transaction Block
+        try {
+            mintTransaction = new Transaction().add(
+                SystemProgram.createAccount({
+                    fromPubkey: payer.publicKey,
+                    newAccountPubkey: mintSigner.publicKey,
+                    lamports: mintLamports,
+                    space: 82,
+                    programId: SPL_TOKEN_PROGRAM_ID,
+                }),
+                createInitializeMintInstruction(
+                    mintSigner.publicKey,
+                    parsedDecimals,
+                    systemAuthority,
+                    freezeChecked ? systemAuthority : null,
+                    SPL_TOKEN_PROGRAM_ID
+                )
+            );
+            console.log('Mint transaction created.');
+        } catch (error) {
+            console.error(`Failed to create mint transaction: ${error.message}`);
+            throw new Error(`Failed to create mint transaction: ${error.message}`);
+        }
+
+        try {
+            mintSignature = await sendAndConfirmTransaction(connection, mintTransaction, [payer, mintSigner], { commitment: 'confirmed' });
+            console.log('Mint transaction confirmed with signature:', mintSignature);
+        } catch (error) {
+            console.error(`Failed to send or confirm mint transaction: ${error.message}`);
+            throw new Error(`Mint transaction failed: ${error.message}`);
+        }
+
+        // Metadata Creation Block
         try {
             const [metadataAccount] = PublicKey.findProgramAddressSync(
                 [
@@ -63,7 +100,6 @@ export async function createNewMint(
                 ],
                 TOKEN_METADATA_PROGRAM_ID
             );
-
             console.log('Metadata account derived:', metadataAccount.toBase58());
 
             const metadataData = {
@@ -75,7 +111,7 @@ export async function createNewMint(
                 collection: null,
                 uses: null,
             };
-            console.log("metadataData:", JSON.stringify(metadataData, null, 2));
+            console.log("Metadata Data prepared:", JSON.stringify(metadataData, null, 2));
 
             const transaction = new Transaction();
             const createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
@@ -94,43 +130,25 @@ export async function createNewMint(
                     }
                 }
             );
-
-            console.log('createMetadataAccountInstruction:', JSON.stringify(createMetadataAccountInstruction, null, 2));
-
-            console.log("metadataAccount:", metadataAccount.toBase58());
-            console.log("mint:", mintSigner.publicKey.toBase58());
-            console.log("mintAuthority:", systemAuthority.toBase58());
-            console.log("payer:", payer.publicKey.toBase58());
-            console.log("updateAuthority:", systemAuthority.toBase58());
+            console.log('Create Metadata Account Instruction prepared.');
 
             transaction.add(createMetadataAccountInstruction);
 
-            console.log("userPublicKey (before conversion):", userPublicKey);
-            const userPublicKeyString = new PublicKey(userPublicKey);
-            console.log("userPublicKey (after conversion):", userPublicKeyString.toBase58());
-            const signers = [payer, mintSigner, userPublicKeyString];
-            console.log("Signers before transaction:");
-            signers.forEach((signer, index) => {
-                if (signer && signer.publicKey) {
-                    console.log(`Signer ${index}:`, signer.publicKey.toBase58());
-                } else {
-                    console.error(`Signer ${index} is undefined or has no publicKey property:`, signer);
-                }
-            });
+            const signers = [payer, mintSigner];
+            console.log("Signers prepared:", signers.map(signer => signer.publicKey.toBase58()));
+
             const metadataSignature = await sendAndConfirmTransaction(connection, transaction, signers, { commitment: 'confirmed' });
-
-            // const metadataSignature = await sendAndConfirmTransaction(connection, transaction, [payer, mintSigner, userPublicKeyString], { commitment: 'confirmed' });
-
             console.log('Metadata transaction confirmed with signature:', metadataSignature);
 
             return mintSigner.publicKey.toBase58();
+
         } catch (error) {
-            console.error(`Error creating metadata: ${error.message}`, error);
+            console.error(`Error creating metadata: ${error.message}`);
             throw new Error(`Metadata creation failed: ${error.message}`);
         }
 
     } catch (error) {
-        console.error(`Error during mint creation: ${error.message}`, error);
-        throw new Error(`Mint creation failed: ${error.message}`);
+        console.error(`Mint creation process failed: ${error.message}`);
+        throw new Error(`Mint creation process failed: ${error.message}`);
     }
 }
