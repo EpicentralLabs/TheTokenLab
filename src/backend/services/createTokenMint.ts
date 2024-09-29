@@ -7,7 +7,7 @@ const connection = new Connection(clusterApiUrl('devnet'));
 
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
-console.log(`🔑 Loaded our keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
+console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
 
 export async function mintToken(parsedDecimals: number, quantity: number, publicKey: PublicKey): Promise<PublicKey> {
     let tokenMint: PublicKey;
