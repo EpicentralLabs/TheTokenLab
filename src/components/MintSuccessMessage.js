@@ -1,6 +1,5 @@
 import React from 'react';
 import './MintSuccessMessage.css';
-import 'dotenv/config';
 
 
 function MintSuccessMessage({
