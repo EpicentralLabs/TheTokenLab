@@ -100,6 +100,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         console.log('✅ Decimals validated:', parsedDecimals);
 
         // 5. Validate image path
+        // eslint-disable-next-line no-undef
         fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
         if (!fs.existsSync(fullPath)) {
             console.error('❌ Validation Error: File not found at the specified path:', fullPath);
@@ -124,21 +125,23 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return res.status(500).json({message: 'Failed to initialize payer keypair.'});
         }
 
-        try {
-            const { solPrice, labsPrice } = await fetchPrices();
-            const mintingFee = paymentType === 'SOL' ? 0.01 * solPrice * 10 ** 9 : 100;
-            await chargeMintingFee(connection, payer, userPublicKeyInstance, paymentType, mintingFee);
 
-            console.log(`✅ Minting fee charged successfully.\n` +
-                `-----------------------------------------\n` +
-                `Minting Fee: ${mintingFee} ${paymentType === 'SOL' ? 'LAMPORTS (SOL)' : 'LABS'}\n` +
-                `Current SOL Price: ${solPrice} USD\n` +
-                `Current LABS Price: ${labsPrice} USD\n` +
-                `-----------------------------------------`);
-        } catch (error) {
-            console.error('❌ Error: Failed to charge minting fee:', (error as Error).message || error);
-            return res.status(500).json({ message: 'Failed to charge minting fee.' });
-        }
+        //  TODO: TURK - FIGURE OUT WHY THE FUCK WE'RE REQUESTING, > 10055 SOL FOR MINTING
+        // try {
+        //     const { solPrice, labsPrice } = await fetchPrices();
+        //     const mintingFee = paymentType === 'SOL' ? 0.01 * solPrice * 10 ** 9 : 100;
+        //     await chargeMintingFee(connection, payer, userPublicKeyInstance, paymentType, mintingFee);
+        //
+        //     console.log(`✅ Minting fee charged successfully.\n` +
+        //         `-----------------------------------------\n` +
+        //         `Minting Fee: ${mintingFee} ${paymentType === 'SOL' ? 'LAMPORTS (SOL)' : 'LABS'}\n` +
+        //         `Current SOL Price: ${solPrice} USD\n` +
+        //         `Current LABS Price: ${labsPrice} USD\n` +
+        //         `-----------------------------------------`);
+        // } catch (error) {
+        //     console.error('❌ Error: Failed to charge minting fee:', (error as Error).message || error);
+        //     return res.status(500).json({ message: 'Failed to charge minting fee.' });
+        // }
 
         let updatedMetadataUri: string;
         try {
@@ -186,6 +189,10 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 tokenMintAccount // Pass the tokenMintAccount
             );
             console.log('✅ Token metadata created for:', tokenName);
+            if (mintChecked) {
+                TransferAuthority(connection, payer, userTokenAccount, userPublicKeyInstance);
+            }
+
 
             return res.status(200).json({
                 message: `✅ Minted ${quantity} tokens with ${parsedDecimals} decimals and metadata created successfully. Transaction: ${transactionLink}`,
