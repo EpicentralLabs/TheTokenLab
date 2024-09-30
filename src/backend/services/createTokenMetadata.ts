@@ -4,13 +4,15 @@ import {
     Connection,
     PublicKey,
     Transaction,
-    sendAndConfirmTransaction, clusterApiUrl,
+    sendAndConfirmTransaction,
+    clusterApiUrl,
 } from "@solana/web3.js";
 import { createCreateMetadataAccountV3Instruction } from "@metaplex-foundation/mpl-token-metadata";
 
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
 const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
+
 async function checkConnection() {
     try {
         const version = await connection.getVersion();
@@ -38,7 +40,6 @@ export async function createMetadata(
 
     const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
-    // Metadata details (using parameters)
     const metadataData = {
         name: tokenName,
         symbol: tokenSymbol,
@@ -61,13 +62,16 @@ export async function createMetadata(
     const metadataAccountInfo = await connection.getAccountInfo(metadataPDA);
     if (metadataAccountInfo) {
         console.log("Metadata account already exists at this address.");
-        return ""; // Or handle the return more appropriately
+        return "";
     }
 
     const transaction = new Transaction();
 
-    const createMetadataAccountInstruction =
-        createCreateMetadataAccountV3Instruction(
+    let createMetadataAccountInstruction;
+
+    if (freezeChecked) {
+        console.log("Freeze is checked; setting appropriate fields.");
+        createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
             {
                 metadata: metadataPDA,
                 mint: tokenMintAccount,
@@ -80,9 +84,31 @@ export async function createMetadata(
                     collectionDetails: null,
                     data: metadataData,
                     isMutable: !immutableChecked,
+                    // Additional fields can be set here if needed when freezeChecked is true
+                    // e.g., freezeAuthority: user.publicKey
                 },
             }
         );
+    } else {
+        console.log("Freeze is not checked; setting appropriate fields.");
+        createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
+            {
+                metadata: metadataPDA,
+                mint: tokenMintAccount,
+                mintAuthority: user.publicKey,
+                payer: user.publicKey,
+                updateAuthority: user.publicKey,
+            },
+            {
+                createMetadataAccountArgsV3: {
+                    collectionDetails: null,
+                    data: metadataData,
+                    isMutable: !immutableChecked,
+                    // Additional fields can be set here if needed when freezeChecked is false
+                },
+            }
+        );
+    }
 
     transaction.add(createMetadataAccountInstruction);
 
