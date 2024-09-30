@@ -27,14 +27,13 @@ const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
 
-// CORS configuration
-const allowedOrigin: string = `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_FRONTEND_PORT}`;
+const allowedOrigin: string = process.env.REACT_APP_PUBLIC_URL as string;
+
 app.use(cors({
     origin: allowedOrigin,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
 // Routes
 app.use('/api/mint', mintRoutes);
 app.use('/upload', uploadRoutes);
