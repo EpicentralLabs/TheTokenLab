@@ -1,20 +1,53 @@
 .mint-success-message {
-    padding: 20px;
-    border: 1px solid green;
-    border-radius: 8px;
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #003b26;
+    color: #00be79;
+    padding: 5px 30px 10px;
+    border-radius: 5px;
+    margin-top: 40px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out;
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.5);
+    border: 2px solid #00FFA3;
+}
+
+.mint-success-message.fade-in {
+    opacity: 1; /* Fade in effect */
+}
+
+.mint-success-message:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 163, 0.7);
+    color: #00FFA3;
 }
 
 .mint-success-title {
+    font-family: 'p-medium', sans-serif;
+    font-size: 1rem;
+    margin-top: 5px;
     margin-bottom: 10px;
 }
 
-.fade-in {
-    animation: fadeIn 0.5s;
+.mint-success-subtitle {
+    font-family: 'p-light', sans-serif;
+    font-size: 1rem;
+    margin: 0;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+.mint-success-details {
+    margin: 10px 0;
+}
+
+.detail-item {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.detail-label {
+    font-weight: bold;
+    margin-right: 5px;
 }
