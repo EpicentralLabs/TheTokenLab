@@ -284,6 +284,17 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
+              <Compress
+            tokenName={tokenName}
+            tokenSymbol={tokenSymbol}
+            quantity={quantity}
+            decimals={decimals}
+            imageURI={imageURI}  // Pass the imageURI to InitializeMint
+            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
+            setIsTokenNameError={setIsTokenNameError}
+            setIsTokenSymbolError={setIsTokenSymbolError}
+            setIsQuantityError={setIsQuantityError}
+            setIsDecimalsError={setIsDecimalsError} />
             </div>
           </section>
           
@@ -321,17 +332,7 @@ function App() {
           />
           
           {/* Compress component */}
-          <Compress
-            tokenName={tokenName}
-            tokenSymbol={tokenSymbol}
-            quantity={quantity}
-            decimals={decimals}
-            imageURI={imageURI}  // Pass the imageURI to InitializeMint
-            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
-            setIsTokenNameError={setIsTokenNameError}
-            setIsTokenSymbolError={setIsTokenSymbolError}
-            setIsQuantityError={setIsQuantityError}
-            setIsDecimalsError={setIsDecimalsError} />
+
           
         </header>
       </div>
