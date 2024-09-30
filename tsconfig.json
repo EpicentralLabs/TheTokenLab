@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "outDir": "./dist",
+    "outDir": "./build",
     "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src/**/*.ts"],
