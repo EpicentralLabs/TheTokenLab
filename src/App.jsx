@@ -16,6 +16,7 @@ import MintSwitch from './components/Mint-switch'
 import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import Compress from './components/ZKCompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import 'dotenv/config';
@@ -318,6 +319,19 @@ function App() {
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
           />
+          
+          {/* Compress component */}
+          <Compress
+            tokenName={tokenName}
+            tokenSymbol={tokenSymbol}
+            quantity={quantity}
+            decimals={decimals}
+            imageURI={imageURI}  // Pass the imageURI to InitializeMint
+            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
+            setIsTokenNameError={setIsTokenNameError}
+            setIsTokenSymbolError={setIsTokenSymbolError}
+            setIsQuantityError={setIsQuantityError}
+            setIsDecimalsError={setIsDecimalsError} />
           
         </header>
       </div>
