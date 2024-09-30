@@ -9,8 +9,15 @@ const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
 console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
 
+
+
+// TODO: TURK- FIGURE OUT WHY WE'RE MINTING THE TOKENS TO A NEW WALLET, AND NOT TRANSFERRING TO THE USER'S WALLET
+// TODO: TURK - TRANSFER AUTHORITY TO THE USER'S WALLET
 export async function mintToken(parsedDecimals: number, quantity: number, publicKey: PublicKey): Promise<{ tokenMint: PublicKey; userTokenAccount: PublicKey }> {
     let tokenMint: PublicKey;
+    console.log(`🏦 Creating token mint with ${parsedDecimals} decimals...`);
+    console.log(`💰 Minting ${quantity} tokens to ${publicKey.toBase58()}...`);
+    console.log(`🔒 Creating associated token account for ${publicKey.toBase58()}...`);
 
     try {
         tokenMint = await createMint(
@@ -50,7 +57,7 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
             tokenMint, // Mint
             userTokenAccount.address,
             user.publicKey,
-            BigInt(quantity),
+            quantity,
             [user],
         );
         console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
