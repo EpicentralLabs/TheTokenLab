@@ -24,7 +24,7 @@ export async function mintToken(parsedDecimals: number, quantity: number, userPu
             connection,
             user,
             user.publicKey,  // Mint authority
-            freezeChecked ? user.publicKey : null,  // Freeze authority, set if freezeChecked is true
+            !freezeChecked ? null : user.publicKey,  // Freeze authority, set if freezeChecked is true
             parsedDecimals
         );
 
