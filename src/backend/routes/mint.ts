@@ -330,9 +330,13 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         } finally {
             if (fullPath) {
                 try {
-                    await logCurrentAuthorities(connection, tokenMintAccount);
-                    fs.unlinkSync(fullPath);
-                    console.log('🗑️ Uploaded image file deleted successfully:', fullPath);
+                    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+                        await logCurrentAuthorities(connection, tokenMintAccount);
+                        fs.unlinkSync(fullPath);
+                        console.log('🗑️ Uploaded image file deleted successfully:', fullPath);
+                    } else{
+                        console.error('❌ Uploaded Image not found! It was likely deleted already!', fullPath);
+                    }
                 } catch (err) {
                     const deleteErrorMessage = (err instanceof Error) ? err.message : String(err);
                     console.error('❌ Error deleting image file:', deleteErrorMessage);
