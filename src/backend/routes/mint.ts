@@ -236,6 +236,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         }
         try {
             const actionsPerformed: string[] = [];
+            // Handle Mint Authority, set it to null if checked
             if (mintChecked) {
                 console.log('🔄 Starting process to set MintTokens authority...');
                 try {
@@ -245,7 +246,8 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                         tokenMintAccount,
                         payer.publicKey,
                         AuthorityType.MintTokens,
-                        userPublicKeyInstance
+                        //userPublicKeyInstance
+                        null
                     );
                     actionsPerformed.push('Minting');
                     console.log('✅ Successfully set MintTokens authority.');
@@ -258,30 +260,33 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             }
             await logCurrentAuthorities(connection, tokenMintAccount);
 
-            // Handle AccountOwner Authority
-            if (immutableChecked) {
-                console.log('🔄 Starting process to set AccountOwner (Immutable) authority...');
-                try {
-                    const mintInfo = await getMint(connection, tokenMintAccount);
-                    console.log("Current Mint Authority:", mintInfo.mintAuthority);
-                    console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
-                    await setAuthority(
+             // Handle Freeze Authority, set it to null if checked
+             if (freezeChecked) {
+                 console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
+                 try {
+                     const mintInfo = await getMint(connection, tokenMintAccount);
+                     console.log("Current Mint Authority:", mintInfo.mintAuthority);
+                     console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
+                     await setAuthority(
                         connection,
                         payer,
                         tokenMintAccount,
                         payer.publicKey,
-                        AuthorityType.AccountOwner,
-                        userPublicKeyInstance
+                        AuthorityType.FreezeAccount,
+                        // userPublicKeyInstance
+                        null
                     );
-                    actionsPerformed.push('Immutable authority');
-                    console.log('✅ Successfully set AccountOwner (Immutable) authority.');
-                } catch (error) {
-                    console.error('❌ Error setting AccountOwner authority:', (error as Error).message || error);
-                    return handleErrorResponse(res, error as Error, 'Failed to set AccountOwner authority');
-                }
-            } else {
-                console.log('ℹ️ immutableChecked is false, skipping immutable authority process.');
-            }
+                    actionsPerformed.push('Freeze authority');
+                    console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
+                 } catch (error) {
+                     console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
+                     return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
+        }
+             } else {
+                 console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
+             }
+
+
             try {
                 fs.unlinkSync(fullPath);
                 console.log('🗑️ Uploaded image file deleted successfully:', fullPath);
