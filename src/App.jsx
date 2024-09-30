@@ -321,11 +321,18 @@ function App() {
             onLabsMintClick={handleLabsMint}
           />
         </header>
-        {/* Render mint success message */}
         {mintSuccess && (
-            <div className="mint-success-message">
-              <p>{mintSuccess}</p>
-            </div>
+            <MintSuccessMessage
+                mintAddress={mintSuccess.mintAddress}
+                tokenAccount={mintSuccess.tokenAccount}
+                quantity={mintSuccess.quantity}
+                decimals={mintSuccess.decimals}
+                metadataUploadOutput={mintSuccess.metadataUploadOutput}
+                freezeChecked={mintSuccess.freezeChecked}
+                totalCharged={mintSuccess.totalCharged}
+                paymentType={mintSuccess.paymentType}
+                transactionLink={mintSuccess.transactionLink}
+            />
         )}
       </div>
       <Footer />
