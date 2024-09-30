@@ -68,15 +68,16 @@ export async function createMetadata(
     const transaction = new Transaction();
 
     let createMetadataAccountInstruction;
-    const updateAuthority = !immutableChecked ? PublicKey.default : user.publicKey;
-    const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
+    const updateAuthority = !immutableChecked ? user.publicKey : PublicKey.default;
+   // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
     if ( freezeChecked || mintChecked || immutableChecked) {
-        console.log("Mint is checked; setting appropriate fields.");
+        console.log("updateAuthority: ", updateAuthority);
+        console.log("one of the options is checked; setting appropriate fields.");
         createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
             {
                 metadata: metadataPDA,
                 mint: tokenMintAccount,
-                mintAuthority: mintAuthority,
+                mintAuthority: user.publicKey,
                 payer: user.publicKey,
                 updateAuthority: updateAuthority,
             },
