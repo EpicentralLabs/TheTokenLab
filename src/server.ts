@@ -22,6 +22,8 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static(path.join(__dirname, 'build')));
+
 // Backend Port Configuration
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
@@ -32,7 +34,7 @@ const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (origin && origin.startsWith(allowedOrigin)) {
+        if (origin && origin.includes(allowedOrigin.replace(/:\d+$/, ''))) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -53,7 +55,12 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         message: err.message || 'Internal Server Error',
     });
 });
+app.use(express.static(path.join(__dirname, 'build')));
 
+// Fallback to React index.html for client-side routing
+app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
