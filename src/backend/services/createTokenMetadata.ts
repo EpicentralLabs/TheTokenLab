@@ -68,8 +68,8 @@ export async function createMetadata(
     const transaction = new Transaction();
 
     let createMetadataAccountInstruction;
-
-    if (freezeChecked) {
+    const updateAuthority = freezeChecked ? user.publicKey : PublicKey.default;
+    if (immutableChecked) {
         console.log("Freeze is checked; setting appropriate fields.");
         createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
             {
@@ -77,15 +77,13 @@ export async function createMetadata(
                 mint: tokenMintAccount,
                 mintAuthority: user.publicKey,
                 payer: user.publicKey,
-                updateAuthority: user.publicKey,
+                updateAuthority: updateAuthority,
             },
             {
                 createMetadataAccountArgsV3: {
                     collectionDetails: null,
                     data: metadataData,
                     isMutable: !immutableChecked,
-                    // Additional fields can be set here if needed when freezeChecked is true
-                    // e.g., freezeAuthority: user.publicKey
                 },
             }
         );
@@ -97,14 +95,13 @@ export async function createMetadata(
                 mint: tokenMintAccount,
                 mintAuthority: user.publicKey,
                 payer: user.publicKey,
-                updateAuthority: user.publicKey,
+                updateAuthority: updateAuthority,
             },
             {
                 createMetadataAccountArgsV3: {
                     collectionDetails: null,
                     data: metadataData,
                     isMutable: !immutableChecked,
-                    // Additional fields can be set here if needed when freezeChecked is false
                 },
             }
         );
