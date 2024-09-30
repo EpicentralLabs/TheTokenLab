@@ -4,13 +4,13 @@ import {
     Connection,
     PublicKey,
     Transaction,
-    sendAndConfirmTransaction,
+    sendAndConfirmTransaction, clusterApiUrl,
 } from "@solana/web3.js";
 import { createCreateMetadataAccountV3Instruction } from "@metaplex-foundation/mpl-token-metadata";
 
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-
+const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
+const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 async function checkConnection() {
     try {
         const version = await connection.getVersion();

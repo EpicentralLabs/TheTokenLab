@@ -3,7 +3,8 @@ import {createRpc, Rpc,} from "@lightprotocol/stateless.js";
 // @ts-ignore
 import {createMint, mintTo, transfer,} from "@lightprotocol/compressed-token";
 import {Keypair} from "@solana/web3.js";
-
+import dotenv from 'dotenv';
+dotenv.config();
 /**
  * Confirms a transaction with exponential backoff to handle rate limits.
  */
@@ -40,10 +41,16 @@ async function main(): Promise<void> {
   const payer = Keypair.generate();
   const tokenRecipient = Keypair.generate();
 
-  // Use your Helius Devnet RPC endpoint with your API key
-  const API_KEY = "504a8684-9c3a-4840-b922-3f5764eefb36"; // Replace with your actual API key
+  const API_KEY = process.env.HELIUS_API_KEY;
+
+  if (!API_KEY) {
+    throw new Error('❌ Missing Helius API key. Please set the HELIUS_API_KEY environment variable.');
+  }
+
   const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
-  const connection: Rpc = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
+  const connection = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
+
+  console.log(`🔗 Connected to Helius RPC at: ${RPC_ENDPOINT}`);
 
   // Define the number of decimals and desired total supply
   const decimals = 9; // Number of decimal places for your token
