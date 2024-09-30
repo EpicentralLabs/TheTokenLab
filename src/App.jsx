@@ -92,13 +92,13 @@ function App() {
     if (!validateInputs()) {
       return;
     }
+    const sanitizedQuantity = quantity.replace(/,/g, '');
 
-    // Create FormData for the API request
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', quantity);
+    mintData.append('quantity', sanitizedQuantity);
     mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
@@ -110,7 +110,7 @@ function App() {
       tokenName,
       tokenSymbol,
       userPublicKey,
-      quantity,
+      quantity: sanitizedQuantity,
       freezeChecked,
       mintChecked,
       immutableChecked,
@@ -129,7 +129,7 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: quantity,
+          quantity: sanitizedQuantity,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,
@@ -201,11 +201,8 @@ function App() {
     mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
   };
 
-  // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
-    // Update the imageURI state with the new URI
     setImageURI(uri)
-    // Log the updated URI to the console for debugging
     console.log('Image URI updated:', uri)
   }
 
