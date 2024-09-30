@@ -78,7 +78,22 @@ function App() {
   }, [mintChecked, freezeChecked, immutableChecked])
 
 
+  const validateInputs = () => {
+    let errors = {
+      tokenName: !tokenName,
+      tokenSymbol: !tokenSymbol,
+      quantity: !quantity,
+      decimals: !decimals,
+    };
 
+    setInputErrors(errors);
+
+    if (Object.values(errors).includes(true)) {
+      alert('All fields are required.');
+      return false;
+    }
+    return true;
+  };
 
   const mintTokens = async (paymentType) => {
     if (!userPublicKey) {
@@ -144,25 +159,24 @@ function App() {
       }
 
       const data = await response.json();
-
       console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput } = data;
-      console.log ('mintAddress:', mintAddress);
-      console.log ('tokenAccount:', tokenAccount);
-      console.log ('metadataUploadOutput:', metadataUploadOutput);
+      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
+      console.log('mintAddress:', mintAddress);
+      console.log('tokenAccount:', tokenAccount);
+      console.log('metadataUploadOutput:', metadataUploadOutput);
       const transactionLink = data.explorerLink;
-      console.log ('transactionLink:', transactionLink);
-      const totalCharged = data.totalCharged;
+      console.log('transactionLink:', transactionLink);
+
       setMintSuccess({
-        mintAddress: data.mintAddress,
-        tokenAccount: data.tokenAccount,
+        mintAddress,
+        tokenAccount,
         quantity,
         decimals,
-        metadataUploadOutput: data.metadataUploadOutput,
+        metadataUploadOutput,
         freezeChecked,
-        totalCharged: data.totalCharged,
+        totalCharged,
         paymentType,
-        transactionLink: data.explorerLink,
+        transactionLink,
       });
       console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
@@ -177,22 +191,6 @@ function App() {
     setIsDecimalsError(errors.decimals);
   }
 
-  const validateInputs = () => {
-    let errors = {
-      tokenName: !tokenName,
-      tokenSymbol: !tokenSymbol,
-      quantity: !quantity,
-      decimals: !decimals,
-    };
-
-    setInputErrors(errors);
-
-    if (Object.values(errors).includes(true)) {
-      alert('All fields are required.');
-      return false;
-    }
-    return true;
-  };
 
 
   const handleSolMint = () => {
