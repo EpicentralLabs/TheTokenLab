@@ -17,7 +17,6 @@ import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
-import Compress from './components/ZKcompress'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
 
@@ -120,7 +119,7 @@ function App() {
     });
 
     try {
-      const response = await fetch(`https://epicentral-labs.vercel.app/api/mint`, {
+      const response = await fetch(`${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
