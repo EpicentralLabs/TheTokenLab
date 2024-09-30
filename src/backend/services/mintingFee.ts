@@ -34,13 +34,43 @@ export async function chargeMintingFee(
     let totalFee: number = 0;
 
     if (paymentType === 'SOL') {
-        const lamports = feeAmount * 10 ** 9; // Convert to lamports
+        const lamports = feeAmount * 10 ** 9;
         const payerBalance = await connection.getBalance(payer.publicKey);
         console.log(`💰 Payer balance: ${payerBalance / 10 ** 9} SOL`);
+        const airdropEnabled = process.env.AIRDROP_IF_INSUFFICIENT_FUNDS === 'True';
 
         if (payerBalance < lamports) {
-            throw new Error('❌ Insufficient funds in payer account for the transaction.');
+            console.log('❌ Insufficient funds in payer account for the transaction.');
+
+            if (airdropEnabled) {
+                console.log('🔄 Payer has insufficient funds, requesting airdrop...');
+
+                const airdropSignature = await connection.requestAirdrop(
+                    payer.publicKey,
+                    2 * 10 ** 9
+                );
+
+                const latestBlockhash = await connection.getLatestBlockhash();
+                await connection.confirmTransaction({
+                    signature: airdropSignature,
+                    blockhash: latestBlockhash.blockhash,
+                    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                });
+
+                console.log('✅ Airdrop successful!');
+
+
+                const newPayerBalance = await connection.getBalance(payer.publicKey);
+                console.log(`💰 New payer balance: ${newPayerBalance / 10 ** 9} SOL`);
+
+                if (newPayerBalance < lamports) {
+                    throw new Error('❌ Insufficient funds in payer account even after airdrop.');
+                }
+            } else {
+                throw new Error('❌ Insufficient funds in payer account, and airdrop is disabled.');
+            }
         }
+
 
         const transferInstruction: TransactionInstruction = SystemProgram.transfer({
             fromPubkey: payer.publicKey,
@@ -58,9 +88,6 @@ export async function chargeMintingFee(
         const versionedTransaction = new VersionedTransaction(message);
         versionedTransaction.sign([payer]);
 
-        // console.log('Prepared Versioned Transaction:', JSON.stringify(versionedTransaction, null, 2));
-
-        // Simulate the transaction
         console.log('🔍 Simulating transaction...');
         const simulationResult = await connection.simulateTransaction(versionedTransaction);
         console.log('Simulation Result:', simulationResult);
