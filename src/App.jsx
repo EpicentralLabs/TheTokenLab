@@ -16,6 +16,7 @@ import MintSwitch from './components/Mint-switch'
 import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import ZKWarningMessage from './components/ZKWarningMessage'
 import Compress from './components/ZKCompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
@@ -54,8 +55,11 @@ function App() {
   const [freezeChecked, setFreezeChecked] = useState(false)
   // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
+  // State for ZK compression switch
+  const [zkChecked, setZKChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+  
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
@@ -284,17 +288,13 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
-              <Compress
-            tokenName={tokenName}
-            tokenSymbol={tokenSymbol}
+              <Compress isChecked={zkChecked} setIsChecked={setZKChecked}
+            
             quantity={quantity}
             decimals={decimals}
-            imageURI={imageURI}  // Pass the imageURI to InitializeMint
-            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
-            setIsTokenNameError={setIsTokenNameError}
-            setIsTokenSymbolError={setIsTokenSymbolError}
             setIsQuantityError={setIsQuantityError}
             setIsDecimalsError={setIsDecimalsError} />
+            {(zkChecked) && (<ZKWarningMessage className={showWarning ? 'fade-in' : ''} />)}
             </div>
           </section>
           
