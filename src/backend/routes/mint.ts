@@ -7,6 +7,7 @@ import { createMetadata } from '../services/createTokenMetadata';
 import { uploadImageToPinata, uploadImageAndPinJSON } from "../services/pinata";
 import {chargeMintingFee} from "../services/mintingFee";
 import {fetchPrices} from "../services/priceService";
+import {AuthorityType, setAuthority} from "@solana/spl-token";
 const router: Router = express.Router();
 
 interface MintRequestBody {
@@ -73,7 +74,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
 
         if (!imagePath) {
             console.error('❌ Validation Error: Invalid image path:', imagePath);
-            return res.status(400).json({ message: 'Invalid image path provided.' });
+            return res.status(400).json({message: 'Invalid image path provided.'});
         }
         // 2. Validate payment type
         if (!['SOL', 'LABS'].includes(paymentType)) {
@@ -164,8 +165,9 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
 
         let userTokenAccount: PublicKey;
         let tokenMintAccount: PublicKey;
+        let result: any;
         try {
-            const result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
+            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
             tokenMintAccount = result.tokenMint;
             userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
@@ -175,7 +177,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         }
 
         try {
-            let transactionLink = await createMetadata(
+            const transactionLink = await createMetadata(
                 tokenName,
                 tokenSymbol,
                 userPublicKeyInstance,
@@ -186,28 +188,95 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 freezeChecked,
                 mintChecked,
                 immutableChecked,
-                tokenMintAccount // Pass the tokenMintAccount
+                tokenMintAccount
             );
             console.log('✅ Token metadata created for:', tokenName);
-            if (mintChecked) {
-                TransferAuthority(connection, payer, userTokenAccount, userPublicKeyInstance);
-            }
 
 
-            return res.status(200).json({
-                message: `✅ Minted ${quantity} tokens with ${parsedDecimals} decimals and metadata created successfully. Transaction: ${transactionLink}`,
-                explorerLink: transactionLink,
-                mintAddress: tokenMintAccount.toString(),
-                tokenAccount: userTokenAccount.toString(),
-                metadataUploadOutput: `Metadata created at: ${transactionLink}`,
-            });
         } catch (error) {
             console.error('❌ Error during minting or metadata creation:', (error as Error).message || error);
-            return res.status(500).json({ error: 'Failed to mint tokens or create metadata.' });
+            return res.status(500).json({error: 'Failed to mint tokens or create metadata.'});
         }
-    } catch (error) {
-        console.error('❌ Unexpected Error:', (error as Error).message || error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+try {
+    if (mintChecked) {
+        console.log('🔄 Starting process to set MintTokens authority...');
+        await setAuthority(
+            connection,
+            payer,
+            tokenMintAccount,
+            payer.publicKey,
+            AuthorityType.MintTokens,
+            userPublicKeyInstance
+        );
+        console.log(`✅ Successfully minted ${quantity} tokens with ${parsedDecimals} decimals.`);
+
+        return res.status(200).json({
+            message: `✅ Minted ${quantity} tokens with ${parsedDecimals} decimals and metadata created successfully.`,
+            explorerLink: transactionLink,
+            mintAddress: tokenMintAccount.toString(),
+            tokenAccount: userTokenAccount.toString(),
+            metadataUploadOutput: `Metadata created at: ${transactionLink}`,
+        });
+    } else {
+        console.log('ℹ️ mintChecked is false, skipping minting process.');
+    }
+
+    if (freezeChecked) {
+        console.log('🔄 Starting process to set FreezeAccount authority...');
+        await setAuthority(
+            connection,
+            payer,
+            tokenMintAccount,
+            payer.publicKey,
+            AuthorityType.FreezeAccount,
+            userPublicKeyInstance
+        );
+        console.log('✅ Successfully set freeze authority.');
+    } else {
+        console.log('ℹ️ freezeChecked is false, skipping freeze authority process.');
+    }
+
+    if (immutableChecked) {
+        console.log('🔄 Starting process to set AccountOwner (Immutable) authority...');
+        await setAuthority(
+            connection,
+            payer,
+            tokenMintAccount,
+            payer.publicKey,
+            AuthorityType.AccountOwner,
+            userPublicKeyInstance
+        );
+        console.log('✅ Successfully set account owner authority (immutable).');
+    } else {
+        console.log('ℹ️ immutableChecked is false, skipping immutable process.');
+    }
+
+} catch (error) {
+    const errorMessage = (error as Error).message || error;
+
+    // @ts-ignore
+    if (errorMessage.includes('mint')) {
+        console.error('❌ Error: Failed to set mint authority:', errorMessage);
+        return res.status(500).json({ error: 'Failed to set mint authority.' });
+    } else { // @ts-ignore
+        if (errorMessage.includes('freeze')) {
+                console.error('❌ Error: Failed to set freeze authority:', errorMessage);
+                return res.status(500).json({ error: 'Failed to set freeze authority.' });
+            } else { // @ts-ignore
+            if (errorMessage.includes('AccountOwner')) {
+                            console.error('❌ Error: Failed to set immutable (AccountOwner) authority:', errorMessage);
+                            return res.status(500).json({ error: 'Failed to set immutable authority.' });
+                        } else {
+                            console.error('❌ Unexpected Error:', errorMessage);
+                            return res.status(500).json({ error: 'Internal Server Error' });
+                        }
+        }
+    }
+}   } catch (error) {
+    console.error('❌ Error:', (error as Error).message || error);
+    return res.status(500).json({error: 'Internal Server Error'});
     }
 });
+
 export default router;
+
