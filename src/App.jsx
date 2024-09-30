@@ -85,6 +85,7 @@ function App() {
       alert('Please connect your wallet first');
       return;
     }
+    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
     console.log(`Initializing mint with ${paymentType} payment`);
 
     const imagePath = imageFile;
@@ -146,7 +147,12 @@ function App() {
 
       console.log('Mint successful!', data);
       const { mintAddress, tokenAccount, metadataUploadOutput } = data;
+      console.log ('mintAddress:', mintAddress);
+      console.log ('tokenAccount:', tokenAccount);
+      console.log ('metadataUploadOutput:', metadataUploadOutput);
+      console.log ('totalCharged:', data.totalCharged);
       const transactionLink = data.explorerLink;
+      console.log ('transactionLink:', transactionLink);
       const totalCharged = data.totalCharged;
       setMintSuccess({
         mintAddress: data.mintAddress,
