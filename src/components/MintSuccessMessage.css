@@ -1,0 +1,56 @@
+.mint-success-message {
+    background-color: #003b26;
+    color: #00be79;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 40px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid #00FFA3;
+}
+
+.mint-success-message.fade-in {
+    opacity: 1;
+}
+
+.mint-success-message:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 163, 0.7);
+}
+
+.mint-success-title {
+    font-family: 'p-medium', sans-serif;
+    font-size: 1.5rem;
+    margin: 10px 0;
+    color: #00FFA3;
+}
+
+.mint-success-subtitle {
+    font-family: 'p-light', sans-serif;
+    font-size: 1.2rem;
+    margin: 5px 0;
+    color: #2c3e50;
+}
+
+.mint-success-details {
+    margin: 15px 0;
+}
+
+.detail-item {
+    margin: 5px 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #08d008;
+}
+
+.detail-label {
+    font-weight: bold;
+    margin-right: 5px;
+    color: #000000;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

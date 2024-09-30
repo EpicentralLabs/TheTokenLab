@@ -19,6 +19,7 @@ import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Compress from './components/ZKcompress'
 import Footer from './components/Footer'
+import MintSuccessMessage from './components/MintSuccessMessage';
 import 'dotenv/config';
 
 
@@ -41,7 +42,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
-
+  const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
     return hoverEffect()
@@ -92,13 +93,13 @@ function App() {
     if (!validateInputs()) {
       return;
     }
+    const sanitizedQuantity = quantity.replace(/,/g, '');
 
-    // Create FormData for the API request
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', quantity);
+    mintData.append('quantity', sanitizedQuantity);
     mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
@@ -110,7 +111,7 @@ function App() {
       tokenName,
       tokenSymbol,
       userPublicKey,
-      quantity,
+      quantity: sanitizedQuantity,
       freezeChecked,
       mintChecked,
       immutableChecked,
@@ -129,7 +130,7 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: quantity,
+          quantity: sanitizedQuantity,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,
@@ -148,18 +149,19 @@ function App() {
       console.log('Mint successful!', data);
       const { mintAddress, tokenAccount, metadataUploadOutput } = data;
       const transactionLink = data.explorerLink;
+      const totalCharged = data.totalCharged;
+      setMintSuccess({
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
+        quantity,
+        decimals,
+        metadataUploadOutput: data.metadataUploadOutput,
+        freezeChecked,
+        totalCharged: data.totalCharged,
+        paymentType,
+        transactionLink: data.explorerLink,
+      });
 
-      alert(`
-        🎉 Mint Successful! 🎉
-        
-        ✅ Mint Address: ${mintAddress}
-        📦 Token Account: ${tokenAccount}
-        🏷️ Quantity Minted: ${quantity} tokens
-        🔢 Decimals: ${decimals}
-        📄 Metadata: ${metadataUploadOutput}
-       
-        🔗 Explorer Link: ${transactionLink}
-        `);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
@@ -200,11 +202,8 @@ function App() {
     mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
   };
 
-  // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
-    // Update the imageURI state with the new URI
     setImageURI(uri)
-    // Log the updated URI to the console for debugging
     console.log('Image URI updated:', uri)
   }
 
@@ -319,22 +318,20 @@ function App() {
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
           />
-          
-          
-          {/* Compress component */}
-          <Compress
-            tokenName={tokenName}
-            tokenSymbol={tokenSymbol}
-            quantity={quantity}
-            decimals={decimals}
-            imageURI={imageURI}  // Pass the imageURI to InitializeMint
-            userPublicKey={userPublicKey} // Pass the userPublicKey to InitializeMint
-            setIsTokenNameError={setIsTokenNameError}
-            setIsTokenSymbolError={setIsTokenSymbolError}
-            setIsQuantityError={setIsQuantityError}
-            setIsDecimalsError={setIsDecimalsError} />
-
         </header>
+        {mintSuccess && (
+            <MintSuccessMessage
+                mintAddress={mintSuccess.mintAddress}
+                tokenAccount={mintSuccess.tokenAccount}
+                quantity={mintSuccess.quantity}
+                decimals={mintSuccess.decimals}
+                metadataUploadOutput={mintSuccess.metadataUploadOutput}
+                freezeChecked={mintSuccess.freezeChecked}
+                totalCharged={mintSuccess.totalCharged}
+                paymentType={mintSuccess.paymentType}
+                transactionLink={mintSuccess.transactionLink}
+            />
+        )}
       </div>
       <Footer />
     </div>

@@ -13,24 +13,16 @@ const app = express();
 
 // Connect to Solana
 const network: Cluster = 'devnet';
-const connection: Connection = new Connection(clusterApiUrl(network), 'confirmed');
-const expectedUrl: string = clusterApiUrl(network);
-console.log(`Connected to: ${expectedUrl}`);
+const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT || clusterApiUrl(network);
+const connection = new Connection(rpcEndpoint, 'confirmed');
+
+console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 
 // Middleware
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-
-// Environment checks
-if (process.env.APP_ENV === 'production' && connection.rpcEndpoint.includes('devnet')) {
-    throw new Error('This application is set to production but is connected to the devnet cluster.');
-}
-if (connection.rpcEndpoint !== expectedUrl) {
-    throw new Error(`Unexpected RPC endpoint: Expected ${expectedUrl}, but got ${connection.rpcEndpoint}.`);
-}
-
-// Set up port
+// Backend Port Configuration
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
