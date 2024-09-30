@@ -85,7 +85,6 @@ function App() {
       alert('Please connect your wallet first');
       return;
     }
-    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
     console.log(`Initializing mint with ${paymentType} payment`);
 
     const imagePath = imageFile;
@@ -93,6 +92,7 @@ function App() {
       return;
     }
     const sanitizedQuantity = quantity.replace(/,/g, '');
+    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
 
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
@@ -150,7 +150,6 @@ function App() {
       console.log ('mintAddress:', mintAddress);
       console.log ('tokenAccount:', tokenAccount);
       console.log ('metadataUploadOutput:', metadataUploadOutput);
-      console.log ('totalCharged:', data.totalCharged);
       const transactionLink = data.explorerLink;
       console.log ('transactionLink:', transactionLink);
       const totalCharged = data.totalCharged;
@@ -165,7 +164,7 @@ function App() {
         paymentType,
         transactionLink: data.explorerLink,
       });
-
+      console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
