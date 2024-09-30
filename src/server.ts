@@ -30,7 +30,7 @@ console.log(`Backend is running on port ${port}`);
 const allowedOrigin: string = process.env.REACT_APP_PUBLIC_URL as string;
 
 app.use(cors({
-    origin: allowedOrigin,
+    origin: 'https://dev.epicentrallabs.com',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
