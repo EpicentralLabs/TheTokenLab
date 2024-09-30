@@ -28,9 +28,16 @@ console.log(`Backend is running on port ${port}`);
 
 
 // CORS configuration
-const allowedOrigin: string = `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_FRONTEND_PORT}`;
+const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
+
 app.use(cors({
-    origin: allowedOrigin,
+    origin: (origin, callback) => {
+        if (origin && origin.startsWith(allowedOrigin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
