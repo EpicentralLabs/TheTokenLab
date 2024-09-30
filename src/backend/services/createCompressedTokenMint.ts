@@ -1,13 +1,8 @@
-import {
-  Rpc,
-  createRpc,
-} from "@lightprotocol/stateless.js";
-import {
-  createMint,
-  mintTo,
-  transfer,
-} from "@lightprotocol/compressed-token";
-import { Keypair, PublicKey } from "@solana/web3.js";
+// @ts-ignore
+import {createRpc, Rpc,} from "@lightprotocol/stateless.js";
+// @ts-ignore
+import {createMint, mintTo, transfer,} from "@lightprotocol/compressed-token";
+import {Keypair} from "@solana/web3.js";
 
 /**
  * Confirms a transaction with exponential backoff to handle rate limits.
@@ -48,9 +43,7 @@ async function main(): Promise<void> {
   // Use your Helius Devnet RPC endpoint with your API key
   const API_KEY = "504a8684-9c3a-4840-b922-3f5764eefb36"; // Replace with your actual API key
   const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
-  const COMPRESSION_RPC_ENDPOINT = RPC_ENDPOINT;
-
-  const connection: Rpc = createRpc(RPC_ENDPOINT, COMPRESSION_RPC_ENDPOINT);
+  const connection: Rpc = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
 
   // Define the number of decimals and desired total supply
   const decimals = 9; // Number of decimal places for your token
