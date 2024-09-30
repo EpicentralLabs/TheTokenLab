@@ -3,14 +3,13 @@ import {
     Connection,
     Keypair,
     SystemProgram,
-    Transaction,
     VersionedTransaction,
-    TransactionMessage
+    TransactionMessage,
+    TransactionInstruction,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, getOrCreateAssociatedTokenAccount, transfer } from '@solana/spl-token';
 import dotenv from 'dotenv';
 dotenv.config();
-
 
 export async function chargeMintingFee(
     connection: Connection,
@@ -18,22 +17,68 @@ export async function chargeMintingFee(
     userPublicKey: PublicKey,
     paymentType: string,
     feeAmount: number
-): Promise<void> {
+): Promise<number> {
     const LABS_TOKEN_MINT_ADDRESS = process.env.LABS_TOKEN_MINT_ADDRESS;
-    if (!LABS_TOKEN_MINT_ADDRESS) {
-        throw new Error('Missing LABS_TOKEN_MINT_ADDRESS environment variable');
+    const TREASURY_WALLET_SOL = process.env.TREASURY_WALLET_SOL;
+    const TREASURY_WALLET_LABS = process.env.TREASURY_WALLET_LABS;
+
+    if (!LABS_TOKEN_MINT_ADDRESS || !TREASURY_WALLET_SOL || !TREASURY_WALLET_LABS) {
+        throw new Error('❌ Missing environment variable(s)');
     }
 
+    console.log('🔍 Fetching latest blockhash...');
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    console.log('🪙 Latest blockhash retrieved:', blockhash);
+
+    let totalCharged: number = 0;
+    let totalFee: number = 0;
 
     if (paymentType === 'SOL') {
-        // Create SOL transfer instruction
-        const transferInstruction = SystemProgram.transfer({
-            fromPubkey: userPublicKey, // The sender of the fees
-            toPubkey: payer.publicKey, // The recipient of the fees
-            lamports: feeAmount, // Convert to lamports (1 SOL = 10^9 lamports)
+        const lamports = feeAmount * 10 ** 9;
+        const payerBalance = await connection.getBalance(payer.publicKey);
+        console.log(`💰 Payer balance: ${payerBalance / 10 ** 9} SOL`);
+        const airdropEnabled = process.env.AIRDROP_IF_INSUFFICIENT_FUNDS === 'True';
+
+        if (payerBalance < lamports) {
+            console.log('❌ Insufficient funds in payer account for the transaction.');
+
+            if (airdropEnabled) {
+                console.log('🔄 Payer has insufficient funds, requesting airdrop...');
+
+                const airdropSignature = await connection.requestAirdrop(
+                    payer.publicKey,
+                    2 * 10 ** 9
+                );
+
+                const latestBlockhash = await connection.getLatestBlockhash();
+                await connection.confirmTransaction({
+                    signature: airdropSignature,
+                    blockhash: latestBlockhash.blockhash,
+                    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                });
+
+                console.log('✅ Airdrop successful!');
+
+
+                const newPayerBalance = await connection.getBalance(payer.publicKey);
+                console.log(`💰 New payer balance: ${newPayerBalance / 10 ** 9} SOL`);
+
+                if (newPayerBalance < lamports) {
+                    throw new Error('❌ Insufficient funds in payer account even after airdrop.');
+                }
+            } else {
+                throw new Error('❌ Insufficient funds in payer account, and airdrop is disabled.');
+            }
+        }
+
+
+        const transferInstruction: TransactionInstruction = SystemProgram.transfer({
+            fromPubkey: payer.publicKey,
+            toPubkey: new PublicKey(TREASURY_WALLET_SOL),
+            lamports,
         });
 
+        console.log('✉️ Creating transaction message...');
         const message = new TransactionMessage({
             payerKey: payer.publicKey,
             recentBlockhash: blockhash,
@@ -41,58 +86,78 @@ export async function chargeMintingFee(
         }).compileToV0Message();
 
         const versionedTransaction = new VersionedTransaction(message);
-
         versionedTransaction.sign([payer]);
 
+        console.log('🔍 Simulating transaction...');
+        const simulationResult = await connection.simulateTransaction(versionedTransaction);
+        console.log('Simulation Result:', simulationResult);
+
+        if (simulationResult.value.err) {
+            console.error('❌ Simulation failed:', simulationResult.value.err);
+            throw new Error('Transaction simulation failed.');
+        }
+
+        console.log('🚀 Sending transaction...');
         const signature = await connection.sendTransaction(versionedTransaction);
-
-        await connection.confirmTransaction(
-            {
-                signature,
-                blockhash,
-                lastValidBlockHeight,
-            },
-            'confirmed'
-        );
-
-        console.log('✅ SOL fees charged successfully.');
+        console.log('🔗 Transaction signature:', signature);
+        totalCharged = lamports;
+        try {
+            await connection.confirmTransaction(
+                { signature, blockhash, lastValidBlockHeight },
+                'confirmed'
+            );
+            console.log('✅ SOL fees charged successfully to treasury wallet.');
+        } catch (error) {
+            console.error('❌ Confirmation failed:', error);
+        }
     } else if (paymentType === 'LABS') {
-        // Charge LABS token fees
+        console.log('💸 Preparing LABS transfer to treasury wallet...');
         const labsMint = new PublicKey(LABS_TOKEN_MINT_ADDRESS);
-        const userLabsAccount = await getOrCreateAssociatedTokenAccount(
-            connection, // Connection
-            payer, // Payer
-            labsMint, // Mint
-            userPublicKey // Owner
-        );
+        console.log('LABS Token Mint Address:', labsMint.toBase58());
 
-        const payerLabsAccount = await getOrCreateAssociatedTokenAccount(
+        console.log('🔍 Getting or creating user LABS token account...');
+        const userLabsAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             payer,
             labsMint,
-            payer.publicKey
+            userPublicKey
         );
 
+        console.log('User LABS Token Account Address:', userLabsAccount.address.toBase58());
+
+        console.log('🔍 Getting or creating treasury LABS token account...');
+        const treasuryLabsAccount = await getOrCreateAssociatedTokenAccount(
+            connection,
+            payer,
+            labsMint,
+            new PublicKey(TREASURY_WALLET_LABS)
+        );
+
+        console.log('Treasury LABS Token Account Address:', treasuryLabsAccount.address.toBase58());
+
+        console.log('🚀 Sending LABS tokens to treasury wallet...');
         const signature = await transfer(
             connection,
             payer,
             userLabsAccount.address,
-            payerLabsAccount.address,
+            treasuryLabsAccount.address,
             payer.publicKey,
-            feeAmount
+            feeAmount // Amount of LABS tokens
         );
 
-        await connection.confirmTransaction(
-            {
-                signature, // Signature
-                blockhash, // Blockhash
-                lastValidBlockHeight, // Last valid block height
-            },
-            'confirmed' // Commitment
-        );
-
-        console.log('✅ LABS fees charged successfully.');
+        console.log('LABS Transfer Signature:', signature);
+        totalCharged = feeAmount;
+        try {
+            await connection.confirmTransaction(
+                { signature, blockhash, lastValidBlockHeight },
+                'confirmed'
+            );
+            console.log('✅ LABS fees charged successfully to treasury wallet.');
+        } catch (error) {
+            console.error('❌ Confirmation failed:', error);
+        }
     } else {
-        throw new Error('Invalid payment type.');
+        throw new Error('❌ Invalid payment type. Expected "SOL" or "LABS".');
     }
+    return totalCharged;
 }

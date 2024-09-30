@@ -20,7 +20,7 @@ import ZKWarningMessage from './components/ZKWarningMessage'
 import Compress from './components/ZKCompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
-import 'dotenv/config';
+import MintSuccessMessage from './components/MintSuccessMessage';
 
 
 function App() {
@@ -42,7 +42,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
-
+  const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
     return hoverEffect()
@@ -83,99 +83,6 @@ function App() {
   }, [mintChecked, freezeChecked, immutableChecked])
 
 
-
-
-  const mintTokens = async (paymentType) => {
-    if (!userPublicKey) {
-      alert('Please connect your wallet first');
-      return;
-    }
-    console.log(`Initializing mint with ${paymentType} payment`);
-
-    const imagePath = imageFile;
-    if (!validateInputs()) {
-      return;
-    }
-
-    // Create FormData for the API request
-    const mintData = new FormData();
-    mintData.append('tokenName', tokenName);
-    mintData.append('tokenSymbol', tokenSymbol);
-    mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', quantity);
-    mintData.append('freezeChecked', freezeChecked);
-    mintData.append('mintChecked', mintChecked);
-    mintData.append('immutableChecked', immutableChecked);
-    mintData.append('decimals', decimals);
-    mintData.append('paymentType', paymentType);
-    mintData.append('imagePath', imagePath);
-
-    console.log('Mint data being sent:', {
-      tokenName,
-      tokenSymbol,
-      userPublicKey,
-      quantity,
-      freezeChecked,
-      mintChecked,
-      immutableChecked,
-      decimals,
-      paymentType,
-      imagePath,
-    });
-
-    try {
-      const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tokenName: tokenName,
-          tokenSymbol: tokenSymbol,
-          userPublicKey: userPublicKey,
-          quantity: quantity,
-          freezeChecked: freezeChecked,
-          mintChecked: mintChecked,
-          immutableChecked: immutableChecked,
-          decimals: decimals,
-          imagePath: imagePath,
-          paymentType: paymentType,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Minting failed');
-      }
-
-      const data = await response.json();
-
-      console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput } = data;
-      const transactionLink = data.explorerLink;
-
-      alert(`
-        🎉 Mint Successful! 🎉
-        
-        ✅ Mint Address: ${mintAddress}
-        📦 Token Account: ${tokenAccount}
-        🏷️ Quantity Minted: ${quantity} tokens
-        🔢 Decimals: ${decimals}
-        📄 Metadata: ${metadataUploadOutput}
-       
-        🔗 Explorer Link: ${transactionLink}
-        `);
-    } catch (error) {
-      console.error(`${paymentType} minting failed:`, error);
-      alert(`Minting failed: ${error.message}`);
-    }
-  };
-  function setInputErrors(errors) {
-    setIsTokenNameError(errors.tokenName);
-    setIsTokenSymbolError(errors.tokenSymbol);
-    setIsQuantityError(errors.quantity);
-    setIsDecimalsError(errors.decimals);
-  }
-
   const validateInputs = () => {
     let errors = {
       tokenName: !tokenName,
@@ -193,6 +100,103 @@ function App() {
     return true;
   };
 
+  const mintTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    console.log(`Initializing mint with ${paymentType} payment`);
+
+    const imagePath = imageFile;
+    if (!validateInputs()) {
+      return;
+    }
+    const sanitizedQuantity = quantity.replace(/,/g, '');
+    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
+
+    const mintData = new FormData();
+    mintData.append('tokenName', tokenName);
+    mintData.append('tokenSymbol', tokenSymbol);
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', sanitizedQuantity);
+    mintData.append('freezeChecked', freezeChecked);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('immutableChecked', immutableChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+    mintData.append('imagePath', imagePath);
+
+    console.log('Mint data being sent:', {
+      tokenName,
+      tokenSymbol,
+      userPublicKey,
+      quantity: sanitizedQuantity,
+      freezeChecked,
+      mintChecked,
+      immutableChecked,
+      decimals,
+      paymentType,
+      imagePath,
+    });
+
+    try {
+      const response = await fetch(`${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenName: tokenName,
+          tokenSymbol: tokenSymbol,
+          userPublicKey: userPublicKey,
+          quantity: sanitizedQuantity,
+          freezeChecked: freezeChecked,
+          mintChecked: mintChecked,
+          immutableChecked: immutableChecked,
+          decimals: decimals,
+          imagePath: imagePath,
+          paymentType: paymentType,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
+
+      const data = await response.json();
+      console.log('Mint successful!', data);
+      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
+      console.log('mintAddress:', mintAddress);
+      console.log('tokenAccount:', tokenAccount);
+      console.log('metadataUploadOutput:', metadataUploadOutput);
+      const transactionLink = data.explorerLink;
+      console.log('transactionLink:', transactionLink);
+
+      setMintSuccess({
+        mintAddress,
+        tokenAccount,
+        quantity,
+        decimals,
+        metadataUploadOutput,
+        freezeChecked,
+        totalCharged,
+        paymentType,
+        transactionLink,
+      });
+      console.log ('totalCharged:', data.totalCharged);
+    } catch (error) {
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
+    }
+  };
+  function setInputErrors(errors) {
+    setIsTokenNameError(errors.tokenName);
+    setIsTokenSymbolError(errors.tokenSymbol);
+    setIsQuantityError(errors.quantity);
+    setIsDecimalsError(errors.decimals);
+  }
+
+
 
   const handleSolMint = () => {
     console.log('Current imageFile state:', imageFile);
@@ -204,11 +208,8 @@ function App() {
     mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
   };
 
-  // Function to handle changes in the image URI (IF any changes occur or are needed)
   const handleImageURIChange = (uri) => {
-    // Update the imageURI state with the new URI
     setImageURI(uri)
-    // Log the updated URI to the console for debugging
     console.log('Image URI updated:', uri)
   }
 
@@ -330,11 +331,20 @@ function App() {
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
           />
-          
-          {/* Compress component */}
-
-          
         </header>
+        {mintSuccess && (
+            <MintSuccessMessage
+                mintAddress={mintSuccess.mintAddress}
+                tokenAccount={mintSuccess.tokenAccount}
+                quantity={mintSuccess.quantity}
+                decimals={mintSuccess.decimals}
+                metadataUploadOutput={mintSuccess.metadataUploadOutput}
+                freezeChecked={mintSuccess.freezeChecked}
+                totalCharged={mintSuccess.totalCharged}
+                paymentType={mintSuccess.paymentType}
+                transactionLink={mintSuccess.transactionLink}
+            />
+        )}
       </div>
       <Footer />
     </div>

@@ -3,8 +3,8 @@ import "dotenv/config";
 import { getKeypairFromEnvironment, getExplorerLink } from "@solana-developers/helpers";
 import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
 
-const connection = new Connection(clusterApiUrl('devnet'));
-
+const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
+const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
 console.log(`🔑 Loaded our keypair securely, Our public key is: ${user.publicKey.toBase58()}`);

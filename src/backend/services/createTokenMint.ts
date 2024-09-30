@@ -3,26 +3,38 @@ import "dotenv/config";
 import { getKeypairFromEnvironment, getExplorerLink } from "@solana-developers/helpers";
 import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
 
-const connection = new Connection(clusterApiUrl('devnet'));
+const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
+const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 
 console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key is: ${user.publicKey.toBase58()}`);
 
-export async function mintToken(parsedDecimals: number, quantity: number, publicKey: PublicKey): Promise<{ tokenMint: PublicKey; userTokenAccount: PublicKey }> {
+// Mint token function
+export async function mintToken(parsedDecimals: number, quantity: number, userPublicKey: PublicKey, freezeChecked: boolean): Promise<{ tokenMint: PublicKey; userTokenAccount: PublicKey; freezeChecked: boolean }> {
     let tokenMint: PublicKey;
+    console.log(`🔗 Using Solana RPC cluster at ${rpcEndpoint}`)
+
+    console.log(`🏦 Creating token mint with ${parsedDecimals} decimals...`);
+    console.log(`💰 Minting ${quantity} tokens to ${userPublicKey.toBase58()}...`);
 
     try {
+        // Create mint and optionally set freeze authority based on freezeChecked
         tokenMint = await createMint(
             connection,
             user,
-            user.publicKey,
-            null,
+            user.publicKey,  // Mint authority
+            !freezeChecked ? null : user.publicKey,  // Freeze authority, set if freezeChecked is true
             parsedDecimals
         );
 
         const link = getExplorerLink("address", tokenMint.toString(), "devnet");
         console.log(`✅ Finished! Created token mint: ${link}`);
+        if (freezeChecked) {
+            console.log(`🔒 Freeze authority has been set for the token mint.`);
+        } else {
+            console.log(`ℹ️ No freeze authority set for the token mint.`);
+        }
     } catch (error) {
         console.error(`❌ Error: Failed to create token mint. ${error instanceof Error ? error.message : error}`);
         throw new Error('Token mint creation failed.');
@@ -31,11 +43,12 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     let userTokenAccount: Account;
 
     try {
+        // Create or retrieve the associated token account for the user
         userTokenAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             user,
             tokenMint,
-            user.publicKey
+            userPublicKey
         );
         console.log(`📦 User token account created or retrieved: ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
@@ -44,14 +57,15 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
     }
 
     try {
+        // Mint tokens to the user's token account
         await mintTo(
             connection,
             user, // Payer
             tokenMint, // Mint
             userTokenAccount.address,
             user.publicKey,
-            BigInt(quantity),
-            [user],
+            quantity,
+            [user], // Signer
         );
         console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
@@ -59,5 +73,5 @@ export async function mintToken(parsedDecimals: number, quantity: number, public
         throw new Error('Token minting failed.');
     }
 
-    return { tokenMint, userTokenAccount: userTokenAccount.address };
+    return { tokenMint, userTokenAccount: userTokenAccount.address, freezeChecked };
 }
