@@ -18,6 +18,7 @@ import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
+import MintSuccessMessage from './components/MintSuccessMessage';
 import 'dotenv/config';
 
 
@@ -40,7 +41,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
-
+  const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
     return hoverEffect()
@@ -147,18 +148,19 @@ function App() {
       console.log('Mint successful!', data);
       const { mintAddress, tokenAccount, metadataUploadOutput } = data;
       const transactionLink = data.explorerLink;
+      const totalCharged = data.totalCharged;
+      setMintSuccess({
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
+        quantity,
+        decimals,
+        metadataUploadOutput: data.metadataUploadOutput,
+        freezeChecked,
+        totalCharged: data.totalCharged,
+        paymentType,
+        transactionLink: data.explorerLink,
+      });
 
-      alert(`
-        🎉 Mint Successful! 🎉
-        
-        ✅ Mint Address: ${mintAddress}
-        📦 Token Account: ${tokenAccount}
-        🏷️ Quantity Minted: ${quantity} tokens
-        🔢 Decimals: ${decimals}
-        📄 Metadata: ${metadataUploadOutput}
-       
-        🔗 Explorer Link: ${transactionLink}
-        `);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
@@ -318,8 +320,13 @@ function App() {
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
           />
-          
         </header>
+        {/* Render mint success message */}
+        {mintSuccess && (
+            <div className="mint-success-message">
+              <p>{mintSuccess}</p>
+            </div>
+        )}
       </div>
       <Footer />
     </div>
