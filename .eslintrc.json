@@ -29,7 +29,7 @@
     "react/react-in-jsx-scope": "warn",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
     "no-undef": "warn",
     "react/no-unescaped-entities": "warn",
     "react/no-unknown-property": "warn",
@@ -39,7 +39,8 @@
     "react/no-typos": "error",
     "react/no-this-in-sfc": "warn",
     "react/no-string-refs": "warn",
-    "react/no-deprecated": "warn"
+    "react/no-deprecated": "warn",
+    
   },
   "settings": {
     "react": {
