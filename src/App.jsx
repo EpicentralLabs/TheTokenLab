@@ -20,7 +20,6 @@ import InitializeMint from './components/Initialize-mint'
 import Compress from './components/ZKcompress'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
-import 'dotenv/config';
 
 
 function App() {
