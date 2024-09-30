@@ -101,12 +101,14 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
                     // Upload the image to the server
                     const result = await uploadFile(file);
                     console.log('File uploaded successfully:', result);
+                    console.log(imagePath)
 
                     setImagePath(result.path);
                     if (onFileUpload && result.path) {
                         onFileUpload(result.path); // Assuming result contains the file path as `result.path`
                     }
-
+                    console.log('File uploaded successfully:', result.path);
+                    console.log('Image path:', result.path);
                     // Notify parent with image URI
                     if (onImageURIChange) {
                         onImageURIChange(fileURL);
