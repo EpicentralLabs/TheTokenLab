@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
 import $ from 'jquery';
-import 'dotenv/config';
 
 function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
@@ -37,7 +36,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
 
         try {
             const response = await $.ajax({
-                url: `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/upload`,
+                url: `https://epicentral-labs.vercel.app/upload`,
                 type: 'POST',
                 data: formData,
                 processData: false, // Don't process the data
