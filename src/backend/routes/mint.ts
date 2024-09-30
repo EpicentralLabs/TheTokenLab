@@ -175,9 +175,9 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
             return res.status(500).json({error: 'Failed to mint tokens'});
         }
-
+        let transactionLink: any;
         try {
-            const transactionLink = await createMetadata(
+             transactionLink = await createMetadata(
                 tokenName,
                 tokenSymbol,
                 userPublicKeyInstance,
