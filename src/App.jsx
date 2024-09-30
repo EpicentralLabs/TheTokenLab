@@ -120,7 +120,7 @@ function App() {
     });
 
     try {
-      const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+      const response = await fetch(`http://${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
