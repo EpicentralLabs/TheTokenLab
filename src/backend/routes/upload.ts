@@ -1,61 +1,51 @@
-// @ts-ignore
 import express, { Router, Request, Response } from 'express';
-// @ts-ignore
-import multer, { FileFilterCallback } from 'multer';
-import * as fs from 'fs';
-import * as crypto from 'crypto';
-import * as path from 'path';
+import multer from 'multer';
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes } from 'firebase/storage'; // Import necessary functions
+import 'dotenv/config';
 
 const router = Router();
 
-// File upload handling
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '..', '..', 'uploads');
+const firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+};
 
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-            console.log(`📁 Created upload directory: ${uploadPath}`);
-        }
-        console.log(`📤 Uploading file to: ${uploadPath}`);
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const hashedName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
-        console.log(`📝 Generated filename: ${hashedName} for original file: ${file.originalname}`);
-        cb(null, hashedName);
-    }
-});
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app); // Get the storage service
 
-
-const upload = multer({
-    storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024,
-    },
-    fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-        const fileTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = fileTypes.test(file.mimetype);
-
-        if (mimetype && extname) {
-            console.log(`✅ File accepted: ${file.originalname}`);
-            return cb(null, true);
-        }
-        console.error(`❌ Error: File upload only supports the following file types: ${fileTypes}`);
-        cb(new Error('Error: File upload only supports the following filetypes - ' + fileTypes));
-    },
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Define the /upload route
 // @ts-ignore
-router.post('/', upload.single('file'), (req: Request, res: Response) => {
-    if (req.file) {
-        console.log(`✅ File uploaded successfully: ${req.file.originalname}`);
-        return res.status(200).json({
-            message: 'File uploaded successfully!',
-            path: `/uploads/${req.file.filename}`,
-        });
+router.post('/', upload.single('file'), async (req: Request, res: Response) => {
+    const file = req.file;
+    if (file) {
+        const fileName = `${Date.now()}_${file.originalname}`; // Create a unique filename
+        const storageRef = ref(storage, fileName); // Create a reference to the file location
+
+        try {
+            // Upload the file to Firebase Storage
+            await uploadBytes(storageRef, file.buffer, {
+                contentType: file.mimetype,
+            });
+
+            const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
+            console.log(`✅ File uploaded successfully: ${file.originalname}`);
+            return res.status(200).json({
+                message: 'File uploaded successfully!',
+                path: publicUrl,
+            });
+        } catch (err) {
+            console.error('❌ Error uploading file:', err);
+            return res.status(500).json({ message: 'Failed to upload file.' });
+        }
     } else {
         console.error('❌ Error: File upload failed!');
         return res.status(400).json({ message: 'File upload failed!' });
