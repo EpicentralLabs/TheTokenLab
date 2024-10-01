@@ -106,14 +106,20 @@ function App() {
     if (!validateInputs()) {
       return;
     }
-    const sanitizedQuantity = quantity.replace(/,/g, '');
-    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
+
+    // Remove commas from quantity and convert to number
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
+
+    // Apply decimals to the quantity
+    const decimalPlaces = parseInt(decimals, 10);
+    const adjustedQuantity = sanitizedQuantity.toFixed(decimalPlaces);
+
 
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', sanitizedQuantity);
+    mintData.append('quantity', adjustedQuantity);
     mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
@@ -125,7 +131,7 @@ function App() {
       tokenName,
       tokenSymbol,
       userPublicKey,
-      quantity: sanitizedQuantity,
+      quantity: adjustedQuantity,
       freezeChecked,
       mintChecked,
       immutableChecked,
@@ -144,7 +150,7 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: sanitizedQuantity,
+          quantity: adjustedQuantity,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,

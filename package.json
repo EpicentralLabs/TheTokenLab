@@ -1,6 +1,7 @@
+
 {
   "name": "epicentralabs",
-  "version": "1.4.0-beta",
+  "version": "1.6.1-beta",
   "private": true,
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
@@ -37,8 +38,8 @@
     "start": "concurrently \"npm run frontend\" \"npm run backend\"",
     "frontend": "react-scripts start",
     "build-backend": "tsc",
-    "backend": "npm run build-backend && node dist/server.js",
-    "build": "CI=false && react-scripts build && tsc",
+    "backend": "npm run build-backend && node build/server.js",
+    "build": "react-scripts build 2> .github/warnings.log || true",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"

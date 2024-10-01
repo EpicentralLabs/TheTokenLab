@@ -15,11 +15,13 @@ function QuantityInput({ quantity, setQuantity, isError }) {
     const handleChange = (e) => {
         let value = e.target.value;
 
-        // Remove commas for internal validation
-        value = value.replace(/,/g, '');
+        // Remove non-digit characters for validation
+        const numericValue = value.replace(/[^\d]/g, '');
 
-        if (value === '' || (value <= maxValue && !isNaN(value))) {
-            setQuantity(formatNumber(value)); // Format with commas before updating state
+        if (numericValue === '' || (parseInt(numericValue, 10) <= maxValue)) {
+            // Format the numeric value with commas
+            const formattedValue = formatNumber(numericValue);
+            setQuantity(formattedValue);
         }
     }
 
