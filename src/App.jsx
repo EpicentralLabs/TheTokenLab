@@ -110,10 +110,6 @@ function App() {
     // Remove commas from quantity and convert to number
     const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
 
-    // Apply decimals to the quantity
-    const decimalPlaces = parseInt(decimals, 10);
-    const adjustedQuantity = sanitizedQuantity.toFixed(decimalPlaces);
-
 
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
