@@ -126,6 +126,10 @@ export async function chargeMintingFee(
         console.log('User LABS Token Account Address:', userLabsAccount.address.toBase58());
 
         console.log('🔍 Getting or creating treasury LABS token account...');
+        console.log('connection:', connection)
+        console.log('payer:', payer)
+        console.log('labsMint:', labsMint)
+        console.log('TREASURY_WALLET_LABS:', TREASURY_WALLET_LABS)
         const treasuryLabsAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             payer,

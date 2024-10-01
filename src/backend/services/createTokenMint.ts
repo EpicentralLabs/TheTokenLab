@@ -13,6 +13,7 @@ console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key
 // Mint token function
 export async function mintToken(parsedDecimals: number, quantity: number, userPublicKey: PublicKey, freezeChecked: boolean): Promise<{ tokenMint: PublicKey; userTokenAccount: PublicKey; freezeChecked: boolean }> {
     let tokenMint: PublicKey;
+    console.log('quantity:', quantity)
     console.log(`🔗 Using Solana RPC cluster at ${rpcEndpoint}`)
 
     console.log(`🏦 Creating token mint with ${parsedDecimals} decimals...`);

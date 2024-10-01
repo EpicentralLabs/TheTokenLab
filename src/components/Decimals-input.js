@@ -6,7 +6,8 @@ function DecimalsInput({ decimals, setDecimals, isError }) {
   // Handler for input changes
   const handleChange = (e) => {
     const value = e.target.value
-    if (value === '' || (!isNaN(value) && parseInt(value, 10) <= 12)) {
+    // Allow empty input or numbers up to 9
+    if (value === '' || (!isNaN(value) && parseInt(value, 10) >= 0 && parseInt(value, 10) <= 9)) {
       setDecimals(value)
     }
   }
@@ -26,7 +27,7 @@ function DecimalsInput({ decimals, setDecimals, isError }) {
           />
           {/* Info bubble with tooltip for additional information */}
           <div className="info-bubble">
-            <div className="tooltip">Define how fractionalized the token will be. (Max. 12 Decimals)</div>
+            <div className="tooltip">Define the number of decimal places after the whole number. (Max. 9 Decimals)</div>
           </div>
         </div>
       </div>

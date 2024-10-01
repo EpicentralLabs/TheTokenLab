@@ -110,8 +110,9 @@ function App() {
     if (!validateInputs()) {
       return;
     }
-    const sanitizedQuantity = quantity.replace(/,/g, '');
-    console.log(onFileUpload, setOnFileUpload(imageFile,network, validateInputs(), ))
+
+    // Remove commas from quantity and convert to number
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
 
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
@@ -139,7 +140,7 @@ function App() {
     });
 
     try {
-      const response = await fetch(`${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+      const response = await fetch(`http://localhost:3001/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +149,8 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: sanitizedQuantity,
+          quantity: sanitizedQuantity
+  ,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,

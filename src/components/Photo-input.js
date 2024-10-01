@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
 import $ from 'jquery';
@@ -36,7 +37,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
 
         try {
             const response = await $.ajax({
-                url: `${process.env.REACT_APP_PUBLIC_URL}/upload`,
+                url: "http://localhost:3001/upload",
                 type: 'POST',
                 data: formData,
                 processData: false, // Don't process the data
