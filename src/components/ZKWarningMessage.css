@@ -1,0 +1,56 @@
+.zk-switch-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0; /* Remove right margin */
+    width: 100%; /* Ensure full width */
+}
+
+.zk-warning-message {
+    display: block;
+    color: #FFA500; /* Yellow-orange color for visibility */
+    font-family: p-light;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(255, 165, 0, 0.1); /* Semi-transparent background */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.1);
+    transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+    opacity: 0; /* Start with zero opacity */
+    visibility: hidden; /* Hide the warning message */
+    position: absolute;
+    right: 10em;
+    width: 400px;
+  }
+
+  @media (max-width: 1725px) {
+    .zk-warning-message {
+      position: relative; /* Change to relative position on smaller screens */
+        right: 0; /* Reset right position */
+        margin-top: 1rem; /* Add space above the warning message */
+    }
+  }
+
+  /* Warning message header */
+  .zk-warning-message::before {
+    content: 'WARNING';
+    display: block;
+    font-family: p-thin, sans-serif;
+    font-weight: bold;
+    margin-bottom: 5px;
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Fade-in effect for warning message */
+  .zk-warning-message.fade-in {
+    visibility: visible; /* Make the warning message visible */
+    opacity: 1; /* Fully visible when class is applied */
+  }
+  
+  /* Hover effect for warning message */
+  .zk-warning-message:hover {
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.2); /* Enhance glow on hover */
+  }

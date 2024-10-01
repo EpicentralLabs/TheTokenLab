@@ -16,6 +16,7 @@ import MintSwitch from './components/Mint-switch'
 import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import Compress from './components/ZKCompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
@@ -53,8 +54,11 @@ function App() {
   const [freezeChecked, setFreezeChecked] = useState(false)
   // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
+  // State for ZK compression switch
+  const [zkChecked, setZKChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+  
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
@@ -286,6 +290,19 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
+              <Compress isChecked={zkChecked} setIsChecked={setZKChecked}>
+            
+            showWarning={showWarning}
+            quantity={quantity}
+            decimals={decimals}
+            setIsQuantityError={setIsQuantityError}
+            setIsDecimalsError={setIsDecimalsError}
+            </Compress>
+
+            {/*need to make the switch capable of voiding the metadata variables and making each bubble darker*/}
+            
+              
+            
             </div>
           </section>
           
