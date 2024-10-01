@@ -35,8 +35,12 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Use the environment variables correctly
-        const url = `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/upload`;
+        let url;
+        if (process.env.REACT_APP_APP_ENV === 'development') {
+            url = `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/upload`;
+        } else {
+            url = `${process.env.REACT_APP_PUBLIC_URL}/api/upload`;
+        }
 
         try {
             const response = await fetch(url, {
