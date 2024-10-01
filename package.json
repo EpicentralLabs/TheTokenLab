@@ -1,7 +1,7 @@
 
 {
   "name": "epicentralabs",
-  "version": "1.6.1-beta",
+  "version": "1.9.0-beta",
   "private": true,
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
