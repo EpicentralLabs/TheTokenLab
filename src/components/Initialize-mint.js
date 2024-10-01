@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
 import SuccessMessage from './InitalizingMint-message'
+import ConfirmMint from './Confirm-mint'
 
 function InitializeMint({ 
   tokenName, 
@@ -56,6 +57,8 @@ function InitializeMint({
 
   const [showError, setShowError] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false)
+  const [selectedPaymentType, setSelectedPaymentType] = useState(null)
 
   const handleInitializeMint = (paymentType) => {
     let hasError = false;
@@ -81,15 +84,23 @@ function InitializeMint({
       setShowError(true)
       setShowSuccess(false)
     } else {
-      setShowError(false)
-      setShowSuccess(true)
-      // Call the appropriate function based on payment type
-      if (paymentType === 'SOL') {
-        onSolMintClick()
-      } else if (paymentType === 'LABS') {
-        onLabsMintClick()
-      }
+      setSelectedPaymentType(paymentType)
+      setShowConfirmPopup(true)
     }
+  }
+
+  const handleConfirmMint = () => {
+    setShowConfirmPopup(false)
+    setShowSuccess(true)
+    if (selectedPaymentType === 'SOL') {
+      onSolMintClick()
+    } else if (selectedPaymentType === 'LABS') {
+      onLabsMintClick()
+    }
+  }
+
+  const handleCancelMint = () => {
+    setShowConfirmPopup(false)
   }
 
   // Reset error and success states when inputs change
@@ -120,6 +131,15 @@ function InitializeMint({
       </div>
       {showError && <ErrorMessage />}
       {showSuccess && <SuccessMessage />}
+      {showConfirmPopup && (
+        <ConfirmMint
+          paymentType={selectedPaymentType}
+          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
+          usdValue={selectedPaymentType === 'SOL' ? calculateUsdValue(0.05, solPrice) : calculateUsdValue(5000, labsPrice)}
+          onConfirm={handleConfirmMint}
+          onCancel={handleCancelMint}
+        />
+      )}
     </div>
   )
 }
