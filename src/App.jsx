@@ -119,7 +119,7 @@ function App() {
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', adjustedQuantity);
+    mintData.append('quantity', sanitizedQuantity);
     mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
@@ -131,7 +131,7 @@ function App() {
       tokenName,
       tokenSymbol,
       userPublicKey,
-      quantity: adjustedQuantity,
+      quantity: sanitizedQuantity,
       freezeChecked,
       mintChecked,
       immutableChecked,
@@ -150,7 +150,7 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: adjustedQuantity,
+          quantity: sanitizedQuantity,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,
