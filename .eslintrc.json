@@ -40,7 +40,7 @@
     "react/no-typos": "error",
     "react/no-this-in-sfc": "warn",
     "react/no-string-refs": "warn",
-    "react/no-deprecated": "warn",
+    "react/no-deprecated": "warn"
     
   },
   "settings": {
