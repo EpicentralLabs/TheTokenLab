@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS", // This is important for Node.js
+    "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "rootDir": "./src",
     "outDir": "./api",
     "typeRoots": ["./node_modules/@types"]
   },

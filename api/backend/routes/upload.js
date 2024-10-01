@@ -26,69 +26,69 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// @ts-ignore
 const express_1 = require("express");
-// @ts-ignore
 const multer_1 = __importDefault(require("multer"));
-const fs = __importStar(require("fs"));
-const crypto = __importStar(require("crypto"));
-const path = __importStar(require("path"));
+const app_1 = require("firebase-admin/app");
+const storage_1 = require("firebase-admin/storage");
+const serviceAccount = __importStar(require("./firebase_account.json"));
+require("dotenv/config");
 const router = (0, express_1.Router)();
-// File upload handling
-const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '..', '..', 'uploads');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-            console.log(`📁 Created upload directory: ${uploadPath}`);
-        }
-        console.log(`📤 Uploading file to: ${uploadPath}`);
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const hashedName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
-        console.log(`📝 Generated filename: ${hashedName} for original file: ${file.originalname}`);
-        cb(null, hashedName);
-    }
+// Initialize Firebase with service account
+(0, app_1.initializeApp)({
+    credential: (0, app_1.cert)(serviceAccount),
+    storageBucket: "epicentrallabs-93373.appspot.com", // Ensure this environment variable is set
 });
-const upload = (0, multer_1.default)({
-    storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024,
-    },
-    fileFilter: (req, file, cb) => {
-        const fileTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = fileTypes.test(file.mimetype);
-        if (mimetype && extname) {
-            console.log(`✅ File accepted: ${file.originalname}`);
-            return cb(null, true);
-        }
-        console.error(`❌ Error: File upload only supports the following file types: ${fileTypes}`);
-        cb(new Error('Error: File upload only supports the following filetypes - ' + fileTypes));
-    },
-});
+const storage = (0, storage_1.getStorage)(); // Get the storage service
+const bucket = storage.bucket(); // Get a reference to the storage bucket
+console.log('✅ Firebase initialized successfully with service account.');
+// Set up multer for file uploads
+const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 // Define the /upload route
-// @ts-ignore
-router.post('/', upload.single('file'), (req, res) => {
-    if (req.file) {
-        console.log(`✅ File uploaded successfully: ${req.file.originalname}`);
-        return res.status(200).json({
-            message: 'File uploaded successfully!',
-            path: `/uploads/${req.file.filename}`,
-        });
+router.post('/', upload.single('file'), async (req, res) => {
+    const file = req.file;
+    if (file) {
+        const fileName = `${Date.now()}_${file.originalname}`; // Create a unique filename
+        const fileUpload = bucket.file(fileName); // Create a reference to the file location in the bucket
+        console.log(`🚀 Uploading file to Firebase Storage with name: ${fileName}`);
+        try {
+            // Upload the file to Firebase Storage
+            await fileUpload.save(file.buffer, {
+                metadata: { contentType: file.mimetype },
+            });
+            const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
+            console.log(`✅ File uploaded successfully: ${file.originalname}`);
+            console.log(`📄 Public URL for uploaded file: ${publicUrl}`);
+            res.status(200).json({
+                message: 'File uploaded successfully!',
+                path: publicUrl,
+            });
+        }
+        catch (err) {
+            console.error('❌ Error uploading file:', err); // Log error details
+            console.log(`💡 Possible reasons for the error: Ensure the Firebase Storage bucket exists and has the correct permissions.`);
+            // @ts-ignore
+            res.status(500).json({ message: 'Failed to upload file.', error: err.message });
+        }
     }
     else {
-        console.error('❌ Error: File upload failed!');
-        return res.status(400).json({ message: 'File upload failed!' });
+        console.error('❌ Error: File upload failed! No file found in request.'); // Log if no file was found
+        res.status(400).json({ message: 'File upload failed! No file provided.' });
     }
 });
 // Error handling middleware
-// @ts-ignore
 router.use((err, req, res, next) => {
+    console.error('❌ Error in middleware:', err);
+    // Check if the error is a Multer error
     if (err instanceof multer_1.default.MulterError) {
-        return res.status(400).json({ message: err.message });
+        console.error('🔴 Multer error details:', err);
+        res.status(400).json({ message: err.message });
     }
-    next(err);
+    else {
+        console.error('🔴 General error details:', err);
+        res.status(500).json({
+            success: false,
+            message: err.message || 'Internal Server Error',
+        });
+    }
 });
 exports.default = router;

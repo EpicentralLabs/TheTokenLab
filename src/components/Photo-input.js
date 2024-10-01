@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
-import $ from 'jquery';
+import fetch from 'node-fetch';
 
 function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
@@ -35,23 +35,43 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
         const formData = new FormData();
         formData.append('file', file);
 
+        let url;
+        if (process.env.REACT_APP_APP_ENV === 'development') {
+            url = `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/upload`;
+        } else {
+            url = `${process.env.REACT_APP_PUBLIC_URL}/api/upload`;
+        }
+
         try {
+<<<<<<< HEAD
             const response = await $.ajax({
                 url: "http://localhost:3001/upload",
                 type: 'POST',
                 data: formData,
                 processData: false, // Don't process the data
                 contentType: false, // Don't set content type; jQuery will set it automatically
+=======
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+>>>>>>> v1.9.1-beta
             });
 
-            console.log('File uploaded successfully:', response);
-            return response; // Return the result for the caller function to use
+            // Check if the response is ok (status in the range 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('File uploaded successfully:', data);
+            return data; // Return the result for the caller function to use
         } catch (error) {
             console.error('Error uploading file:', error);
             setError('Error uploading file');
             throw error; // Re-throw error to be caught in the caller function
         }
     };
+
 
     const handlePhotoChange = async (e) => {
         const file = e.target.files[0];

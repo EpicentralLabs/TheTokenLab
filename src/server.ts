@@ -22,15 +22,15 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
+<<<<<<< HEAD
 // app.use(express.static(path.join(__dirname, 'build')));
+=======
+>>>>>>> v1.9.1-beta
 
 // Backend Port Configuration
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
-
-// CORS configuration
-// const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
 
 app.use(cors({
     origin: '*',
@@ -40,7 +40,7 @@ app.use(cors({
 
 // Routes
 app.use('/api/mint', mintRoutes);
-app.use('/upload', uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
@@ -49,13 +49,12 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         message: err.message || 'Internal Server Error',
     });
 });
-app.use(express.static(path.join(__dirname, 'build')));
 
-// Fallback to React index.html for client-side routing
-app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+
+if (process.env.REACT_APP_APP_ENV === 'development') {
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}
+export default app;
+

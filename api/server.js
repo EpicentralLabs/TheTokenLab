@@ -31,7 +31,6 @@ const express_1 = __importDefault(require("express"));
 const bodyParser = __importStar(require("body-parser"));
 const web3_js_1 = require("@solana/web3.js");
 require("dotenv/config");
-const path = __importStar(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const mint_1 = __importDefault(require("./backend/routes/mint"));
 const upload_1 = __importDefault(require("./backend/routes/upload"));
@@ -46,12 +45,9 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 app.use(express_1.default.json());
 app.use(bodyParser.json());
 app.use((0, cors_1.default)());
-// app.use(express.static(path.join(__dirname, 'build')));
 // Backend Port Configuration
 const port = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
-// CORS configuration
-// const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
 app.use((0, cors_1.default)({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -59,7 +55,7 @@ app.use((0, cors_1.default)({
 }));
 // Routes
 app.use('/api/mint', mint_1.default);
-app.use('/upload', upload_1.default);
+app.use('/api/upload', upload_1.default);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
@@ -67,12 +63,9 @@ app.use((err, req, res, next) => {
         message: err.message || 'Internal Server Error',
     });
 });
-app.use(express_1.default.static(path.join(__dirname, 'build')));
-// Fallback to React index.html for client-side routing
-app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+if (process.env.REACT_APP_APP_ENV === 'development') {
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}
+exports.default = app;

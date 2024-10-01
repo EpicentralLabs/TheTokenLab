@@ -143,7 +143,11 @@ function App() {
     });
 
     try {
+<<<<<<< HEAD
       const response = await fetch(`http://localhost:3001/api/mint`, {
+=======
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+>>>>>>> v1.9.1-beta
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,8 +156,12 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
+<<<<<<< HEAD
           quantity: sanitizedQuantity
   ,
+=======
+          quantity: sanitizedQuantity,
+>>>>>>> v1.9.1-beta
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,

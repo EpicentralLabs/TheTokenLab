@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -29,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadImageToPinata = uploadImageToPinata;
 exports.uploadImageAndPinJSON = uploadImageAndPinJSON;
 const form_data_1 = __importDefault(require("form-data"));
-const fs = __importStar(require("fs"));
 const node_fetch_1 = __importDefault(require("node-fetch")); // Ensure this imports node-fetch@2
 const logger_1 = __importDefault(require("./logger"));
 // Helper function to assert and validate PinataFileResponse type
@@ -38,11 +14,17 @@ function assertIsPinataFileResponse(data) {
         throw new Error(`Invalid PinataFileResponse data: ${JSON.stringify(data)}`);
     }
 }
-async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretApiKey) {
+async function uploadImageToPinata(imageUrl, pinataApiKey, pinataSecretApiKey) {
     const formData = new form_data_1.default();
-    formData.append('file', fs.createReadStream(imagePath));
     try {
-        const response = await (0, node_fetch_1.default)('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+        // Fetch the image from Firebase Storage using its public URL
+        const imageResponse = await (0, node_fetch_1.default)(imageUrl);
+        if (!imageResponse.ok)
+            throw new Error(`Error fetching image: ${imageResponse.statusText}`);
+        // Append the fetched image to form data
+        formData.append('file', imageResponse.body, { filename: 'image.png' }); // You can adjust the filename if needed
+        // Upload the image to Pinata
+        const pinataResponse = await (0, node_fetch_1.default)('https://api.pinata.cloud/pinning/pinFileToIPFS', {
             method: 'POST',
             headers: {
                 'pinata_api_key': pinataApiKey,
@@ -50,16 +32,16 @@ async function uploadImageToPinata(imagePath, pinataApiKey, pinataSecretApiKey) 
             },
             body: formData,
         });
-        if (!response.ok)
-            throw new Error(`Error uploading image: ${response.statusText}`);
-        const responseData = await response.json();
-        assertIsPinataFileResponse(responseData); // Validate the response
-        const imageCid = responseData.IpfsHash; // Return just the CID
+        if (!pinataResponse.ok)
+            throw new Error(`Error uploading image to Pinata: ${pinataResponse.statusText}`);
+        const pinataData = await pinataResponse.json();
+        assertIsPinataFileResponse(pinataData); // Validate the response
+        const imageCid = pinataData.IpfsHash; // Return the CID of the uploaded image
         logger_1.default.info(`Image uploaded to IPFS with CID: ${imageCid}`);
         return imageCid;
     }
     catch (error) {
-        logger_1.default.error(`Error uploading image to IPFS: ${error.message}`);
+        logger_1.default.error(`Error uploading image to Pinata: ${error.message}`);
         throw error;
     }
 }
