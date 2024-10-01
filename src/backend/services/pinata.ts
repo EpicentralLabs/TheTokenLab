@@ -19,12 +19,20 @@ function assertIsPinataFileResponse(data: any): asserts data is PinataFileRespon
     }
 }
 
-export async function uploadImageToPinata(imagePath: string, pinataApiKey: string, pinataSecretApiKey: string): Promise<string> {
+export async function uploadImageToPinata(imageUrl: string, pinataApiKey: string, pinataSecretApiKey: string): Promise<string> {
     const formData = new FormData();
-    formData.append('file', fs.createReadStream(imagePath));
 
     try {
-        const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+        // Fetch the image from Firebase Storage using its public URL
+        const imageResponse = await fetch(imageUrl);
+
+        if (!imageResponse.ok) throw new Error(`Error fetching image: ${imageResponse.statusText}`);
+
+        // Append the fetched image to form data
+        formData.append('file', imageResponse.body, { filename: 'image.png' }); // You can adjust the filename if needed
+
+        // Upload the image to Pinata
+        const pinataResponse = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
             method: 'POST',
             headers: {
                 'pinata_api_key': pinataApiKey,
@@ -33,16 +41,16 @@ export async function uploadImageToPinata(imagePath: string, pinataApiKey: strin
             body: formData,
         });
 
-        if (!response.ok) throw new Error(`Error uploading image: ${response.statusText}`);
+        if (!pinataResponse.ok) throw new Error(`Error uploading image to Pinata: ${pinataResponse.statusText}`);
 
-        const responseData = await response.json();
-        assertIsPinataFileResponse(responseData); // Validate the response
+        const pinataData = await pinataResponse.json();
+        assertIsPinataFileResponse(pinataData); // Validate the response
 
-        const imageCid = responseData.IpfsHash; // Return just the CID
+        const imageCid = pinataData.IpfsHash; // Return the CID of the uploaded image
         logger.info(`Image uploaded to IPFS with CID: ${imageCid}`);
         return imageCid;
     } catch (error) {
-        logger.error(`Error uploading image to IPFS: ${(error as Error).message}`);
+        logger.error(`Error uploading image to Pinata: ${(error as Error).message}`);
         throw error;
     }
 }
