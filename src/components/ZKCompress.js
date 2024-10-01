@@ -1,9 +1,9 @@
 import React, { useState} from 'react';
+import './ZKWarningMessage.css';
 import './Switches.css';
-import ErrorMessageZK from './Error-message-ZK';
-import SuccessMessage from './InitalizingMint-message'
 
 function Compress({ 
+    showWarning,
     quantity, 
     decimals,  
     setIsQuantityError, 
@@ -17,14 +17,22 @@ function Compress({
     const handleChange = () => {setIsChecked(!isChecked)};
 
     
-
-
-    
-   
+    function ZKWarningMessage() {
+      return (
+        // Render a div with warning message and styling classes
+       
+         <div className="zk-warning-message fade-in">
+            Enableing ZK Compression currently DOES NOT attatch metadeta upon initializing the token mint
+          </div>
+      
+      )
+    }
 
     return (
       <div className="switch-container">
+       
       <div className="switch-text">Use ZK Compression</div>
+      
       <label className="switch">
         <input
           type="checkbox"
@@ -36,6 +44,7 @@ function Compress({
         {/* Slider span for custom switch appearance */}
         <span className="slider"></span>
       </label>
+       {(isChecked) && (<ZKWarningMessage />)}
     </div>
     );
 }

@@ -16,7 +16,6 @@ import MintSwitch from './components/Mint-switch'
 import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
-import ZKWarningMessage from './components/ZKWarningMessage'
 import Compress from './components/ZKCompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
@@ -289,13 +288,19 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
-              <Compress isChecked={zkChecked} setIsChecked={setZKChecked}
+              <Compress isChecked={zkChecked} setIsChecked={setZKChecked}>
             
+            showWarning={showWarning}
             quantity={quantity}
             decimals={decimals}
             setIsQuantityError={setIsQuantityError}
-            setIsDecimalsError={setIsDecimalsError} />
-            {(zkChecked) && (<ZKWarningMessage className={showWarning ? 'fade-in' : ''} />)}
+            setIsDecimalsError={setIsDecimalsError}
+            </Compress>
+
+            {/*need to make the switch capable of voiding the metadata variables and making each bubble darker*/}
+            
+              
+            
             </div>
           </section>
           
