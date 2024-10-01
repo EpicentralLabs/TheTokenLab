@@ -37,7 +37,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
 
         try {
             const response = await $.ajax({
-                url: `${process.env.REACT_APP_PUBLIC_URL}/api/upload`,
+                url: `${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/upload`,
                 type: 'POST',
                 data: formData,
                 processData: false, // Don't process the data

@@ -22,7 +22,6 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'build')));
 
 // Backend Port Configuration
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
@@ -49,7 +48,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         message: err.message || 'Internal Server Error',
     });
 });
-app.use(express.static(path.join(__dirname, 'build')));
 
 // Fallback to React index.html for client-side routing
 app.get('/*', function (req, res) {
