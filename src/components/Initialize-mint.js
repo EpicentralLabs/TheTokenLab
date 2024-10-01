@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
 import SuccessMessage from './InitalizingMint-message'
+import ConfirmMint from './Confirm-mint'
 
 function InitializeMint({ 
   tokenName, 
@@ -56,6 +57,10 @@ function InitializeMint({
 
   const [showError, setShowError] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false)
+  const [selectedPaymentType, setSelectedPaymentType] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleInitializeMint = (paymentType) => {
     let hasError = false;
@@ -82,14 +87,32 @@ function InitializeMint({
       setShowSuccess(false)
     } else {
       setShowError(false)
-      setShowSuccess(true)
-      // Call the appropriate function based on payment type
-      if (paymentType === 'SOL') {
-        onSolMintClick()
-      } else if (paymentType === 'LABS') {
-        onLabsMintClick()
-      }
+      setSelectedPaymentType(paymentType)
+      setShowConfirmPopup(true)
     }
+  }
+
+  const handleConfirm = async () => {
+    setIsLoading(true)
+    try {
+      if (selectedPaymentType === 'SOL') {
+        await onSolMintClick()
+      } else if (selectedPaymentType === 'LABS') {
+        await onLabsMintClick()
+      }
+      setIsSuccess(true)
+    } catch (error) {
+      console.error('Minting failed:', error)
+      setIsSuccess(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setShowConfirmPopup(false)
+    setIsSuccess(false)
+    setIsLoading(false)
   }
 
   // Reset error and success states when inputs change
@@ -120,6 +143,17 @@ function InitializeMint({
       </div>
       {showError && <ErrorMessage />}
       {showSuccess && <SuccessMessage />}
+      {showConfirmPopup && (
+        <ConfirmMint
+          paymentType={selectedPaymentType}
+          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
+          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+          isLoading={isLoading}
+          isSuccess={isSuccess}
+        />
+      )}
     </div>
   )
 }

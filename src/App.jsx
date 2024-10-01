@@ -199,14 +199,22 @@ function App() {
 
 
 
-  const handleSolMint = () => {
+  const handleSolMint = async () => {
     console.log('Current imageFile state:', imageFile);
-    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+    try {
+      await mintTokens('SOL');
+    } catch (err) {
+      console.error('Error during SOL minting:', err);
+    }
   };
 
-  const handleLabsMint = () => {
+  const handleLabsMint = async () => {
     console.log('Current imageFile state:', imageFile);
-    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
+    try {
+      await mintTokens('LABS');
+    } catch (err) {
+      console.error('Error during LABS minting:', err);
+    }
   };
 
   const handleImageURIChange = (uri) => {
