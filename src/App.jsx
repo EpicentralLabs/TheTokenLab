@@ -110,16 +110,11 @@ function App() {
     // Remove commas from quantity and convert to number
     const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
 
-    // Apply decimals to the quantity
-    const decimalPlaces = parseInt(decimals, 10);
-    const adjustedQuantity = sanitizedQuantity.toFixed(decimalPlaces);
-
-
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
-    mintData.append('quantity', adjustedQuantity);
+    mintData.append('quantity', sanitizedQuantity);
     mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
@@ -131,7 +126,7 @@ function App() {
       tokenName,
       tokenSymbol,
       userPublicKey,
-      quantity: adjustedQuantity,
+      quantity: sanitizedQuantity,
       freezeChecked,
       mintChecked,
       immutableChecked,
@@ -141,7 +136,7 @@ function App() {
     });
 
     try {
-      const response = await fetch(`${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
+      const response = await fetch(`http://localhost:3001/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +145,8 @@ function App() {
           tokenName: tokenName,
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
-          quantity: adjustedQuantity,
+          quantity: sanitizedQuantity
+  ,
           freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,

@@ -12,6 +12,7 @@ console.log(`🔑 Loaded our SOLANA_PRIVATE_KEY keypair securely, Our public key
 // Mint token function
 async function mintToken(parsedDecimals, quantity, userPublicKey, freezeChecked) {
     let tokenMint;
+    console.log('quantity:', quantity);
     console.log(`🔗 Using Solana RPC cluster at ${rpcEndpoint}`);
     console.log(`🏦 Creating token mint with ${parsedDecimals} decimals...`);
     console.log(`💰 Minting ${quantity} tokens to ${userPublicKey.toBase58()}...`);

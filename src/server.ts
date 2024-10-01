@@ -22,7 +22,7 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'build')));
+// app.use(express.static(path.join(__dirname, 'build')));
 
 // Backend Port Configuration
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
