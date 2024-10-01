@@ -46,5 +46,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-// Start the server
+
+if (process.env.REACT_APP_APP_ENV === 'development') {
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}
 export default app;
+
