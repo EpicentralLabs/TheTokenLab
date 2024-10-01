@@ -126,12 +126,20 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         console.log('✅ Decimals validated:', parsedDecimals);
         // 5. Validate image path
         // eslint-disable-next-line no-undef
-        fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
-        if (!fs.existsSync(fullPath)) {
-            console.error('❌ Validation Error: File not found at the specified path:', fullPath);
-            return res.status(400).json({message: 'File not found at the specified path.'});
+        const fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
+
+        console.log('🔍 Checking file path:', fullPath);
+
+        if (imagePath.startsWith('https://storage.googleapis.com')) {
+            console.log('✅ Validating file via Firebase Storage URL:', imagePath);
+        } else {
+            // If it's a local path, check for file existence
+            if (!fs.existsSync(fullPath)) {
+                console.error('❌ Validation Error: File not found at the specified path:', fullPath);
+                return res.status(400).json({ message: 'File not found at the specified path.' });
+            }
+            console.log('✅ Image path validated:', fullPath);
         }
-        console.log('✅ Image path validated:', fullPath);
 
         // 6. Initialize payer keypair
         const privateKey = process.env.SOLANA_PRIVATE_KEY;
@@ -183,8 +191,9 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         let updatedMetadataUri: string;
         try {
             const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
+            let imageUrl = imagePath;
             const imageCid = await uploadImageAndPinJSON(
-                fullPath,
+                imageUrl,
                 process.env.PINATA_API_KEY || '',
                 process.env.PINATA_SECRET_API_KEY || '',
                 process.env.PINATA_BEARER_TOKEN || '',

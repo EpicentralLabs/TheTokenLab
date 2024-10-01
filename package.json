@@ -1,9 +1,9 @@
-
 {
   "name": "epicentralabs",
   "version": "1.6.1-beta",
   "private": true,
   "dependencies": {
+    "@google-cloud/storage": "^7.13.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@metaplex-foundation/mpl-toolbox": "^0.9.4",
     "@metaplex-foundation/umi": "^0.9.2",
@@ -18,6 +18,8 @@
     "dotenv": "^10.0.0",
     "esm": "^3.2.25",
     "express": "^4.19.2",
+    "firebase": "^10.14.0",
+    "firebase-admin": "^12.6.0",
     "form-data": "^4.0.0",
     "fs": "0.0.1-security",
     "multer": "^1.4.5-lts.1",
@@ -25,6 +27,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "0.9.5",
+    "uuid": "^10.0.0",
     "winston": "^3.14.2"
   },
   "scripts": {
@@ -33,7 +36,7 @@
     "start": "concurrently \"npm run frontend\" \"npm run backend\"",
     "frontend": "react-scripts start",
     "build-backend": "tsc",
-    "backend": "npm run build-backend && node build/server.js",
+    "backend": "npm run build-backend && node api/server.js",
     "build": "react-scripts build 2> .github/warnings.log || true",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
