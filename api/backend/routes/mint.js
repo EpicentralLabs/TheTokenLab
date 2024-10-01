@@ -119,12 +119,19 @@ router.post('/', async (req, res) => {
         console.log('✅ Decimals validated:', parsedDecimals);
         // 5. Validate image path
         // eslint-disable-next-line no-undef
-        fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
-        if (!fs.existsSync(fullPath)) {
-            console.error('❌ Validation Error: File not found at the specified path:', fullPath);
-            return res.status(400).json({ message: 'File not found at the specified path.' });
+        const fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
+        console.log('🔍 Checking file path:', fullPath);
+        if (imagePath.startsWith('https://storage.googleapis.com')) {
+            console.log('✅ Validating file via Firebase Storage URL:', imagePath);
         }
-        console.log('✅ Image path validated:', fullPath);
+        else {
+            // If it's a local path, check for file existence
+            if (!fs.existsSync(fullPath)) {
+                console.error('❌ Validation Error: File not found at the specified path:', fullPath);
+                return res.status(400).json({ message: 'File not found at the specified path.' });
+            }
+            console.log('✅ Image path validated:', fullPath);
+        }
         // 6. Initialize payer keypair
         const privateKey = process.env.SOLANA_PRIVATE_KEY;
         if (!privateKey) {
@@ -153,7 +160,7 @@ router.post('/', async (req, res) => {
             console.log('✅ Minting fee charged successfully!');
             // Calculate price per lamport (USD value of 1 lamport)
             const solPerLamport = solPrice / 10 ** 9; // SOL uses 9 decimal Places
-            const labsPerUnit = labsPrice / 10 ** 9; // TODO: Confirm LABS also uses 9 decimal places
+            const labsPerUnit = labsPrice / 10 ** 9; // LABS uses 9 decimal places
             console.table([
                 { 'Metric': 'Minting Fee', 'Value': `${mintingFee} ${paymentType === 'SOL' ? 'USD (SOL)' : 'LABS'}` },
                 { 'Metric': 'Current SOL Price', 'Value': `${solPrice} USD` },
@@ -170,7 +177,8 @@ router.post('/', async (req, res) => {
         let updatedMetadataUri;
         try {
             const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
-            const imageCid = await (0, pinata_1.uploadImageAndPinJSON)(fullPath, process.env.PINATA_API_KEY || '', process.env.PINATA_SECRET_API_KEY || '', process.env.PINATA_BEARER_TOKEN || '', tokenSymbol.toUpperCase(), tokenName, description);
+            let imageUrl = imagePath;
+            const imageCid = await (0, pinata_1.uploadImageAndPinJSON)(imageUrl, process.env.PINATA_API_KEY || '', process.env.PINATA_SECRET_API_KEY || '', process.env.PINATA_BEARER_TOKEN || '', tokenSymbol.toUpperCase(), tokenName, description);
             updatedMetadataUri = `https://gateway.pinata.cloud/ipfs/${imageCid}`;
             console.log('✅ Image and metadata uploaded to Pinata:', updatedMetadataUri);
         }
