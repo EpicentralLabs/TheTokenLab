@@ -28,9 +28,6 @@ const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
 
-// CORS configuration
-// const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
-
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -49,11 +46,5 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-// Fallback to React index.html for client-side routing
-app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
 // Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+export default app;
