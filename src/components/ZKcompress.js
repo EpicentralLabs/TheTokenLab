@@ -1,64 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import './ZKCompress.css';
-import ErrorMessageZK from './Error-message-ZK';
-import SuccessMessage from './InitalizingMint-message'
+import React, { useState} from 'react';
+import './ZKWarningMessage.css';
+import './Switches.css';
 
 function Compress({ 
-    tokenName, 
-    tokenSymbol, 
-    quantity, 
-    decimals, 
-    setIsTokenNameError, 
-    setIsTokenSymbolError, 
-    setIsQuantityError, 
-    setIsDecimalsError
+    
   }) {
-    const [showError, setShowError] = useState(false)
-    const [showSuccess, setShowSuccess] = useState(false)
 
-useEffect(() => {
-    //functionality data / algorithm to compress
-  })
     
-    const handleZKCompress = (paymentType) => {
-        let hasError = false;
+
+    const [zkChecked, setZKChecked] = useState(false)
+
+    const handleZKChange = () => {setZKChecked(!zkChecked)};
+
+    const ZKbool = zkChecked ? 'true' : 'false'
+
     
-        if (!tokenName.trim()) {
-          setIsTokenNameError(true)
-          hasError = true
-        }
-        if (!tokenSymbol.trim()) {
-          setIsTokenSymbolError(true)
-          hasError = true
-        }
-        if (!quantity.trim()) {
-          setIsQuantityError(true)
-          hasError = true
-        }
-        if (!decimals.trim()) {
-          setIsDecimalsError(true)
-          hasError = true
-        }
-    
-        if (hasError) {
-            setShowError(true)
-            setShowSuccess(false)
-        } else {
-            setShowError(false)
-            setShowSuccess(true)
-      }
+    function ZKWarningMessage() {
+      return (
+        // Render a div with warning message and styling classes
+       
+         <div className="zk-warning-message fade-in">
+            Enabling ZK Compression currently DOES NOT attatch metadeta upon initializing the token mint
+          </div>
+      
+      )
     }
 
     return (
-        <div className='ZKcenter'>
-          <div className='ZK-button-box'>
-            <h1 className="compress-button-container">
-                <button className="compress-button" onClick={() => handleZKCompress(/*compress var*/) }>Use ZK Compression</button>
-            </h1>
-          </div>
-            {showError && <ErrorMessageZK />}
-            {showSuccess && <SuccessMessage />}
-        </div>
+      <div className="zk-switch-container">
+       
+      <div className="zk-switch-text">Use ZK Compression</div>
+      
+      <label className="zk-switch">
+        <input
+          type="checkbox"
+          name="ZKCompress"
+          value={ZKbool}
+          checked={zkChecked}
+          onChange={handleZKChange}
+        />
+        {/* Slider span for custom switch appearance */}
+        <span className="zk-slider"></span>
+      </label>
+      <div className="warning-box">
+        {(zkChecked) && (<ZKWarningMessage/>)}
+      </div>
+    </div>
     );
 }
 

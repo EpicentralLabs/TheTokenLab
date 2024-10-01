@@ -16,6 +16,7 @@ import MintSwitch from './components/Mint-switch'
 import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import Compress from './components/ZKcompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
@@ -298,6 +299,11 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
+
+
+              <Compress/>
+
+
             </div>
           </section>
           
