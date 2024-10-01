@@ -23,6 +23,10 @@
       "dest": "api/backend/routes/upload.js"
     },
     {
+      "src": "/api/compress-mint",
+      "dest": "api/backend/routes/compression.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "api/server.js"
     }

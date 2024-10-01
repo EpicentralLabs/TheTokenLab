@@ -38,7 +38,7 @@ app.use(cors({
 // Routes
 app.use('/api/mint', mintRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('api/compressed-mint', compressionRoutes);
+app.use('api/compress-mint', compressionRoutes);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
