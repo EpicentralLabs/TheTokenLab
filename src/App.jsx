@@ -63,6 +63,9 @@ function App() {
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
+  //function to handle the ZK compression warning message
+  // const handleZKChange = () => {setZKChecked((prev) => !prev)};
+
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
     setUserPublicKey(publicKey)
@@ -290,14 +293,7 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
-              <Compress isChecked={zkChecked} setIsChecked={setZKChecked}>
-            
-            showWarning={showWarning}
-            quantity={quantity}
-            decimals={decimals}
-            setIsQuantityError={setIsQuantityError}
-            setIsDecimalsError={setIsDecimalsError}
-            </Compress>
+              <Compress/>
 
             {/*need to make the switch capable of voiding the metadata variables and making each bubble darker*/}
             
@@ -307,9 +303,7 @@ function App() {
           </section>
           
           {/* Authority revocation section */}
-          <div className="revoke">
-            Revoke Authority:
-          </div>
+          <div className="revoke">Revoke Authority:</div>
           
           {/* Token authority switches */}
           <div className="switch-grid">
@@ -322,6 +316,7 @@ function App() {
           {(mintChecked || freezeChecked || immutableChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
+
           
           {/* Update InitializeMint component */}
           <InitializeMint 

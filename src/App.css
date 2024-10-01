@@ -84,6 +84,13 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    height: 305.812px;
+}
+
+@media (max-width: 1500px) {
+    .Input-List {
+        height: auto; /* Adjust height for smaller screens */
+    }
 }
 
 /* Right side (photo input) */

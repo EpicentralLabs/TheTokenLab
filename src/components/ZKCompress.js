@@ -3,18 +3,19 @@ import './ZKWarningMessage.css';
 import './Switches.css';
 
 function Compress({ 
-    showWarning,
     quantity, 
     decimals,  
     setIsQuantityError, 
     setIsDecimalsError,
-    isChecked,
-    setIsChecked,
   }) {
 
-    const ZKbool = isChecked ? 'true' : 'false'
     
-    const handleChange = () => {setIsChecked(!isChecked)};
+
+    const [zkChecked, setZKChecked] = useState(false)
+
+    const handleZKChange = () => {setZKChecked(!zkChecked)};
+
+    const ZKbool = zkChecked ? 'true' : 'false'
 
     
     function ZKWarningMessage() {
@@ -22,29 +23,31 @@ function Compress({
         // Render a div with warning message and styling classes
        
          <div className="zk-warning-message fade-in">
-            Enableing ZK Compression currently DOES NOT attatch metadeta upon initializing the token mint
+            Enabling ZK Compression currently DOES NOT attatch metadeta upon initializing the token mint
           </div>
       
       )
     }
 
     return (
-      <div className="switch-container">
+      <div className="zk-switch-container">
        
-      <div className="switch-text">Use ZK Compression</div>
+      <div className="zk-switch-text">Use ZK Compression</div>
       
-      <label className="switch">
+      <label className="zk-switch">
         <input
           type="checkbox"
           name="ZKCompress"
           value={ZKbool}
-          checked={isChecked}
-          onChange={handleChange}
+          checked={zkChecked}
+          onChange={handleZKChange}
         />
         {/* Slider span for custom switch appearance */}
-        <span className="slider"></span>
+        <span className="zk-slider"></span>
       </label>
-       {(isChecked) && (<ZKWarningMessage />)}
+      <div className="warning-box">
+        {(zkChecked) && (<ZKWarningMessage/>)}
+      </div>
     </div>
     );
 }
