@@ -1,8 +1,6 @@
 import React from 'react';
 import './MintSuccessMessage.css';
-import 'dotenv/config';
-import dotenv from "dotenv";
-dotenv.config();
+
 
 function MintSuccessMessage({
                                 mintAddress,
@@ -24,17 +22,17 @@ function MintSuccessMessage({
     const metadataTransactionHash = extractTransactionHash(metadataUploadOutput);
 
     const constructMintURL = (address) => {
-        const cluster = process.env.SOLANA_CLUSTER ? `?cluster=${process.env.SOLANA_CLUSTER}` : '?cluster=devnet';
+        const cluster = process.env.REACT_APP_SOLANA_CLUSTER ? `?cluster=${process.env.REACT_APP_SOLANA_CLUSTER}` : '?cluster=devnet';
         return `https://explorer.solana.com/address/${address}${cluster}`;
     }
 
     const constructTokenAccountURL = (address) => {
-        const cluster = process.env.SOLANA_CLUSTER ? `?cluster=${process.env.SOLANA_CLUSTER}` : '?cluster=devnet';
+        const cluster = process.env.REACT_APP_SOLANA_CLUSTER ? `?cluster=${process.env.REACT_APP_SOLANA_CLUSTER}` : '?cluster=devnet';
         return `https://explorer.solana.com/address/${address}${cluster}`;
     }
 
     const constructMetadataURL = (hash) => {
-        const cluster = process.env.SOLANA_CLUSTER ? `?cluster=${process.env.SOLANA_CLUSTER}` : '?cluster=devnet';
+        const cluster = process.env.REACT_APP_SOLANA_CLUSTER ? `?cluster=${process.env.REACT_APP_SOLANA_CLUSTER}` : '?cluster=devnet';
         return `https://explorer.solana.com/tx/${hash}${cluster}`;
     }
 

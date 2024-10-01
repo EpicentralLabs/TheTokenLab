@@ -1,7 +1,7 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import "./Photo-input.css";
 import $ from 'jquery';
-import 'dotenv/config';
 
 function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
@@ -37,7 +37,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
 
         try {
             const response = await $.ajax({
-                url: `http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/upload`,
+                url: `${process.env.REACT_APP_PUBLIC_URL}/upload`,
                 type: 'POST',
                 data: formData,
                 processData: false, // Don't process the data
@@ -102,12 +102,14 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
                     // Upload the image to the server
                     const result = await uploadFile(file);
                     console.log('File uploaded successfully:', result);
+                    console.log(imagePath)
 
                     setImagePath(result.path);
                     if (onFileUpload && result.path) {
                         onFileUpload(result.path); // Assuming result contains the file path as `result.path`
                     }
-
+                    console.log('File uploaded successfully:', result.path);
+                    console.log('Image path:', result.path);
                     // Notify parent with image URI
                     if (onImageURIChange) {
                         onImageURIChange(fileURL);
