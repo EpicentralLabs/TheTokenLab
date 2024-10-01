@@ -85,3 +85,26 @@
 .confirm-mint-button.cancel:hover {
   background-color: #cc3333;
 }
+
+.confirm-mint-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.confirm-mint-spinner {
+  border: 4px solid rgba(0, 255, 163, 0.3);
+  border-top: 4px solid #00FFA3;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

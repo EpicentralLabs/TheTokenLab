@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
-import SuccessMessage from './InitalizingMint-message'
 import ConfirmMint from './Confirm-mint'
 
 function InitializeMint({ 
@@ -56,9 +55,10 @@ function InitializeMint({
   }
 
   const [showError, setShowError] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
   const [showConfirmPopup, setShowConfirmPopup] = useState(false)
   const [selectedPaymentType, setSelectedPaymentType] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleInitializeMint = (paymentType) => {
     let hasError = false;
@@ -82,20 +82,23 @@ function InitializeMint({
 
     if (hasError) {
       setShowError(true)
-      setShowSuccess(false)
     } else {
       setSelectedPaymentType(paymentType)
       setShowConfirmPopup(true)
     }
   }
 
-  const handleConfirmMint = () => {
-    setShowConfirmPopup(false)
-    setShowSuccess(true)
-    if (selectedPaymentType === 'SOL') {
-      onSolMintClick()
-    } else if (selectedPaymentType === 'LABS') {
-      onLabsMintClick()
+  const handleConfirmMint = async () => {
+    setIsLoading(true)
+    try {
+      if (selectedPaymentType === 'SOL') {
+        await onSolMintClick()
+      } else if (selectedPaymentType === 'LABS') {
+        await onLabsMintClick()
+      }
+      setIsSuccess(true)
+    } catch (error) {
+      console.error
     }
   }
 
@@ -110,7 +113,6 @@ function InitializeMint({
     setIsQuantityError(false)
     setIsDecimalsError(false)
     setShowError(false)
-    setShowSuccess(false)
   }, [tokenName, tokenSymbol, quantity, decimals])
 
   return (
@@ -130,7 +132,6 @@ function InitializeMint({
         </button>
       </div>
       {showError && <ErrorMessage />}
-      {showSuccess && <SuccessMessage />}
       {showConfirmPopup && (
         <ConfirmMint
           paymentType={selectedPaymentType}
