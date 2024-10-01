@@ -3,26 +3,19 @@ import './Input-list.css';
 
 // QuantityInput component for handling token quantity input
 function QuantityInput({ quantity, setQuantity, isError }) {
-    // Maximum allowed value for quantity (1 trillion)
     const maxValue = 1000000000000;
 
-    // Format number with commas
     const formatNumber = (num) => {
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    // Handler for input change
     const handleChange = (e) => {
         let value = e.target.value;
-
-        // Remove non-digit characters for validation
-        const numericValue = value.replace(/[^\d]/g, '');
-
-        if (numericValue === '' || (parseInt(numericValue, 10) <= maxValue)) {
-            // Format the numeric value with commas
-            const formattedValue = formatNumber(numericValue);
-            setQuantity(formattedValue);
+        value = value.replace(/[^0-9]/g, '');
+        if (parseInt(value) > maxValue) {
+            value = maxValue.toString();
         }
+        setQuantity(value);
     }
 
     return (
