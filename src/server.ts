@@ -7,6 +7,7 @@ import * as path from 'path';
 import cors from 'cors';
 import mintRoutes from './backend/routes/mint';
 import uploadRoutes from './backend/routes/upload';
+import compressionRoutes from './backend/routes/compression';
 
 // Create an instance of the Express app
 const app = express();
@@ -37,7 +38,7 @@ app.use(cors({
 // Routes
 app.use('/api/mint', mintRoutes);
 app.use('/api/upload', uploadRoutes);
-
+app.use('api/compress-mint', compressionRoutes);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({

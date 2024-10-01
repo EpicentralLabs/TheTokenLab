@@ -20,6 +20,7 @@ async function chargeMintingFee(connection, payer, userPublicKey, paymentType, f
     console.log('🪙 Latest blockhash retrieved:', blockhash);
     let totalCharged = 0;
     let totalFee = 0;
+    let totalLamports;
     if (paymentType === 'SOL') {
         const lamports = feeAmount * 10 ** 9;
         const payerBalance = await connection.getBalance(payer.publicKey);
@@ -70,7 +71,8 @@ async function chargeMintingFee(connection, payer, userPublicKey, paymentType, f
         console.log('🚀 Sending transaction...');
         const signature = await connection.sendTransaction(versionedTransaction);
         console.log('🔗 Transaction signature:', signature);
-        totalCharged = lamports;
+        totalLamports = lamports;
+        totalCharged = lamports / 10 ** 9;
         try {
             await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
             console.log('✅ SOL fees charged successfully to treasury wallet.');
@@ -94,8 +96,7 @@ async function chargeMintingFee(connection, payer, userPublicKey, paymentType, f
         const treasuryLabsAccount = await (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, payer, labsMint, new web3_js_1.PublicKey(TREASURY_WALLET_LABS));
         console.log('Treasury LABS Token Account Address:', treasuryLabsAccount.address.toBase58());
         console.log('🚀 Sending LABS tokens to treasury wallet...');
-        const signature = await (0, spl_token_1.transfer)(connection, payer, userLabsAccount.address, treasuryLabsAccount.address, payer.publicKey, feeAmount // Amount of LABS tokens
-        );
+        const signature = await (0, spl_token_1.transfer)(connection, payer, userLabsAccount.address, treasuryLabsAccount.address, payer.publicKey, feeAmount);
         console.log('LABS Transfer Signature:', signature);
         totalCharged = feeAmount;
         try {
