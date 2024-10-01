@@ -153,7 +153,7 @@ router.post('/', async (req, res) => {
             console.log('✅ Minting fee charged successfully!');
             // Calculate price per lamport (USD value of 1 lamport)
             const solPerLamport = solPrice / 10 ** 9; // SOL uses 9 decimal Places
-            const labsPerUnit = labsPrice / 10 ** 9; // TODO: Confirm LABS also uses 9 decimal places
+            const labsPerUnit = labsPrice / 10 ** 9; // LABS uses 9 decimal places
             console.table([
                 { 'Metric': 'Minting Fee', 'Value': `${mintingFee} ${paymentType === 'SOL' ? 'USD (SOL)' : 'LABS'}` },
                 { 'Metric': 'Current SOL Price', 'Value': `${solPrice} USD` },

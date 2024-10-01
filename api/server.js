@@ -26,6 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// Import necessary modules
 const express_1 = __importDefault(require("express"));
 const bodyParser = __importStar(require("body-parser"));
 const web3_js_1 = require("@solana/web3.js");
@@ -44,18 +45,13 @@ console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint}`);
 // Middleware
 app.use(express_1.default.json());
 app.use(bodyParser.json());
+app.use((0, cors_1.default)());
 app.use(express_1.default.static(path.join(__dirname, 'build')));
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal Server Error',
-    });
-});
 // Backend Port Configuration
 const port = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
-// CORS configuration (Allow any port but same origin)
+// CORS configuration
+// const allowedOrigin = process.env.REACT_APP_PUBLIC_URL || 'http://localhost';
 app.use((0, cors_1.default)({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -71,42 +67,12 @@ app.use((err, req, res, next) => {
         message: err.message || 'Internal Server Error',
     });
 });
-// Health Check Route
-app.get('/api/health', async (req, res) => {
-    res.set('Cache-Control', 'no-store');
-    try {
-        console.log('Checking Solana version...');
-        const versionInfo = await connection.getVersion(); // This can throw an error
-        console.log('Solana version retrieved:', versionInfo);
-        const memoryUsage = process.memoryUsage();
-        const memoryUsageInMB = {
-            rss: (memoryUsage.rss / 1024 / 1024).toFixed(2),
-            heapTotal: (memoryUsage.heapTotal / 1024 / 1024).toFixed(2),
-            heapUsed: (memoryUsage.heapUsed / 1024 / 1024).toFixed(2),
-            external: (memoryUsage.external / 1024 / 1024).toFixed(2),
-        };
-        const environment = process.env.NODE_ENV || 'development';
-        res.status(200).json({
-            status: 'OK',
-            environment,
-            solana: {
-                rpcEndpoint: rpcEndpoint,
-                version: versionInfo,
-            },
-            memoryUsage: memoryUsageInMB,
-            timestamp: new Date().toISOString(),
-        });
-    }
-    catch (error) {
-        console.error('Health check failed:', error);
-        res.status(500).json({
-            status: 'ERROR',
-            message: 'Health check failed',
-            error: error instanceof Error ? error.message : 'Unknown error',
-        });
-    }
+app.use(express_1.default.static(path.join(__dirname, 'build')));
+// Fallback to React index.html for client-side routing
+app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
