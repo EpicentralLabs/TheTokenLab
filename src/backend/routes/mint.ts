@@ -118,10 +118,10 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return res.status(400).json({message: 'Invalid user public key.'});
         }
         // 4. Validate decimals
-        parsedDecimals = parseInt(decimals, 10);
-        if (isNaN(parsedDecimals) || parsedDecimals < 0 || parsedDecimals > 6) {
-            console.error('❌ Validation Error: Invalid decimals. Must be a non-negative integer and <= 6.');
-            return res.status(400).json({message: 'Invalid decimals. Must be a non-negative integer and <= 6.'});
+        parsedDecimals = decimals ? parseInt(decimals) : 0
+        if (isNaN(parsedDecimals) || parsedDecimals < 0 || parsedDecimals > 9) {
+            console.error('❌ Validation Error: Invalid decimals. Must be a non-negative integer and <= 9.');
+            return res.status(400).json({message: 'Invalid decimals. Must be a non-negative integer and <= 9.'});
         }
         console.log('✅ Decimals validated:', parsedDecimals);
         // 5. Validate image path
@@ -255,7 +255,6 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                         tokenMintAccount,
                         payer.publicKey,
                         AuthorityType.MintTokens,
-                        //userPublicKeyInstance
                         null
                     );
                     actionsPerformed.push('Minting');
@@ -282,7 +281,6 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                         tokenMintAccount,
                         payer.publicKey,
                         AuthorityType.FreezeAccount,
-                        // userPublicKeyInstance
                         null
                     );
                     actionsPerformed.push('Freeze authority');
