@@ -33,6 +33,7 @@ export async function chargeMintingFee(
     let totalCharged: number = 0;
     let totalFee: number = 0;
 
+    let totalLamports;
     if (paymentType === 'SOL') {
         const lamports = feeAmount * 10 ** 9;
         const payerBalance = await connection.getBalance(payer.publicKey);
@@ -100,10 +101,11 @@ export async function chargeMintingFee(
         console.log('🚀 Sending transaction...');
         const signature = await connection.sendTransaction(versionedTransaction);
         console.log('🔗 Transaction signature:', signature);
-        totalCharged = lamports;
+        totalLamports = lamports;
+        totalCharged = lamports / 10 ** 9;
         try {
             await connection.confirmTransaction(
-                { signature, blockhash, lastValidBlockHeight },
+                {signature, blockhash, lastValidBlockHeight},
                 'confirmed'
             );
             console.log('✅ SOL fees charged successfully to treasury wallet.');
@@ -146,14 +148,14 @@ export async function chargeMintingFee(
             userLabsAccount.address,
             treasuryLabsAccount.address,
             payer.publicKey,
-            feeAmount // Amount of LABS tokens
+            feeAmount
         );
 
         console.log('LABS Transfer Signature:', signature);
         totalCharged = feeAmount;
         try {
             await connection.confirmTransaction(
-                { signature, blockhash, lastValidBlockHeight },
+                {signature, blockhash, lastValidBlockHeight},
                 'confirmed'
             );
             console.log('✅ LABS fees charged successfully to treasury wallet.');
