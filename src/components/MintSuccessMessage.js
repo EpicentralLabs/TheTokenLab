@@ -74,7 +74,7 @@ function MintSuccessMessage({
                 </div>
                 <hr />
                 <div className="detail-item">
-                    <span className="detail-label">💰 Total Charged:</span> {totalCharged} {paymentType === 'SOL' ? 'lamports' : 'LABS'}
+                    <span className="detail-label">💰 Total Charged:</span> {totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}
                 </div>
                 <hr />
                 <div className="detail-item">
