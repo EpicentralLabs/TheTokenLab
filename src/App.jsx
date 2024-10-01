@@ -17,10 +17,8 @@ import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
-import Compress from './components/ZKcompress'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
-import 'dotenv/config';
 
 
 function App() {
@@ -80,7 +78,22 @@ function App() {
   }, [mintChecked, freezeChecked, immutableChecked])
 
 
+  const validateInputs = () => {
+    let errors = {
+      tokenName: !tokenName,
+      tokenSymbol: !tokenSymbol,
+      quantity: !quantity,
+      decimals: !decimals,
+    };
 
+    setInputErrors(errors);
+
+    if (Object.values(errors).includes(true)) {
+      alert('All fields are required.');
+      return false;
+    }
+    return true;
+  };
 
   const mintTokens = async (paymentType) => {
     if (!userPublicKey) {
@@ -100,6 +113,7 @@ function App() {
     // Apply decimals to the quantity
     const decimalPlaces = parseInt(decimals, 10);
     const adjustedQuantity = sanitizedQuantity.toFixed(decimalPlaces);
+
 
     const mintData = new FormData();
     mintData.append('tokenName', tokenName);
@@ -127,7 +141,7 @@ function App() {
     });
 
     try {
-      const response = await fetch(`http://${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+      const response = await fetch(`${process.env.PUBLIC_URL}:${process.env.BACKEND_PORT}/api/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,23 +165,26 @@ function App() {
       }
 
       const data = await response.json();
-
       console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput } = data;
+      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
+      console.log('mintAddress:', mintAddress);
+      console.log('tokenAccount:', tokenAccount);
+      console.log('metadataUploadOutput:', metadataUploadOutput);
       const transactionLink = data.explorerLink;
-      const totalCharged = data.totalCharged;
+      console.log('transactionLink:', transactionLink);
+
       setMintSuccess({
-        mintAddress: data.mintAddress,
-        tokenAccount: data.tokenAccount,
+        mintAddress,
+        tokenAccount,
         quantity,
         decimals,
-        metadataUploadOutput: data.metadataUploadOutput,
+        metadataUploadOutput,
         freezeChecked,
-        totalCharged: data.totalCharged,
+        totalCharged,
         paymentType,
-        transactionLink: data.explorerLink,
+        transactionLink,
       });
-
+      console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
@@ -180,22 +197,6 @@ function App() {
     setIsDecimalsError(errors.decimals);
   }
 
-  const validateInputs = () => {
-    let errors = {
-      tokenName: !tokenName,
-      tokenSymbol: !tokenSymbol,
-      quantity: !quantity,
-      decimals: !decimals,
-    };
-
-    setInputErrors(errors);
-
-    if (Object.values(errors).includes(true)) {
-      alert('All fields are required.');
-      return false;
-    }
-    return true;
-  };
 
 
   const handleSolMint = () => {
