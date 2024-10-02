@@ -1,22 +1,32 @@
 import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
-import { mintToken } from '../services/createTokenMint';
-import {chargeMintingFee} from "../services/mintingFee";
-import {fetchPrices} from "../services/priceService";
+import * as fs from 'fs';
+import * as path from 'path';
+import { mintToken } from './createTokenMint';
+import { createMetadata } from './createTokenMetadata';
+import { uploadImageToPinata, uploadImageAndPinJSON } from "./pinata";
+import {chargeMintingFee} from "./mintingFee";
+import {fetchPrices} from "./priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
+import {getStorage} from "firebase-admin/storage";
 const router: Router = express.Router();
+import { createWriteStream } from 'fs';
 
-interface CompressedMintBody {
+interface MintRequestBody {
+    tokenName: string;
+    tokenSymbol: string;
     userPublicKey: string;
     quantity: number;
     mintChecked: boolean;
+    immutableChecked: boolean;
     decimals: string;
     paymentType: string;
+    imagePath: string;
 }
 
-const validateRequiredFields = (reqBody: CompressedMintBody) => {
-    const missingFields: (keyof CompressedMintBody)[] = [];
-    const requiredFields: (keyof CompressedMintBody)[] = ['quantity', 'mintChecked', 'decimals', 'paymentType'];
+const validateRequiredFields = (reqBody: MintRequestBody) => {
+    const missingFields: (keyof MintRequestBody)[] = [];
+    const requiredFields: (keyof MintRequestBody)[] = ['tokenName', 'tokenSymbol', 'quantity', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath'];
 
     for (const field of requiredFields) {
         if (reqBody[field] === undefined || reqBody[field] === null) {
@@ -55,18 +65,41 @@ async function logCurrentAuthorities(connection: Connection, tokenMintAccount: P
 }
 
 
+async function deleteFileFromFirebase(firebaseUrl: string) {
+    try {
+        const bucket = getStorage().bucket();
+        const filePath = extractFilePathFromFirebaseUrl(firebaseUrl);
+        const file = bucket.file(filePath);
+        await file.delete();
 
+        console.log(`🗑️ File deleted successfully from Firebase Storage: ${firebaseUrl}`);
+    } catch (error) {
+        const deleteErrorMessage = (error as Error).message || String(error);
+        console.error('❌ Error deleting file from Firebase Storage:', deleteErrorMessage);
+    }
+}
+
+
+function extractFilePathFromFirebaseUrl(firebaseUrl: string): string {
+    const url = new URL(firebaseUrl);
+    return url.pathname.substring(1);
+}
 // Define the /api/mint endpoint
 // @ts-ignore
-router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response) => {
+router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) => {
 
-    
+
+
     const {
+        tokenName,
+        tokenSymbol,
         userPublicKey,
         quantity,
         mintChecked,
+        immutableChecked,
         decimals,
         paymentType,
+        imagePath,
     } = req.body;
 
     console.log('ℹ️ Request received:', req.body);
@@ -78,6 +111,7 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
     let fullPath: string;
     let payer: Keypair;
     let totalCharged: number;
+    let firebaseURL = req.body.imagePath;
     const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
     const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 
@@ -106,6 +140,10 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         }
         console.log('✅ All required fields validated.');
 
+        if (!imagePath) {
+            console.error('❌ Validation Error: Invalid image path:', imagePath);
+            return res.status(400).json({message: 'Invalid image path provided.'});
+        }
         // 2. Validate payment type
         if (!['SOL', 'LABS'].includes(paymentType)) {
             console.error('❌ Validation Error: Invalid payment type. Must be SOL or LABS.');
@@ -127,13 +165,27 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             return res.status(400).json({message: 'Invalid decimals. Must be a non-negative integer and <= 9.'});
         }
         console.log('✅ Decimals validated:', parsedDecimals);
+        // 5. Validate image path
+        // eslint-disable-next-line no-undef
+        const fullPath = path.join(__dirname, '..', '..', 'uploads', path.basename(imagePath));
 
+        console.log('🔍 Checking file path:', fullPath);
 
+        if (imagePath.startsWith('https://storage.googleapis.com')) {
+            console.log('✅ Validating file via Firebase Storage URL:', imagePath);
+        } else {
+            if (!fs.existsSync(fullPath)) {
+                console.error('❌ Validation Error: File not found at the specified path:', fullPath);
+                return res.status(400).json({ message: 'File not found at the specified path.' });
+            }
+            console.log('✅ Image path validated:', fullPath);
+        }
 
         // 6. Initialize payer keypair
         const privateKey = process.env.SOLANA_PRIVATE_KEY;
         if (!privateKey) {
             console.error('❌ Missing SOLANA_PRIVATE_KEY environment variable');
+            await deleteFileFromFirebase(firebaseURL);
             return res.status(500).json({error: 'Missing SOLANA_PRIVATE_KEY'});
         }
 
@@ -144,6 +196,7 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             console.log('✅ Payer keypair initialized.');
         } catch (err) {
             console.error('❌ Error: Failed to initialize payer keypair.', (err as Error).message || err);
+            await deleteFileFromFirebase(firebaseURL);
             return handleErrorResponse(res, err as Error, 'Failed to initialize payer keypair.');
         }
 
@@ -174,9 +227,30 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             console.log('-----------------------------------------');
         } catch (error) {
             console.error('❌ Error: Failed to charge minting fee:', (error as Error).message || error);
+            await deleteFileFromFirebase(firebaseURL);
             return handleErrorResponse(res, error as Error, 'Failed to charge minting fee.');
         }
 
+        let updatedMetadataUri: string;
+        try {
+            const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
+            let imageUrl = imagePath;
+            const imageCid = await uploadImageAndPinJSON(
+                imageUrl,
+                process.env.PINATA_API_KEY || '',
+                process.env.PINATA_SECRET_API_KEY || '',
+                process.env.PINATA_BEARER_TOKEN || '',
+                tokenSymbol.toUpperCase(),
+                tokenName,
+                description
+            );
+            updatedMetadataUri = `https://gateway.pinata.cloud/ipfs/${imageCid}`;
+            console.log('✅ Image and metadata uploaded to Pinata:', updatedMetadataUri);
+        } catch (err) {
+            console.error('❌ Error: Failed to upload image and metadata.', (err as Error).message || err);
+            await deleteFileFromFirebase(firebaseURL);
+            return handleErrorResponse(res, err as Error, 'Failed to upload image and metadata.');
+        }
 
         let userTokenAccount: PublicKey;
         let tokenMintAccount: PublicKey;
@@ -187,14 +261,36 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             tokenMintAccount = result.tokenMint;
             userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
+            console.log(`Freeze checked: ${result.freezeChecked}`);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
+            await deleteFileFromFirebase(firebaseURL);
             return handleErrorResponse(res, error as Error, 'Failed to mint tokens.');
         }
         let transactionLink: any;
-
+        try {
+            transactionLink = await createMetadata(
+                tokenName,
+                tokenSymbol,
+                userPublicKeyInstance,
+                updatedMetadataUri,
+                payer.publicKey,
+                parsedDecimals,
+                quantity,
+                mintChecked,
+                immutableChecked,
+                tokenMintAccount
+            );
+            console.log('✅ Token metadata created for:', tokenName);
+            console.log('✅ Status of Mint Checked:', mintChecked);
+        } catch (error) {
+            console.error('❌ Error during minting or metadata creation:', (error as Error).message || error);
+            await deleteFileFromFirebase(firebaseURL);
+            return handleErrorResponse(res, error as Error, 'Failed to create token metadata.');
+        }
         try {
             const actionsPerformed: string[] = [];
+            // Handle Mint Authority, set it to null if checked
             if (mintChecked) {
                 console.log('🔄 Starting process to set MintTokens authority...');
                 try {
@@ -206,18 +302,52 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
                         AuthorityType.MintTokens,
                         null
                     );
+                    await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
+                        AuthorityType.FreezeAccount,
+                        null
+                    );
+                    console.log('✅ Successfully set FreezeAccount authority as null.');
                     actionsPerformed.push('Minting');
                     console.log('✅ Successfully set MintTokens authority.');
                 } catch (error) {
                     console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
+                    await deleteFileFromFirebase(firebaseURL);
                     return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
                 }
             } else {
-                console.log('ℹ️ mintChecked is false, skipping minting process.');
+                 {
+                 console.log('✅ Not revoking mint authority');
+                 console.log('✅ Setting user as mint authority');
+                       await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer.publicKey,
+                        AuthorityType.MintTokens,
+                        userPublicKeyInstance
+                       );
+                       console.log('✅ Successfully set MintTokens authority to user.');
+                       await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
+                        AuthorityType.FreezeAccount,
+                        null
+                    );
+                       console.log('✅ Successfully set FreezeAccount authority as null.');
+
+
+             }
+
             }
             await logCurrentAuthorities(connection, tokenMintAccount);
 
-        //      // Handle Freeze Authority, set it to null if checked
+             // Handle Freeze Authority, set it to null if checked
         //      if (freezeChecked) {
         //          console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
         //          try {
@@ -236,16 +366,20 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         //             console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
         //          } catch (error) {
         //              console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
+        //              await deleteFileFromFirebase(firebaseURL);
         //              return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
         // }
         //      } else {
         //          console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
         //      }
-        //
-        //
-        //
-        //
 
+
+            try {
+                await deleteFileFromFirebase(firebaseURL);
+                console.log('🗑️ Uploaded image file deleted successfully:', fullPath);
+            } catch (err) {
+                console.error('❌ Error deleting image file:', (err as Error).message || err);
+            }
             // If we reach here, all actions were successful
             return res.status(200).json({
                 message: `✅ Successfully completed: ${actionsPerformed.join(', ')}.`,
@@ -270,10 +404,30 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
                 console.error(`❌ Error: ${errorMapping[errorKey]}:`, errorMessage);
                 return handleErrorResponse(res, error as Error, errorMapping[errorKey])
             }
+
             console.error('❌ Unexpected Error:', errorMessage);
+            if (fullPath) {
+                try {
+                    console.error('❌ Minting failed. Deleting uploaded image file:', fullPath);
+                    await deleteFileFromFirebase(firebaseURL);
+                    console.log('🗑️ Uploaded image file deleted successfully:', fullPath);
+                    console.log('✅ All Process completed successfully!');
+                } catch (err) {
+                    console.error('❌ Error deleting image file:', (err as Error).message || err);
+                }
+            }
+
             return handleErrorResponse(res, error as Error, 'Internal Server Error');
         } finally {
-            // Clean up HERE
+            if (firebaseURL) {
+                try {
+                    await deleteFileFromFirebase(firebaseURL);
+                    console.log('🗑️ Uploaded image file deleted successfully:', firebaseURL);
+                } catch (err) {
+                    const deleteErrorMessage = (err instanceof Error) ? err.message : String(err);
+                    console.error('❌ Error deleting image file:', deleteErrorMessage);
+                }
+            }
         }
     } catch (error) {
         return handleErrorResponse(res, error as Error, 'Internal Server Error');

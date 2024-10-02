@@ -4,12 +4,12 @@ import * as bodyParser from 'body-parser';
 import { Cluster, clusterApiUrl, Connection } from '@solana/web3.js';
 import 'dotenv/config';
 import cors from 'cors';
-import mintRoutes from './backend/routes/mint';
-import uploadRoutes from './backend/routes/upload';
-import compressionRoutes from './backend/routes/compression';
+import mintRoutes from './backend/mint';
+import uploadRoutes from './backend/upload';
+import compressionRoutes from './backend/compression';
 import * as os from 'os';
 import { Writable } from 'stream';
-import logger from './backend/services/security';
+import logger from './backend/security';
 import ipinfo from "ipinfo-express";
 
 const app = express();
