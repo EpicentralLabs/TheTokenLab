@@ -94,6 +94,7 @@ function InitializeMint({
 
   const handleConfirm = async () => {
     setIsLoading(true)
+    setIsSuccess(false)
     try {
       if (selectedPaymentType === 'SOL') {
         await onSolMintClick()
@@ -103,7 +104,7 @@ function InitializeMint({
       setIsSuccess(true)
     } catch (error) {
       console.error('Minting failed:', error)
-      setIsSuccess(false)
+      // Optionally, you can set an error state here and display an error message
     } finally {
       setIsLoading(false)
     }
