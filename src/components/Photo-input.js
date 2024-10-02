@@ -7,7 +7,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [error, setError] = useState('');
-    const [setImagePath] = useState(''); // New state for storing image path
+    const [imagePath, setImagePath] = useState('');
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -112,22 +112,24 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
                     const result = await uploadFile(file);
                     console.log('File uploaded successfully:', result);
 
-                    setImagePath(result.publicUrl);
-
-
                     if (onFileUpload && result.publicUrl) {
                         onFileUpload(result.publicUrl);
-                    }
-                    console.log('Image path:', result.publicUrl);
+                        if (onFileUpload && result.publicUrl) {
+                            onFileUpload(result.publicUrl);
+                        }
 
-                    if (onImageURIChange) {
-                        onImageURIChange(result.publicUrl);  // Ensure you're passing the correct public URL
+                        console.log('Image path:', result.publicUrl);
+                        console.log(imagePath);
+                        if (onImageURIChange) {
+                            onImageURIChange(result.publicUrl);
+                        }
+                        setImagePath(result.publicUrl);
                     }
                 } catch (err) {
                     setError('Failed to upload file');
                     console.error('File upload error:', err);
                 } finally {
-                    URL.revokeObjectURL(fileURL);  // Clean up the local file URL after upload
+                    URL.revokeObjectURL(fileURL);
                 }
             }
         };
@@ -142,12 +144,12 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
         setPhoto('');
         setPreviewUrl('');
         setError('');
-        setImagePath(''); // Clear the image path state
+        setImagePath('');
         if (fileInputRef.current) {
-            fileInputRef.current.value = null; // Reset file input correctly
+            fileInputRef.current.value = null;
         }
         if (onFileUpload) {
-            onFileUpload(null); // Notify parent component of removal
+            onFileUpload(null);
             console.log('Cleared photo in parent component');
         }
     };

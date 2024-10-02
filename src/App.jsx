@@ -137,7 +137,11 @@ function App() {
 
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
