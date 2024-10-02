@@ -3,7 +3,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import * as bodyParser from 'body-parser';
 import { Cluster, clusterApiUrl, Connection } from '@solana/web3.js';
 import 'dotenv/config';
-import * as path from 'path';
 import cors from 'cors';
 import mintRoutes from './backend/routes/mint';
 import uploadRoutes from './backend/routes/upload';
@@ -28,20 +27,17 @@ app.use(bodyParser.json());
 const port: number = Number(process.env.REACT_APP_BACKEND_PORT) || 3001;
 console.log(`Backend is running on port ${port}`);
 
-
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
 // Routes
 app.use('/api/mint', mintRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/compress-mint', compressionRoutes);
-app.get('/api/health', (req, res) => {
+
+// Health check route
+app.get('/api/health', (req: Request, res: Response) => {
     res.status(200).json({ status: 'OK' });
 });
+
+// Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
@@ -50,11 +46,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-
+// Start the server in development mode
 if (process.env.REACT_APP_APP_ENV === 'development') {
     app.listen(port, () => {
         console.log(`Server is running on http://localhost:${port}`);
     });
 }
-export default app;
 
+export default app;

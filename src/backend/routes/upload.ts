@@ -6,6 +6,7 @@ import * as admin from 'firebase-admin';
 import * as serviceAccount from './firebase_account.json';
 import 'dotenv/config';
 import path from 'path';
+import { Readable } from 'stream';
 
 const router = Router();
 
@@ -33,32 +34,48 @@ const upload = multer({
             cb(new Error('Error: File type not allowed!'));
         }
     },
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
 });
 
-// Define the /upload route
 router.post('/', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     const file = req.file;
 
     if (file) {
         const fileName = `${Date.now()}_${file.originalname}`;
         const fileUpload = bucket.file(fileName);
-
         console.log(`🚀 Uploading file to Firebase Storage with name: ${fileName}`);
 
         try {
-            // Upload the file to Firebase Storage
-            await fileUpload.save(file.buffer, {
-                metadata: { contentType: file.mimetype },
+            // Create a writable stream to Firebase Storage
+            const stream = fileUpload.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype,
+                },
             });
 
-            const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
-            console.log(`✅ File uploaded successfully: ${file.originalname}`);
-            console.log(`📄 Public URL for uploaded file: ${publicUrl}`);
-            res.status(200).json({
-                message: 'File uploaded successfully!',
-                path: publicUrl,
+            const readableStream = new Readable({
+                read() {}
             });
+
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            res.status(200);
+
+            stream.on('finish', () => {
+                const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
+                readableStream.push(`✅ File uploaded successfully: ${file.originalname}\n`);
+                readableStream.push(`📄 Public URL: ${publicUrl}\n`);
+                readableStream.push(null);
+                readableStream.pipe(res);
+            });
+
+            stream.on('error', (err) => {
+                console.error('❌ Error uploading file:', err);
+                readableStream.push(`❌ Error uploading file: ${err.message}\n`);
+                readableStream.push(null);
+                readableStream.pipe(res);
+            });
+
+            stream.end(file.buffer);
         } catch (err) {
             const errorMessage = (err as Error).message;
             console.error('❌ Error uploading file:', errorMessage);
