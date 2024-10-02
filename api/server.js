@@ -34,6 +34,7 @@ require("dotenv/config");
 const cors_1 = __importDefault(require("cors"));
 const mint_1 = __importDefault(require("./backend/routes/mint"));
 const upload_1 = __importDefault(require("./backend/routes/upload"));
+const compression_1 = __importDefault(require("./backend/routes/compression"));
 // Create an instance of the Express app
 const app = (0, express_1.default)();
 // Connect to Solana
@@ -56,6 +57,7 @@ app.use((0, cors_1.default)({
 // Routes
 app.use('/api/mint', mint_1.default);
 app.use('/api/upload', upload_1.default);
+app.use('api/compress-mint', compression_1.default);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(err.status || 500).json({

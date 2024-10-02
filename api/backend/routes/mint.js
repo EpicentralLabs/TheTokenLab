@@ -40,7 +40,7 @@ const storage_1 = require("firebase-admin/storage");
 const router = express_1.default.Router();
 const validateRequiredFields = (reqBody) => {
     const missingFields = [];
-    const requiredFields = ['tokenName', 'tokenSymbol', 'quantity', 'freezeChecked', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath']; // Specify the required fields with type
+    const requiredFields = ['tokenName', 'tokenSymbol', 'quantity', 'freezeChecked', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath'];
     for (const field of requiredFields) {
         if (reqBody[field] === undefined || reqBody[field] === null) { // Check for both undefined and null
             missingFields.push(field);
