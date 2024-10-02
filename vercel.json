@@ -10,25 +10,25 @@
       }
     },
     {
-      "src": "/api/server.js",
+      "src": "api/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/mint",
+      "src": "api/mint",
       "dest": "api/backend/routes/mint.js"
     },
     {
-      "src": "/api/upload",
+      "src": "api/upload",
       "dest": "api/backend/routes/upload.js"
     },
     {
-      "src": "/api/compress-mint",
+      "src": "api/compress-mint",
       "dest": "api/backend/routes/compression.js"
     },
     {
-      "src": "/api/(.*)",
+      "src": "api/(.*)",
       "dest": "api/server.js"
     }
   ]
