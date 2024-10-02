@@ -302,7 +302,7 @@ function App() {
           
           {/* Authority revocation section */}
           <div className="revoke">
-            Revoke Authority:
+            Revoke (Remove):
           </div>
           
           {/* Token authority switches */}

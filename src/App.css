@@ -137,7 +137,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 300px; /* Adjust this value as needed */
+    max-width: 400px; /* Increased from 300px to allow more space */
     margin: 0 auto;
 }
 
@@ -147,7 +147,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 10px; /* Add some horizontal spacing between switches */
+    margin: 0 30px; /* Increased from 15px to create more space between switches */
 }
 
 /* List spacing styles */

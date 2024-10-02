@@ -10,6 +10,7 @@
   margin: 0; /* Remove right margin */
   height: 100%;
   width: 100%; /* Ensure full width */
+  min-width: 120px; /* Adjust this value as needed */
 }
 
 /* Styling for the switch label text */
@@ -20,6 +21,7 @@
   text-align: center;
   margin: 0 0 8px 0;
   width: 100%; /* Ensure full width */
+  white-space: nowrap; /* Prevent text from wrapping */
 }
 
 /* Base styling for the switch */
