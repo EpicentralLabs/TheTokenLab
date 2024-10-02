@@ -15,7 +15,7 @@ function QuantityInput({ quantity, setQuantity, isError }) {
         if (parseInt(value) > maxValue) {
             value = maxValue.toString();
         }
-        setQuantity(value);
+        setQuantity(formatNumber(value));
     }
 
     return (
@@ -28,7 +28,7 @@ function QuantityInput({ quantity, setQuantity, isError }) {
                         type="text"
                         id="quantity"
                         className={`input-bubble ${isError ? 'error' : ''}`}
-                        value={quantity}
+                        value={formatNumber(quantity)} // Format the quantity for display
                         onChange={handleChange}
                     />
                     {/* Info bubble with tooltip */}
