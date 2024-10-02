@@ -39,7 +39,7 @@ function App() {
   const [imageFile, setImageFile] = useState(null); // To store the uploaded image file
 
   const [userPublicKey, setUserPublicKey] = useState('');
-  // const [onFileUpload, setOnFileUpload] = useState('');
+  const [onFileUpload, setOnFileUpload] = useState('');
   const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
@@ -55,6 +55,9 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+
+  // let APP_ENV = process.env.REACT_APP_ENV || 'development';
+  // const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
@@ -104,7 +107,6 @@ function App() {
       return;
     }
 
-    // Remove commas from quantity and convert to number
     const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
 
 
@@ -133,6 +135,7 @@ function App() {
       imagePath,
     });
 
+
     try {
       const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
         method: 'POST',
@@ -158,6 +161,7 @@ function App() {
       }
 
       const data = await response.json();
+
       console.log('Mint successful!', data);
       const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
       console.log('mintAddress:', mintAddress);
@@ -165,6 +169,8 @@ function App() {
       console.log('metadataUploadOutput:', metadataUploadOutput);
       const transactionLink = data.explorerLink;
       console.log('transactionLink:', transactionLink);
+      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
+      console.log(imageFile, 'imageFile', setImageFile());
 
       setMintSuccess({
         mintAddress,
