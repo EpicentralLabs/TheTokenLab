@@ -8,7 +8,6 @@ function MintSuccessMessage({
                                 quantity,
                                 decimals,
                                 metadataUploadOutput,
-                                freezeChecked,
                                 totalCharged,
                                 paymentType,
                                 transactionLink,
@@ -67,10 +66,6 @@ function MintSuccessMessage({
                     ) : (
                         <span>No metadata transaction found</span>
                     )}
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">🔒 Freeze Checked:</span> {freezeChecked ? 'Enabled' : 'Disabled'}
                 </div>
                 <hr />
                 <div className="detail-item">

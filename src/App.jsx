@@ -49,8 +49,6 @@ function App() {
   // State variables for switch components and warning message
   // State for mint authority switch
   const [mintChecked, setMintChecked] = useState(false)
-  // State for freeze authority switch
-  const [freezeChecked, setFreezeChecked] = useState(false)
   // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
@@ -67,7 +65,7 @@ function App() {
 
   // Show warning message when any switch is checked
   useEffect(() => {
-    const warningState = mintChecked || freezeChecked || immutableChecked
+    const warningState = mintChecked || immutableChecked
     if (warningState) {
       // Small delay to ensure the component is mounted before fading in
       const timer = setTimeout(() => setShowWarning(true), 50)
@@ -75,7 +73,7 @@ function App() {
     } else {
       setShowWarning(false)
     }
-  }, [mintChecked, freezeChecked, immutableChecked])
+  }, [mintChecked, immutableChecked])
 
 
   const validateInputs = () => {
@@ -115,7 +113,6 @@ function App() {
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
     mintData.append('quantity', sanitizedQuantity);
-    mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
     mintData.append('decimals', decimals);
@@ -127,7 +124,6 @@ function App() {
       tokenSymbol,
       userPublicKey,
       quantity: sanitizedQuantity,
-      freezeChecked,
       mintChecked,
       immutableChecked,
       decimals,
@@ -151,7 +147,6 @@ function App() {
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
           quantity: sanitizedQuantity,
-          freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,
           decimals: decimals,
@@ -182,7 +177,6 @@ function App() {
         quantity,
         decimals,
         metadataUploadOutput,
-        freezeChecked,
         totalCharged,
         paymentType,
         transactionLink,
@@ -304,12 +298,12 @@ function App() {
           {/* Token authority switches */}
           <div className="switch-grid">
             <h1><MintSwitch isChecked={mintChecked} setIsChecked={setMintChecked} /></h1>
-            <h1><FreezeSwitch isChecked={freezeChecked} setIsChecked={setFreezeChecked} /></h1>
+            {/*<h1><FreezeSwitch isChecked={freezeChecked} setIsChecked={setFreezeChecked} /></h1>*/}
             <h1><ImmutableSwitch isChecked={immutableChecked} setIsChecked={setImmutableChecked} /></h1>
           </div>
           
           {/* Conditional rendering of warning message */}
-          {(mintChecked || freezeChecked || immutableChecked) && (
+          {(mintChecked || immutableChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
@@ -336,7 +330,6 @@ function App() {
                 quantity={mintSuccess.quantity}
                 decimals={mintSuccess.decimals}
                 metadataUploadOutput={mintSuccess.metadataUploadOutput}
-                freezeChecked={mintSuccess.freezeChecked}
                 totalCharged={mintSuccess.totalCharged}
                 paymentType={mintSuccess.paymentType}
                 transactionLink={mintSuccess.transactionLink}

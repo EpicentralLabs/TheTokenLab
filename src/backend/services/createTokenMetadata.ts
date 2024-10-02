@@ -31,7 +31,6 @@ export async function createMetadata(
     payer: PublicKey,
     parsedDecimals: number,
     quantity: number,
-    freezeChecked: boolean,
     mintChecked: boolean,
     immutableChecked: boolean,
     tokenMintAccount: PublicKey
@@ -70,7 +69,7 @@ export async function createMetadata(
     let createMetadataAccountInstruction;
     const updateAuthority = !immutableChecked ? user.publicKey : PublicKey.default;
     // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
-    if (freezeChecked || mintChecked || immutableChecked) {
+    if (mintChecked || immutableChecked) {
         console.log("updateAuthority: ", updateAuthority);
         console.log("one of the options is checked; setting appropriate fields.");
         createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
