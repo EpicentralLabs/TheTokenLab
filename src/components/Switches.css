@@ -1,13 +1,21 @@
 /* Import custom fonts */
 @import url('./fonts/fonts.css');
 
-/* Container for the switch and its label */
+/* Container for all switches */
+.switches-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Container for individual switch and its label */
 .switch-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0; /* Remove right margin */
+  margin: 0 10px; /* Add horizontal margin between switches */
   height: 100%;
   width: 100%; /* Ensure full width */
 }
