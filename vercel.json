@@ -4,8 +4,11 @@
     { "source": "/api/(.*)", "destination": "/api/server.js" }
   ],
   "functions": {
-    "api": {
-      "includeFiles": "api/**/*.js"
+    "api/backend/routes/mint.js": {
+      "includeFiles": "api/backend/routes/**/*.js"
+    },
+    "api/backend/routes/upload.js": {
+      "includeFiles": "api/backend/routes/**/*.js"
     }
   }
 }
