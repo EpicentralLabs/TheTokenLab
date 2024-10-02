@@ -1,5 +1,13 @@
 {
   "version": 2,
+  "functions": {
+    "api/mint.js": {
+      "runtime": "nodejs14.x"
+    },
+    "api/upload.js": {
+      "runtime": "nodejs14.x"
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/server.js" }
   ]
