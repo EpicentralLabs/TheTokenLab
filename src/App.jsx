@@ -39,7 +39,7 @@ function App() {
   const [imageFile, setImageFile] = useState(null); // To store the uploaded image file
 
   const [userPublicKey, setUserPublicKey] = useState('');
-  const [onFileUpload, setOnFileUpload] = useState('');
+  // const [onFileUpload, setOnFileUpload] = useState('');
   const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
@@ -57,7 +57,6 @@ function App() {
   const [showWarning, setShowWarning] = useState(false)
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
-  const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
