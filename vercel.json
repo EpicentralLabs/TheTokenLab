@@ -2,13 +2,5 @@
   "version": 2,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/server.js" }
-  ],
-  "functions": {
-    "api/mint.js": {
-      "includeFiles": "api/*.js"
-    },
-    "api/upload.js": {
-      "includeFiles": "api/*.js"
-    }
-  }
+  ]
 }
