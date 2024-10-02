@@ -56,8 +56,8 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
-  let APP_ENV = process.env.REACT_APP_ENV || 'development';
-  const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
+  // let APP_ENV = process.env.REACT_APP_ENV || 'development';
+  // const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
@@ -107,7 +107,6 @@ function App() {
       return;
     }
 
-    // Remove commas from quantity and convert to number
     const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
 
 
@@ -136,8 +135,13 @@ function App() {
       imagePath,
     });
 
+
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,6 +165,7 @@ function App() {
       }
 
       const data = await response.json();
+
       console.log('Mint successful!', data);
       const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
       console.log('mintAddress:', mintAddress);
@@ -168,6 +173,8 @@ function App() {
       console.log('metadataUploadOutput:', metadataUploadOutput);
       const transactionLink = data.explorerLink;
       console.log('transactionLink:', transactionLink);
+      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
+      console.log(imageFile, 'imageFile', setImageFile());
 
       setMintSuccess({
         mintAddress,

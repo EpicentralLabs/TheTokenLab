@@ -1,35 +1,20 @@
 {
   "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/server.js" }
+  ],
   "builds": [
     {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "buildCommand": "npm run build && npm run build-backend"
+        "buildCommand": "npm run build"
       }
     },
     {
-      "src": "/api/server.js",
+      "src": "api/**/*.js",
       "use": "@vercel/node"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/mint",
-      "dest": "api/backend/routes/mint.js"
-    },
-    {
-      "src": "/api/upload",
-      "dest": "api/backend/routes/upload.js"
-    },
-    {
-      "src": "/api/compress-mint",
-      "dest": "api/backend/routes/compression.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "api/server.js"
-    }
-  ]
+    ]
 }

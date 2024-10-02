@@ -10,6 +10,7 @@ import {fetchPrices} from "../services/priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
 import {getStorage} from "firebase-admin/storage";
 const router: Router = express.Router();
+import { createWriteStream } from 'fs';
 
 interface MintRequestBody {
     tokenName: string;
@@ -29,7 +30,7 @@ const validateRequiredFields = (reqBody: MintRequestBody) => {
     const requiredFields: (keyof MintRequestBody)[] = ['tokenName', 'tokenSymbol', 'quantity', 'freezeChecked', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath'];
 
     for (const field of requiredFields) {
-        if (reqBody[field] === undefined || reqBody[field] === null) { // Check for both undefined and null
+        if (reqBody[field] === undefined || reqBody[field] === null) {
             missingFields.push(field);
         }
     }
@@ -81,9 +82,8 @@ async function deleteFileFromFirebase(firebaseUrl: string) {
 
 
 function extractFilePathFromFirebaseUrl(firebaseUrl: string): string {
-    // Example URL: https://storage.googleapis.com/[BUCKET_NAME]/[FULL_FILE_PATH]
     const url = new URL(firebaseUrl);
-    return url.pathname.substring(1);  // Remove the leading '/' from the path
+    return url.pathname.substring(1);
 }
 // Define the /api/mint endpoint
 // @ts-ignore

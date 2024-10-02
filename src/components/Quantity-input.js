@@ -12,10 +12,16 @@ function QuantityInput({ quantity, setQuantity, isError }) {
     const handleChange = (e) => {
         let value = e.target.value;
         value = value.replace(/[^0-9]/g, '');
-        if (parseInt(value) > maxValue) {
-            value = maxValue.toString();
+
+        if (value) {
+            const numericValue = parseInt(value, 10);
+            if (numericValue > maxValue) {
+                value = maxValue.toString();
+            }
+            setQuantity(formatNumber(value));
+        } else {
+            setQuantity('');
         }
-        setQuantity(value);
     }
 
     return (
@@ -28,7 +34,7 @@ function QuantityInput({ quantity, setQuantity, isError }) {
                         type="text"
                         id="quantity"
                         className={`input-bubble ${isError ? 'error' : ''}`}
-                        value={quantity}
+                        value={formatNumber(quantity)}
                         onChange={handleChange}
                     />
                     {/* Info bubble with tooltip */}
