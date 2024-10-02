@@ -297,9 +297,8 @@ function App() {
           
           {/* Token authority switches */}
           <div className="switch-grid">
-            <h1><MintSwitch isChecked={mintChecked} setIsChecked={setMintChecked} /></h1>
-            {/*<h1><FreezeSwitch isChecked={freezeChecked} setIsChecked={setFreezeChecked} /></h1>*/}
-            <h1><ImmutableSwitch isChecked={immutableChecked} setIsChecked={setImmutableChecked} /></h1>
+            <MintSwitch isChecked={mintChecked} setIsChecked={setMintChecked} />
+            <ImmutableSwitch isChecked={immutableChecked} setIsChecked={setImmutableChecked} />
           </div>
           
           {/* Conditional rendering of warning message */}
