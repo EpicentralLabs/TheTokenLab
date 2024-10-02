@@ -67,7 +67,7 @@ export async function createMetadata(
     const transaction = new Transaction();
 
     let createMetadataAccountInstruction;
-    const updateAuthority = !immutableChecked ? user.publicKey : PublicKey.default;
+    const updateAuthority = !immutableChecked ? userPublicKeyInstance : PublicKey.default;
     // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
     if (mintChecked || immutableChecked) {
         console.log("updateAuthority: ", updateAuthority);
@@ -98,7 +98,7 @@ export async function createMetadata(
                 mint: tokenMintAccount,
                 mintAuthority: user.publicKey,
                 payer: user.publicKey,
-                updateAuthority: user.publicKey,
+                updateAuthority: updateAuthority,
             },
             {
                 createMetadataAccountArgsV3: {

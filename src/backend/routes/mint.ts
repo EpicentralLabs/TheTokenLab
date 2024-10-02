@@ -302,6 +302,15 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                         AuthorityType.MintTokens,
                         null
                     );
+                    await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
+                        AuthorityType.FreezeAccount,
+                        null
+                    );
+                    console.log('✅ Successfully set FreezeAccount authority as null.');
                     actionsPerformed.push('Minting');
                     console.log('✅ Successfully set MintTokens authority.');
                 } catch (error) {
@@ -310,7 +319,31 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                     return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
                 }
             } else {
-                console.log('ℹ️ mintChecked is false, skipping minting process.');
+                 {
+                 console.log('✅ Not revoking mint authority');
+                 console.log('✅ Setting user as mint authority');
+                       await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer.publicKey,
+                        AuthorityType.MintTokens,
+                        userPublicKeyInstance
+                       );
+                       console.log('✅ Successfully set MintTokens authority to user.');
+                       await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
+                        AuthorityType.FreezeAccount,
+                        null
+                    );
+                       console.log('✅ Successfully set FreezeAccount authority as null.');
+
+
+             }
+
             }
             await logCurrentAuthorities(connection, tokenMintAccount);
 
