@@ -7,7 +7,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [error, setError] = useState('');
-    const [imagePath, setImagePath] = useState(''); // New state for storing image path
+    const [setImagePath] = useState(''); // New state for storing image path
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -103,33 +103,31 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
                 setError('Image maximum 1000 x 1000 pixels');
                 console.error('Image dimensions too large.');
             } else {
-                // If all checks pass, update state
                 setPhoto(file.name);
                 const fileURL = URL.createObjectURL(file);
                 setPreviewUrl(fileURL);
                 console.log('Image passed validation and preview URL set');
 
                 try {
-                    // Upload the image to the server
                     const result = await uploadFile(file);
                     console.log('File uploaded successfully:', result);
-                    console.log(imagePath)
 
-                    setImagePath(result.path);
-                    if (onFileUpload && result.path) {
-                        onFileUpload(result.path); // Assuming result contains the file path as `result.path`
+                    setImagePath(result.publicUrl);
+
+
+                    if (onFileUpload && result.publicUrl) {
+                        onFileUpload(result.publicUrl);
                     }
-                    console.log('File uploaded successfully:', result.path);
-                    console.log('Image path:', result.path);
-                    // Notify parent with image URI
+                    console.log('Image path:', result.publicUrl);
+
                     if (onImageURIChange) {
-                        onImageURIChange(fileURL);
+                        onImageURIChange(result.publicUrl);  // Ensure you're passing the correct public URL
                     }
                 } catch (err) {
                     setError('Failed to upload file');
                     console.error('File upload error:', err);
                 } finally {
-                    URL.revokeObjectURL(fileURL); // Clean up object URL after upload
+                    URL.revokeObjectURL(fileURL);  // Clean up the local file URL after upload
                 }
             }
         };
