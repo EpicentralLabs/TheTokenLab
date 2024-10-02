@@ -56,8 +56,6 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
-  let APP_ENV = process.env.REACT_APP_ENV || 'development';
-
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
     setUserPublicKey(publicKey)
