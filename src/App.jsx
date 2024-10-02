@@ -54,6 +54,8 @@ function App() {
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
 
+  const [zkChecked, setZKChecked] = useState(false)
+
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 
@@ -294,7 +296,10 @@ function App() {
               </h1>
 
 
-              <Compress/>
+              <Compress
+              zkChecked={zkChecked}
+              setZKChecked={setZKChecked}
+              />
 
 
             </div>
@@ -330,6 +335,7 @@ function App() {
             setIsDecimalsError={setIsDecimalsError}
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
+            isCompressed={zkChecked}
           />
         </header>
         {mintSuccess && (

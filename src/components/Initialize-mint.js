@@ -14,11 +14,19 @@ function InitializeMint({
   setIsQuantityError, 
   setIsDecimalsError,
   onSolMintClick,
-  onLabsMintClick
+  onLabsMintClick,
+  isCompressed
 }) {
   // State to store the prices of SOL and LABS tokens
   const [solPrice, setSolPrice] = useState(null)
   const [labsPrice, setLabsPrice] = useState(null)
+  let solDisplayPrice = 0.05
+  let labsDisplayPrice = 5000
+
+  if(isCompressed){
+    solDisplayPrice = 0.01
+    labsDisplayPrice = 500
+  }
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -131,14 +139,14 @@ function InitializeMint({
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
         <button className="initialize-mint-button" onClick={() => handleInitializeMint('SOL')}>
-          0.05 SOL
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
+          {solDisplayPrice} SOL
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(solDisplayPrice, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
         <button className="initialize-mint-button" onClick={() => handleInitializeMint('LABS')}>
-          <span>5,000 LABS</span>
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
+          <span>{labsDisplayPrice} LABS</span>
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(labsDisplayPrice, labsPrice)})</span>
         </button>
       </div>
       {showError && <ErrorMessage />}
@@ -146,8 +154,8 @@ function InitializeMint({
       {showConfirmPopup && (
         <ConfirmMint
           paymentType={selectedPaymentType}
-          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
-          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+          cost={selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice}
+          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           isLoading={isLoading}
