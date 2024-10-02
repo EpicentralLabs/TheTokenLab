@@ -39,6 +39,9 @@ app.use(cors({
 app.use('/api/mint', mintRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/compress-mint', compressionRoutes);
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'OK' });
+});
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
