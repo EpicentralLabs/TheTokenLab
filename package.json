@@ -35,9 +35,10 @@
     "lint:fix": "eslint . --fix",
     "start": "concurrently \"npm run frontend\" \"npm run backend\"",
     "frontend": "react-scripts start",
+    "frontend-prod": "react-scripts build",
     "build-backend": "tsc",
     "backend": "npm run build-backend && node api/server.js",
-    "build": "react-scripts build 2> .github/warnings.log || true",
+    "build": "npm run frontend-prod && npm run backend",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"
