@@ -17,7 +17,8 @@ export async function mintToken(parsedDecimals: number, quantity: number, userPu
 
     console.log(`🏦 Creating token mint with ${parsedDecimals} decimals...`);
     console.log(`💰 Minting ${quantity} tokens to ${userPublicKey.toBase58()}...`);
-
+    const adjustedQuantity = quantity * Math.pow(10, parsedDecimals);
+    console.log(`💰 Adjusted quantity for minting: ${adjustedQuantity}`);
     try {
         // Create mint and optionally set freeze authority based on freezeChecked
         tokenMint = await createMint(
@@ -64,10 +65,10 @@ export async function mintToken(parsedDecimals: number, quantity: number, userPu
             tokenMint, // Mint
             userTokenAccount.address,
             user.publicKey,
-            quantity,
+            adjustedQuantity,
             [user], // Signer
         );
-        console.log(`✅ Minted ${quantity} tokens to ${userTokenAccount.address.toBase58()}`);
+        console.log(`✅ Minted ${adjustedQuantity} tokens to ${userTokenAccount.address.toBase58()}`);
     } catch (error) {
         console.error(`❌ Error: Failed to mint tokens. ${error instanceof Error ? error.message : error}`);
         throw new Error('Token minting failed.');
