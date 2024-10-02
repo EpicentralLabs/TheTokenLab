@@ -28,6 +28,9 @@
   text-align: center;
   margin: 0 0 8px 0;
   width: 100%; /* Ensure full width */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow text */
 }
 
 /* Base styling for the switch */
@@ -124,4 +127,5 @@ input:checked + .slider:before {
   width: 100%;
   max-width: 300px; /* Adjust this value as needed */
   margin: 0 auto;
+  margin-top: 15px;
 }
