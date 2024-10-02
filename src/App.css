@@ -125,24 +125,29 @@
     justify-content: center;
     align-items: center;
     padding: 0;
-    width: fit-content;
+    width: 100%;
     font-size: 1.25rem;
-    margin-top: 1rem; /* Reduced space below the "Revoke" text */
+    margin-top: 1rem;
+    margin-bottom: 0.5rem; /* Add some space below the text */
 }
 
 /* Grid layout for switches */
 .switch-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    width: 600px;
-    margin-top: -1rem; /* Reduced space above the switches */
+    width: 100%;
+    max-width: 300px; /* Adjust this value as needed */
+    margin: 0 auto;
 }
 
-@media (max-width: 520px) {
-    .switch-grid {
-        width: 400px; /* Increase the maximum width on very small screens */
-    }
+/* Individual switch container */
+.switch-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px; /* Add some horizontal spacing between switches */
 }
 
 /* List spacing styles */
