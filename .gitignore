@@ -134,3 +134,4 @@ dist
 ./archive/backend/uploads/*
 ./dist/*
 ./build/*!/build/
+build
