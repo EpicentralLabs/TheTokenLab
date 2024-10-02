@@ -6,7 +6,7 @@ function WarningMessage() {
   return (
     // Render a div with warning message and styling classes
     <div className="warning-message fade-in">
-      Removing Mint, Freeze, or Mutable Authority is irreversible!
+      Removing Mint and or Update Authority is irreversible! (Freeze Authority is removed by default)
     </div>
   )
 }
