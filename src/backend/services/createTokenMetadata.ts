@@ -69,8 +69,8 @@ export async function createMetadata(
 
     let createMetadataAccountInstruction;
     const updateAuthority = !immutableChecked ? user.publicKey : PublicKey.default;
-   // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
-    if ( freezeChecked || mintChecked || immutableChecked) {
+    // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
+    if (freezeChecked || mintChecked || immutableChecked) {
         console.log("updateAuthority: ", updateAuthority);
         console.log("one of the options is checked; setting appropriate fields.");
         createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
@@ -89,10 +89,28 @@ export async function createMetadata(
                 },
             }
         );
-            transaction.add(createMetadataAccountInstruction);
-
+        transaction.add(createMetadataAccountInstruction);
+    } else {
+        // Add appropriate instruction for when none of the options are checked
+        // This part was missing in the original code
+        createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
+            {
+                metadata: metadataPDA,
+                mint: tokenMintAccount,
+                mintAuthority: user.publicKey,
+                payer: user.publicKey,
+                updateAuthority: user.publicKey,
+            },
+            {
+                createMetadataAccountArgsV3: {
+                    collectionDetails: null,
+                    data: metadataData,
+                    isMutable: true,
+                },
+            }
+        );
+        transaction.add(createMetadataAccountInstruction);
     }
-
 
     const transactionSignature = await sendAndConfirmTransaction(
         connection,
