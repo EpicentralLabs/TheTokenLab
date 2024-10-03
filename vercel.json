@@ -1,14 +1,6 @@
 {
   "version": 2,
-  "functions": {
-    "api/mint.js": {
-      "runtime": "@vercel/node@20.x"
-    },
-    "api/upload.js": {
-      "runtime": "@vercel/node@20.x"
-    }
-  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/server.js" }
+    { "source": "/(.*)", "destination": "/api" }
   ]
 }
