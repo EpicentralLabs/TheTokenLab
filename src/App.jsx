@@ -15,6 +15,7 @@ import PhotoInput from './components/Photo-input'
 import MintSwitch from './components/Mint-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import ZKWarningMessage from './components/ZKWarningMessage'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
@@ -373,9 +374,13 @@ function App() {
               </h1>
               {/* Add ZKcompress component here */}
               <Compress 
-              zkChecked={zkChecked}
-              setZKChecked={setZKChecked}
+              isChecked={zkChecked}
+              setIsChecked={setZKChecked}
               />
+              <div className="zk-warning-box">
+              {(zkChecked) && (<ZKWarningMessage className={showWarning ? 'fade-in' : ''} />)}
+              </div>
+
             </div>
           </section>
           

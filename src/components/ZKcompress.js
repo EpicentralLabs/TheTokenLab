@@ -1,50 +1,32 @@
 import React from 'react';
 import './ZKWarningMessage.css';
-import './Switches.css';
 
-function Compress({ 
-    zkChecked,
-    setZKChecked
-  }) {
+function Compress({isChecked, setIsChecked}) {
 
   
 
-    const handleZKChange = () => {setZKChecked(!zkChecked)};
+    const handleChange = () => {setIsChecked(!isChecked)};
 
-    const ZKbool = zkChecked ? 'true' : 'false'
+    const ZKbool = isChecked ? 'true' : 'false'
 
-    
-    function ZKWarningMessage() {
-      return (
-        // Render a div with warning message and styling classes
-       
-         <div className="zk-warning-message fade-in">
-            Enabling ZK Compression currently DOES NOT attach metadata upon token initialization!
-          </div>
-      
-      )
-    }
 
     return (
       <div className="zk-switch-container">
        
-      <div className="zk-switch-text">Use ZK Compression</div>
+        <div className="zk-switch-text">Use ZK Compression</div>
       
-      <label className="zk-switch">
-        <input
-          type="checkbox"
-          name="ZKCompress"
-          value={ZKbool}
-          checked={zkChecked}
-          onChange={handleZKChange}
-        />
-        {/* Slider span for custom switch appearance */}
-        <span className="zk-slider"></span>
-      </label>
-      <div className="warning-box">
-        {(zkChecked) && (<ZKWarningMessage/>)}
+        <label className="zk-switch">
+          <input
+            type="checkbox"
+            name="ZKCompress"
+            value={ZKbool}
+            checked={isChecked}
+            onChange={handleChange}
+          />
+          {/* Slider span for custom switch appearance */}
+          <span className="zk-slider"></span>
+        </label>
       </div>
-    </div>
     );
 }
 
