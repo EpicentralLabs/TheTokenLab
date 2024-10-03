@@ -95,6 +95,91 @@ function App() {
     return true;
   };
 
+  const compressTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    console.log(`ZK Compress Button is ${zkChecked}`);
+
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
+
+
+    const compressData = new FormData();
+  
+    compressData.append('userPublicKey', userPublicKey);
+    compressData.append('quantity', sanitizedQuantity);
+    compressData.append('mintChecked', mintChecked);
+    compressData.append('immutableChecked', immutableChecked);
+    compressData.append('decimals', decimals);
+    compressData.append('paymentType', paymentType);
+    compressData.append('zkChecked', zkChecked);
+
+    console.log('Compress Token data being sent:', {
+   
+      userPublicKey,
+      quantity: sanitizedQuantity,
+      mintChecked,
+      immutableChecked,
+      decimals,
+      paymentType,
+      zkChecked,
+    });
+
+
+    try {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress-mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress-mint`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userPublicKey: userPublicKey,
+          quantity: sanitizedQuantity,
+          mintChecked: mintChecked,
+          immutableChecked: immutableChecked,
+          decimals: decimals,
+          paymentType: paymentType,
+          zkChecked: zkChecked,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
+
+      const data = await response.json();
+
+      console.log('Mint successful!', data);
+      const { mintAddress, tokenAccount, totalCharged } = data;
+      console.log('mintAddress:', mintAddress);
+      console.log('tokenAccount:', tokenAccount);
+      const transactionLink = data.explorerLink;
+      console.log('transactionLink:', transactionLink);
+      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
+      console.log(imageFile, 'imageFile', setImageFile());
+      
+      setMintSuccess({
+        mintAddress,
+        tokenAccount,
+        quantity,
+        decimals,
+        totalCharged,
+        paymentType,
+        transactionLink,
+      });
+      console.log ('totalCharged:', data.totalCharged);
+    } catch (error) {
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
+    }
+  };
+
+
   const mintTokens = async (paymentType) => {
     if (!userPublicKey) {
       alert('Please connect your wallet first');
@@ -287,7 +372,10 @@ function App() {
                 />
               </h1>
               {/* Add ZKcompress component here */}
-              <Compress />
+              <Compress 
+              zkChecked={zkChecked}
+              setZKChecked={setZKChecked}
+              />
             </div>
           </section>
           
@@ -303,7 +391,7 @@ function App() {
           </div>
           
           {/* Conditional rendering of warning message */}
-          {(mintChecked || immutableChecked || zkChecked) && (
+          {(mintChecked || immutableChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           

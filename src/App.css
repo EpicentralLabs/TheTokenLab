@@ -73,6 +73,7 @@
     display: flex;
     justify-content: center;
     width: 100%;
+    height: 310px; /* Adjust this value as needed */
     max-width: 800px;
     margin: 0 auto;
     gap: 20px; /* Adjust this value to control the gap between columns */
@@ -95,10 +96,9 @@
 }
 
 /* For screens smaller than 768px (tablets and mobile devices) */
-@media (max-width: 768px) {
+@media (max-width: 1500px) {
     .Input-grid-left-and-right {
-        flex-direction: column;
-        align-items: center;
+        height: auto;
     }
 
     .Input-List, .App-right {

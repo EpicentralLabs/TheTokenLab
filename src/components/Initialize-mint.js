@@ -3,6 +3,7 @@ import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
 import SuccessMessage from './InitalizingMint-message'
 import ConfirmMint from './Confirm-mint'
+import { sol } from '@metaplex-foundation/umi'
 
 function InitializeMint({ 
   tokenName, 
@@ -14,11 +15,19 @@ function InitializeMint({
   setIsQuantityError, 
   setIsDecimalsError,
   onSolMintClick,
-  onLabsMintClick
+  onLabsMintClick,
+  zkChecked
 }) {
   // State to store the prices of SOL and LABS tokens
   const [solPrice, setSolPrice] = useState(null)
   const [labsPrice, setLabsPrice] = useState(null)
+  let solDisplayPrice = 0.05
+  let labsDisplayPrice = 5000
+
+  if(zkChecked){
+    solDisplayPrice = 0.01
+    labsDisplayPrice = 500
+  }
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -108,16 +117,16 @@ function InitializeMint({
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
         <button className="initialize-mint-button" onClick={() => handleMintClick('SOL')}>
-          0.05 SOL
+          {solDisplayPrice} SOL
           {/* Display approximate USD value for SOL payment */}
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(solDisplayPrice, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
         <button className="initialize-mint-button" onClick={() => handleMintClick('LABS')}>
-          <span>5,000 LABS</span>
+          <span>{labsDisplayPrice} Labs</span>
           {/* Display approximate USD value for LABS payment */}
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(labsDisplayPrice, labsPrice)})</span>
         </button>
       </div>
       {/* Display error message if there's an error */}
@@ -128,8 +137,8 @@ function InitializeMint({
       {showConfirmPopup && (
         <ConfirmMint
           paymentType={selectedPaymentType}
-          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
-          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+          cost={selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice}
+          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           isLoading={isLoading}

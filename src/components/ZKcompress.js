@@ -1,14 +1,13 @@
-import React, { useState} from 'react';
+import React from 'react';
 import './ZKWarningMessage.css';
 import './Switches.css';
 
 function Compress({ 
-    
+    zkChecked,
+    setZKChecked
   }) {
 
-    
-
-    const [zkChecked, setZKChecked] = useState(false)
+  
 
     const handleZKChange = () => {setZKChecked(!zkChecked)};
 
