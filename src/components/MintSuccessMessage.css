@@ -28,7 +28,7 @@
     transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
-.mint-success-overlay:hover .mint-success-message {
+.mint-success-message:hover {
     transform: scale(1);
     box-shadow: 0 0 20px rgba(0, 255, 163, 0.5);
 }
