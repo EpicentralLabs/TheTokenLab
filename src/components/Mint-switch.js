@@ -14,7 +14,7 @@ function MintSwitch({ isChecked, setIsChecked }) {
 
   return (
     <div className="switch-container">
-      <div className="switch-text">Mint</div>
+      <div className="switch-text">Mint Authority</div>
       <label className="switch">
         <input
           type="checkbox"

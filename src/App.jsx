@@ -13,13 +13,12 @@ import DecimalsInput from './components/Decimals-input'
 import DescriptionInput from './components/Description-input'
 import PhotoInput from './components/Photo-input'
 import MintSwitch from './components/Mint-switch'
-import FreezeSwitch from './components/Freeze-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
-
+import Compress from './components/ZKcompress';
 
 function App() {
   // State for token details
@@ -40,6 +39,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
+  const [isMinting, setIsMinting] = useState(false);
   const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
@@ -49,12 +49,12 @@ function App() {
   // State variables for switch components and warning message
   // State for mint authority switch
   const [mintChecked, setMintChecked] = useState(false)
-  // State for freeze authority switch
-  const [freezeChecked, setFreezeChecked] = useState(false)
   // State for immutable switch
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+  // Add new state for ZK compression
+  const [zkChecked, setZKChecked] = useState(false)
 
   // let APP_ENV = process.env.REACT_APP_ENV || 'development';
   // const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
@@ -67,7 +67,7 @@ function App() {
 
   // Show warning message when any switch is checked
   useEffect(() => {
-    const warningState = mintChecked || freezeChecked || immutableChecked
+    const warningState = mintChecked || immutableChecked
     if (warningState) {
       // Small delay to ensure the component is mounted before fading in
       const timer = setTimeout(() => setShowWarning(true), 50)
@@ -75,7 +75,7 @@ function App() {
     } else {
       setShowWarning(false)
     }
-  }, [mintChecked, freezeChecked, immutableChecked])
+  }, [mintChecked, immutableChecked])
 
 
   const validateInputs = () => {
@@ -100,6 +100,7 @@ function App() {
       alert('Please connect your wallet first');
       return;
     }
+    setIsMinting(true);
     console.log(`Initializing mint with ${paymentType} payment`);
 
     const imagePath = imageFile;
@@ -115,7 +116,6 @@ function App() {
     mintData.append('tokenSymbol', tokenSymbol);
     mintData.append('userPublicKey', userPublicKey);
     mintData.append('quantity', sanitizedQuantity);
-    mintData.append('freezeChecked', freezeChecked);
     mintData.append('mintChecked', mintChecked);
     mintData.append('immutableChecked', immutableChecked);
     mintData.append('decimals', decimals);
@@ -127,7 +127,6 @@ function App() {
       tokenSymbol,
       userPublicKey,
       quantity: sanitizedQuantity,
-      freezeChecked,
       mintChecked,
       immutableChecked,
       decimals,
@@ -151,7 +150,6 @@ function App() {
           tokenSymbol: tokenSymbol,
           userPublicKey: userPublicKey,
           quantity: sanitizedQuantity,
-          freezeChecked: freezeChecked,
           mintChecked: mintChecked,
           immutableChecked: immutableChecked,
           decimals: decimals,
@@ -167,30 +165,23 @@ function App() {
       const data = await response.json();
 
       console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
-      console.log('mintAddress:', mintAddress);
-      console.log('tokenAccount:', tokenAccount);
-      console.log('metadataUploadOutput:', metadataUploadOutput);
-      const transactionLink = data.explorerLink;
-      console.log('transactionLink:', transactionLink);
-      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
-      console.log(imageFile, 'imageFile', setImageFile());
-
+      
+      // Set mintSuccess data
       setMintSuccess({
-        mintAddress,
-        tokenAccount,
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
         quantity,
         decimals,
-        metadataUploadOutput,
-        freezeChecked,
-        totalCharged,
+        metadataUploadOutput: data.metadataUploadOutput,
+        totalCharged: data.totalCharged,
         paymentType,
-        transactionLink,
+        transactionLink: data.explorerLink,
       });
-      console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
+    } finally {
+      setIsMinting(false);
     }
   };
   function setInputErrors(errors) {
@@ -203,19 +194,21 @@ function App() {
 
 
   const handleSolMint = () => {
-    console.log('Current imageFile state:', imageFile);
-    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+    return mintTokens('SOL');
   };
 
   const handleLabsMint = () => {
-    console.log('Current imageFile state:', imageFile);
-    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
+    return mintTokens('LABS');
   };
 
   const handleImageURIChange = (uri) => {
     setImageURI(uri)
     console.log('Image URI updated:', uri)
   }
+
+  const handleCloseMintSuccess = () => {
+    setMintSuccess(null);
+  };
 
   return (
     <div className="App" style={{
@@ -293,23 +286,24 @@ function App() {
                     pathToFileURL={imageFile} // Use the stored image file path
                 />
               </h1>
+              {/* Add ZKcompress component here */}
+              <Compress />
             </div>
           </section>
           
           {/* Authority revocation section */}
           <div className="revoke">
-            Revoke Authority:
+            Revoke (Remove):
           </div>
           
           {/* Token authority switches */}
           <div className="switch-grid">
-            <h1><MintSwitch isChecked={mintChecked} setIsChecked={setMintChecked} /></h1>
-            <h1><FreezeSwitch isChecked={freezeChecked} setIsChecked={setFreezeChecked} /></h1>
-            <h1><ImmutableSwitch isChecked={immutableChecked} setIsChecked={setImmutableChecked} /></h1>
+            <MintSwitch isChecked={mintChecked} setIsChecked={setMintChecked} />
+            <ImmutableSwitch isChecked={immutableChecked} setIsChecked={setImmutableChecked} />
           </div>
           
           {/* Conditional rendering of warning message */}
-          {(mintChecked || freezeChecked || immutableChecked) && (
+          {(mintChecked || immutableChecked || zkChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
@@ -327,20 +321,22 @@ function App() {
             setIsDecimalsError={setIsDecimalsError}
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
+            zkChecked={zkChecked} // Pass zkChecked to InitializeMint
           />
         </header>
+        {isMinting && <div className="minting-overlay">Minting in progress...</div>}
         {mintSuccess && (
-            <MintSuccessMessage
-                mintAddress={mintSuccess.mintAddress}
-                tokenAccount={mintSuccess.tokenAccount}
-                quantity={mintSuccess.quantity}
-                decimals={mintSuccess.decimals}
-                metadataUploadOutput={mintSuccess.metadataUploadOutput}
-                freezeChecked={mintSuccess.freezeChecked}
-                totalCharged={mintSuccess.totalCharged}
-                paymentType={mintSuccess.paymentType}
-                transactionLink={mintSuccess.transactionLink}
-            />
+          <MintSuccessMessage
+            mintAddress={mintSuccess.mintAddress}
+            tokenAccount={mintSuccess.tokenAccount}
+            quantity={mintSuccess.quantity}
+            decimals={mintSuccess.decimals}
+            metadataUploadOutput={mintSuccess.metadataUploadOutput}
+            totalCharged={mintSuccess.totalCharged}
+            paymentType={mintSuccess.paymentType}
+            transactionLink={mintSuccess.transactionLink}
+            onClose={handleCloseMintSuccess}
+          />
         )}
       </div>
       <Footer />

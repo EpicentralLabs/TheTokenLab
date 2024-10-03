@@ -1,15 +1,14 @@
 import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
-import { mintToken } from '../services/createTokenMint';
-import {chargeMintingFee} from "../services/mintingFee";
-import {fetchPrices} from "../services/priceService";
+import { mintToken } from './createTokenMint';
+import {chargeMintingFee} from "./mintingFee";
+import {fetchPrices} from "./priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
 const router: Router = express.Router();
 
 interface CompressedMintBody {
     userPublicKey: string;
     quantity: number;
-    freezeChecked: boolean;
     mintChecked: boolean;
     decimals: string;
     paymentType: string;
@@ -17,7 +16,7 @@ interface CompressedMintBody {
 
 const validateRequiredFields = (reqBody: CompressedMintBody) => {
     const missingFields: (keyof CompressedMintBody)[] = [];
-    const requiredFields: (keyof CompressedMintBody)[] = ['quantity', 'freezeChecked', 'mintChecked', 'decimals', 'paymentType'];
+    const requiredFields: (keyof CompressedMintBody)[] = ['quantity', 'mintChecked', 'decimals', 'paymentType'];
 
     for (const field of requiredFields) {
         if (reqBody[field] === undefined || reqBody[field] === null) {
@@ -65,7 +64,6 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
     const {
         userPublicKey,
         quantity,
-        freezeChecked,
         mintChecked,
         decimals,
         paymentType,
@@ -185,11 +183,10 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         let result: any;
 
         try {
-            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance, freezeChecked);
+            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
             tokenMintAccount = result.tokenMint;
             userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
-            console.log(`Freeze checked: ${result.freezeChecked}`);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
             return handleErrorResponse(res, error as Error, 'Failed to mint tokens.');
@@ -220,34 +217,34 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             }
             await logCurrentAuthorities(connection, tokenMintAccount);
 
-             // Handle Freeze Authority, set it to null if checked
-             if (freezeChecked) {
-                 console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
-                 try {
-                     const mintInfo = await getMint(connection, tokenMintAccount);
-                     console.log("Current Mint Authority:", mintInfo.mintAuthority);
-                     console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
-                     await setAuthority(
-                        connection,
-                        payer,
-                        tokenMintAccount,
-                        payer.publicKey,
-                        AuthorityType.FreezeAccount,
-                        null
-                    );
-                    actionsPerformed.push('Freeze authority');
-                    console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
-                 } catch (error) {
-                     console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
-                     return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
-        }
-             } else {
-                 console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
-             }
-
-
-
-
+        //      // Handle Freeze Authority, set it to null if checked
+        //      if (freezeChecked) {
+        //          console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
+        //          try {
+        //              const mintInfo = await getMint(connection, tokenMintAccount);
+        //              console.log("Current Mint Authority:", mintInfo.mintAuthority);
+        //              console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
+        //              await setAuthority(
+        //                 connection,
+        //                 payer,
+        //                 tokenMintAccount,
+        //                 payer.publicKey,
+        //                 AuthorityType.FreezeAccount,
+        //                 null
+        //             );
+        //             actionsPerformed.push('Freeze authority');
+        //             console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
+        //          } catch (error) {
+        //              console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
+        //              return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
+        // }
+        //      } else {
+        //          console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
+        //      }
+        //
+        //
+        //
+        //
 
             // If we reach here, all actions were successful
             return res.status(200).json({
@@ -256,7 +253,6 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
                 mintAddress: tokenMintAccount.toString(),
                 tokenAccount: userTokenAccount?.toString(),
                 metadataUploadOutput: `Metadata created at: ${transactionLink}`,
-                freezeChecked:'Token Freeze Authority is Set?: ' + freezeChecked,
                 totalCharged: totalCharged
             });
 

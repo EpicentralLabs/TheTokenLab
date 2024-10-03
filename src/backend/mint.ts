@@ -2,11 +2,11 @@ import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import { mintToken } from '../services/createTokenMint';
-import { createMetadata } from '../services/createTokenMetadata';
-import { uploadImageToPinata, uploadImageAndPinJSON } from "../services/pinata";
-import {chargeMintingFee} from "../services/mintingFee";
-import {fetchPrices} from "../services/priceService";
+import { uploadImageToPinata, uploadImageAndPinJSON } from "./pinata";
+import { mintToken } from './createTokenMint';
+import { createMetadata } from './createTokenMetadata';
+import {chargeMintingFee} from "./mintingFee";
+import {fetchPrices} from "./priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
 import {getStorage} from "firebase-admin/storage";
 const router: Router = express.Router();
@@ -17,7 +17,6 @@ interface MintRequestBody {
     tokenSymbol: string;
     userPublicKey: string;
     quantity: number;
-    freezeChecked: boolean;
     mintChecked: boolean;
     immutableChecked: boolean;
     decimals: string;
@@ -27,7 +26,7 @@ interface MintRequestBody {
 
 const validateRequiredFields = (reqBody: MintRequestBody) => {
     const missingFields: (keyof MintRequestBody)[] = [];
-    const requiredFields: (keyof MintRequestBody)[] = ['tokenName', 'tokenSymbol', 'quantity', 'freezeChecked', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath'];
+    const requiredFields: (keyof MintRequestBody)[] = ['tokenName', 'tokenSymbol', 'quantity', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType', 'imagePath'];
 
     for (const field of requiredFields) {
         if (reqBody[field] === undefined || reqBody[field] === null) {
@@ -96,7 +95,6 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         tokenSymbol,
         userPublicKey,
         quantity,
-        freezeChecked,
         mintChecked,
         immutableChecked,
         decimals,
@@ -202,7 +200,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
             return handleErrorResponse(res, err as Error, 'Failed to initialize payer keypair.');
         }
 
-         // TODO: TURK - FIGURE OUT WHY THE FUCK WE'RE REQUESTING, > 10055 SOL FOR MINTING
+        // TODO: TURK - FIGURE OUT WHY THE FUCK WE'RE REQUESTING, > 10055 SOL FOR MINTING
         const SOL_FEE = parseFloat(process.env.MINTING_FEE_SOL || '0.05'); // Default to 0.05 if not set
         const LABS_FEE = parseInt(process.env.MINTING_FEE_LABS || '5000'); // Default to 5000 if not set
 
@@ -259,7 +257,7 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         let result: any;
 
         try {
-            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance, freezeChecked);
+            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
             tokenMintAccount = result.tokenMint;
             userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
@@ -279,7 +277,6 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 payer.publicKey,
                 parsedDecimals,
                 quantity,
-                freezeChecked,
                 mintChecked,
                 immutableChecked,
                 tokenMintAccount
@@ -305,6 +302,15 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                         AuthorityType.MintTokens,
                         null
                     );
+                    await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
+                        AuthorityType.FreezeAccount,
+                        null
+                    );
+                    console.log('✅ Successfully set FreezeAccount authority as null.');
                     actionsPerformed.push('Minting');
                     console.log('✅ Successfully set MintTokens authority.');
                 } catch (error) {
@@ -313,35 +319,59 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                     return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
                 }
             } else {
-                console.log('ℹ️ mintChecked is false, skipping minting process.');
-            }
-            await logCurrentAuthorities(connection, tokenMintAccount);
-
-             // Handle Freeze Authority, set it to null if checked
-             if (freezeChecked) {
-                 console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
-                 try {
-                     const mintInfo = await getMint(connection, tokenMintAccount);
-                     console.log("Current Mint Authority:", mintInfo.mintAuthority);
-                     console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
-                     await setAuthority(
+                {
+                    console.log('✅ Not revoking mint authority');
+                    console.log('✅ Setting user as mint authority');
+                    await setAuthority(
                         connection,
                         payer,
                         tokenMintAccount,
                         payer.publicKey,
+                        AuthorityType.MintTokens,
+                        userPublicKeyInstance
+                    );
+                    console.log('✅ Successfully set MintTokens authority to user.');
+                    await setAuthority(
+                        connection,
+                        payer,
+                        tokenMintAccount,
+                        payer,
                         AuthorityType.FreezeAccount,
                         null
                     );
-                    actionsPerformed.push('Freeze authority');
-                    console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
-                 } catch (error) {
-                     console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
-                     await deleteFileFromFirebase(firebaseURL);
-                     return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
-        }
-             } else {
-                 console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
-             }
+                    console.log('✅ Successfully set FreezeAccount authority as null.');
+
+
+                }
+
+            }
+            await logCurrentAuthorities(connection, tokenMintAccount);
+
+            // Handle Freeze Authority, set it to null if checked
+            //      if (freezeChecked) {
+            //          console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
+            //          try {
+            //              const mintInfo = await getMint(connection, tokenMintAccount);
+            //              console.log("Current Mint Authority:", mintInfo.mintAuthority);
+            //              console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
+            //              await setAuthority(
+            //                 connection,
+            //                 payer,
+            //                 tokenMintAccount,
+            //                 payer.publicKey,
+            //                 AuthorityType.FreezeAccount,
+            //                 null
+            //             );
+            //             actionsPerformed.push('Freeze authority');
+            //             console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
+            //          } catch (error) {
+            //              console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
+            //              await deleteFileFromFirebase(firebaseURL);
+            //              return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
+            // }
+            //      } else {
+            //          console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
+            //      }
 
 
             try {
@@ -357,7 +387,6 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
                 mintAddress: tokenMintAccount.toString(),
                 tokenAccount: userTokenAccount?.toString(),
                 metadataUploadOutput: `Metadata created at: ${transactionLink}`,
-                freezeChecked:'Token Freeze Authority is Set?: ' + freezeChecked,
                 totalCharged: totalCharged
             });
 
@@ -404,4 +433,5 @@ router.post('/', async (req: Request<{}, {}, MintRequestBody>, res: Response) =>
         return handleErrorResponse(res, error as Error, 'Internal Server Error');
     }});
 export default router;
+
 

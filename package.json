@@ -40,7 +40,7 @@
     "frontend-prod": "react-scripts build",
     "build-backend": "tsc",
     "backend": "npm run build-backend && node api/server.js",
-    "build": "npm run frontend-prod && tsc",
+    "build": "tsc && npm run frontend-prod",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"
