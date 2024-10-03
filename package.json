@@ -1,81 +1,68 @@
 {
-  "name": "epicentralabs",
-  "version": "1.6.1-beta",
+  "name": "epicentral-labs",
+  "description": "EpicentralLabs - Token Lab",
+  "version": "2.0.0",
   "private": true,
-  "dependencies": {
-    "@google-cloud/storage": "^7.13.0",
-    "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
-    "@metaplex-foundation/mpl-toolbox": "^0.9.4",
-    "@metaplex-foundation/umi": "^0.9.2",
-    "@metaplex-foundation/umi-bundle-defaults": "^0.9.2",
-    "@pinata/sdk": "^2.1.0",
-    "@solana-developers/helpers": "^2.4.0",
-    "@solana/spl-token": "^0.4.8",
-    "@solana/spl-token-metadata": "^0.1.5",
-    "@solana/web3.js": "^1.95.3",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
-    "esm": "^3.2.25",
-    "express": "^4.19.2",
-    "firebase": "^10.14.0",
-    "firebase-admin": "^12.6.0",
-    "form-data": "^4.0.0",
-    "fs": "0.0.1-security",
-    "ipinfo-express": "^2.0.2",
-    "multer": "^1.4.5-lts.1",
-    "node-cache": "^5.1.2",
-    "node-fetch": "^2.7.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "0.9.5",
-    "uuid": "^10.0.0",
-    "winston": "^3.14.2"
-  },
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "start": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "frontend": "react-scripts start",
-    "frontend-prod": "react-scripts build",
-    "build-backend": "tsc",
-    "backend": "npm run build-backend && node api/server.js",
-    "build": "npm run frontend-prod && tsc",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "debug": "node --trace-warnings --trace-deprecation  server.mjs"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.8",
+    "@solana/web3.js": "^1.95.3",
+    "next": "14.2.14",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/eslint-parser": "^7.25.1",
-    "@babel/plugin-transform-runtime": "^7.25.4",
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-react": "^7.24.7",
-    "@solana/wallet-adapter-base": "^0.9.23",
-    "@solana/wallet-adapter-react": "^0.15.35",
-    "@solana/wallet-adapter-react-ui": "^0.9.35",
-    "@solana/wallet-adapter-wallets": "^0.19.32",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.7.4",
+    "@types/bs58": "^4.0.4",
+    "@types/node": "^20",
     "@types/node-fetch": "^2.6.11",
-    "@types/react": "^18.3.6",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.7.0",
-    "@typescript-eslint/parser": "^8.7.0",
-    "babel-loader": "^9.2.1",
-    "concurrently": "^9.0.1",
-    "eslint": "^8.57.1",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-define-config": "^2.1.0",
-    "eslint-plugin-import": "^2.30.0",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.6.0",
-    "eslint-plugin-react": "^7.37.1",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "ts-node": "^10.9.2",
-    "tsx": "^3.1.4",
-    "typescript": "^5.6.2"
-  }
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.14",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  },
+  "homepage": "https://github.com/EpicentralLabs/EpicentralLabs",
+  "bugs": {
+    "url": "https://github.com/EpicentralLabs/EpicentralLabs/issues/",
+    "email": "dev@team.epicentrallabs.com"
+  },
+  "author": {
+    "name": "EpicentralLabs",
+    "email": "dev@team.epicentrallabs.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EpicentralLabs/EpicentralLabs.git"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "contributors": [
+    {
+      "name": "ZeroSums",
+      "email": "insightfulitconsulting@gmail.com",
+      "url": "https://insightfulitconsulting.com"
+    },
+    {
+      "name": "TheLazySol",
+      "email": "dev@team.epicentrallabs.com",
+      "url": "https://epicentrallabs.com/"
+    },
+    {
+      "name": "Turk"
+    },
+    {
+      "name": "Electro"
+    },
+    {
+      "name": "kipkuh"
+    }
+  ]
 }

@@ -1,0 +1,131 @@
+/* Import custom fonts */
+@import url('fonts/fonts.css');
+
+/* Container for all switches */
+.switches-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Container for individual switch and its label */
+.switch-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 20px; /* Increased horizontal margin between switches */
+  height: 100%;
+  width: 100%; /* Ensure full width */
+}
+
+/* Styling for the switch label text */
+.switch-text {
+  font-family: p-light;
+  font-size: 1rem;
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin: 0 0 8px 0;
+  width: 100%; /* Ensure full width */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow text */
+}
+
+/* Base styling for the switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+/* Hide default checkbox input */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom slider styling */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #4b4b4b;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+/* Slider button styling */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 15px;
+  width: 15px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Checked state styling */
+input:checked + .slider {
+  background-color: #00FFA3;
+  box-shadow: 0 0 10px #00FFA3; /* Add glow effect when checked */
+}
+
+/* Move slider button when checked */
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Warning message styling */
+.warning-message {
+  color: #FFA500; /* Yellow-orange color for visibility */
+  font-family: p-light;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(255, 165, 0, 0.1); /* Semi-transparent background */
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(255, 165, 0, 0.1);
+  transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+  opacity: 0; /* Initially hidden */
+}
+
+/* Warning message header */
+.warning-message::before {
+  content: 'WARNING';
+  display: block;
+  font-family: p-thin, sans-serif;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Fade-in effect for warning message */
+.warning-message.fade-in {
+  opacity: 1; /* Fully visible when class is applied */
+}
+
+/* Hover effect for warning message */
+.warning-message:hover {
+  box-shadow: 0 0 15px rgba(255, 165, 0, 0.2); /* Enhance glow on hover */
+}
+
+/* New styles for the switch grid */
+.switch-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 300px; /* Adjust this value as needed */
+  margin: 0 auto;
+  margin-top: 15px;
+}

@@ -1,0 +1,143 @@
+/* Main container for the initialize mint section */
+.initialize-mint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0; /* Removed top margin to move the container up */
+}
+
+/* Title styling for the initialize mint section */
+.initialize-mint-title {
+  font-family: p-thin, sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.1rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+/* Container for the mint buttons */
+.initialize-mint-button-container {
+  display: flex;
+  flex-direction: row; /* Horizontal layout for desktop */
+  align-items: center;
+  justify-content: center;
+  gap: 1rem; /* Space between buttons and "or" text */
+}
+
+/* Styling for the mint buttons */
+.initialize-mint-button {
+  font-family: p-bold, sans-serif;
+  font-size: 1rem;
+  color: #000000;
+  letter-spacing: 1px;
+  border-radius: .50rem;
+  border: none;
+  background-image: linear-gradient(to top right, #00A8CD, #00FFA3);
+  background-size: 100% 100%;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: uppercase;
+  position: relative;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-image 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 160px; /* Fixed width for both buttons */
+  height: 50px; /* Fixed height for consistency */
+  transform-origin: center center;
+  will-change: transform; /* Optimize for animations */
+  backface-visibility: hidden; /* Reduce blurriness */
+  -webkit-font-smoothing: subpixel-antialiased; /* Improve text rendering */
+  margin-bottom: 0; /* Remove bottom margin for desktop */
+}
+
+/* Hover effect for the mint buttons */
+.initialize-mint-button:hover {
+  background-image: linear-gradient(to bottom left, #00A8CD, #00FFA3);
+  transform: scale(1.1);
+}
+
+/* Active state for the mint buttons */
+.initialize-mint-button:active {
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  transform: translateY(2px) scale(1.1);
+}
+
+/* Container for all text elements within the button */
+.initialize-mint-button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+  will-change: transform; /* Optimize for animations */
+  backface-visibility: hidden; /* Reduce blurriness */
+  width: 100%;
+}
+
+/* Hover effect for all text elements within mint buttons */
+.initialize-mint-button:hover .initialize-mint-button-content {
+  transform: scale(1.05);
+}
+
+/* Active effect for all text elements within mint buttons */
+.initialize-mint-button:active .initialize-mint-button-content {
+  transform: translateY(2px) scale(1.05);
+}
+
+/* Styling for the main text (0.05 SOL) */
+.initialize-mint-button-text {
+  font-size: 1rem;
+  font-weight: bold;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+/* Styling for the subtext (5,000 LABS) */
+.initialize-mint-subtext {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.2rem;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+/* Ensure button content is above any pseudo-elements */
+.initialize-mint-button > * {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease; /* Add transition for smooth scaling */
+}
+
+/* Hover effect for text within mint buttons */
+.initialize-mint-button:hover > * {
+  transform: scale(1.05); /* Scale up text slightly on hover */
+}
+
+/* Styling for the "or" text between buttons */
+.initialize-mint-or-text {
+  font-family: p-light, sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  margin: 0 1rem; /* Horizontal margin for desktop */
+}
+
+/* Media query for mobile devices */
+@media screen and (max-width: 768px) {
+  .initialize-mint-button-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem; /* Consistent gap for mobile */
+  }
+
+  .initialize-mint-button {
+    width: 140%; /* Percentage width for responsiveness on mobile */
+    max-width: 200px; /* Maximum width on mobile */
+    margin-bottom: 0.25rem; /* Consistent margin for mobile */
+  }
+
+  .initialize-mint-or-text {
+    margin: 0.25rem 0; /* Consistent margin for mobile */
+  }
+}
