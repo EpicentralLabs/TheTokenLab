@@ -54,7 +54,16 @@
 .detail-label {
     font-weight: bold;
     margin-right: 5px;
+    color: white;
+}
+
+.detail-item a {
     color: #00FFA3;
+    text-decoration: none;
+}
+
+.detail-item a:hover {
+    text-decoration: underline;
 }
 
 .mint-success-close {
