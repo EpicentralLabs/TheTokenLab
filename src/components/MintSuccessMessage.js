@@ -35,6 +35,13 @@ function MintSuccessMessage({
         return `https://explorer.solana.com/tx/${hash}${cluster}`;
     }
 
+    const truncateAddress = (address) => {
+        if (address.length > 8) {
+            return `${address.slice(0, 4)}....${address.slice(-4)}`;
+        }
+        return address;
+    };
+
     return (
         <div className="mint-success-overlay">
             <div className="mint-success-message">
@@ -42,12 +49,16 @@ function MintSuccessMessage({
                 <div className="mint-success-details">
                     <span className="detail-label">✅ Mint Address:</span>
                     <span className="detail-item">
-                        <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer">{mintAddress}</a>
+                        <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer" title={mintAddress}>
+                            {truncateAddress(mintAddress)}
+                        </a>
                     </span>
 
                     <span className="detail-label">📦 Token Account:</span>
                     <span className="detail-item">
-                        <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer">{tokenAccount}</a>
+                        <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer" title={tokenAccount}>
+                            {truncateAddress(tokenAccount)}
+                        </a>
                     </span>
 
                     <span className="detail-label">🏷️ Quantity Minted:</span>

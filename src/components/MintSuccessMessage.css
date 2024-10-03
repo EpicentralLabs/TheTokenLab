@@ -43,9 +43,11 @@
 
 .mint-success-details {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto auto;
     gap: 10px 20px;
+    justify-content: center;
     align-items: start;
+    text-align: center;
 }
 
 .detail-label {
@@ -58,6 +60,7 @@
 .detail-item {
     font-family: 'p-light', sans-serif;
     color: #ffffff;
+    text-align: left;
 }
 
 .detail-item a {
