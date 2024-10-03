@@ -14,7 +14,7 @@ function ImmutableSwitch({ isChecked, setIsChecked }) {
 
   return (
     <div className="switch-container">
-      <div className="switch-text">Immutable</div>
+      <div className="switch-text">Update Authority</div>
       <label className="switch">
         <input
           type="checkbox"
