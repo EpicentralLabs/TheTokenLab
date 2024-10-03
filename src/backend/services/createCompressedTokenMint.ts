@@ -1,10 +1,39 @@
 // @ts-ignore
-import {createRpc, Rpc,} from "@lightprotocol/stateless.js";
+import { createRpc, Rpc } from "@lightprotocol/stateless.js";
 // @ts-ignore
-import {createMint, mintTo, transfer,} from "@lightprotocol/compressed-token";
-import {Keypair} from "@solana/web3.js";
+import { createMint, mintTo, transfer } from "@lightprotocol/compressed-token";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import dotenv from 'dotenv';
+import {Request, Response} from "express";
+import router from "../routes/mint";
 dotenv.config();
+
+interface compressedMintRequestBody {
+    userPublicKey: string;
+    quantity: number;
+    mintChecked: boolean;
+    immutableChecked: boolean;
+    decimals: string;
+    paymentType: string;
+}
+const validateRequiredFields = (reqBody: compressedMintRequestBody) => {
+    const missingFields: (keyof compressedMintRequestBody)[] = [];
+    const requiredFields: (keyof compressedMintRequestBody)[] = [ 'quantity', 'mintChecked', 'immutableChecked', 'decimals', 'paymentType'];
+
+    for (const field of requiredFields) {
+        if (reqBody[field] === undefined || reqBody[field] === null) {
+            missingFields.push(field);
+        }
+    }
+    return missingFields;
+};
+
+const handleErrorResponse = (res: Response, error: Error, defaultMessage: string) => {
+    console.error('❌ Error:', error.message);
+    return res.status(500).json({ error: defaultMessage });
+};
+
+
 /**
  * Confirms a transaction with exponential backoff to handle rate limits.
  */
@@ -37,98 +66,124 @@ async function confirmTransactionWithBackoff(
   throw new Error("Transaction confirmation failed after maximum retries.");
 }
 
-async function main(): Promise<void> {
-  const payer = Keypair.generate();
-  const tokenRecipient = Keypair.generate();
 
-  const API_KEY = process.env.HELIUS_API_KEY;
 
-  if (!API_KEY) {
-    throw new Error('❌ Missing Helius API key. Please set the HELIUS_API_KEY environment variable.');
-  }
+async function createCompressedTokenMint({
+  decimals,
+  desiredTotalSupply,
+  userPublicKey,
+}: {
+  decimals: number;
+  desiredTotalSupply: number;
+  userPublicKey: string;
+}): Promise<any> {
+    // @ts-ignore
+    router.post('/', async (req: Request<object, object, compressedMintRequestBody>, res: Response) => {
+        try {
+            const missingFields = validateRequiredFields(req.body);
+            if (missingFields.length > 0) {
+                console.error('❌ Validation Error: Required fields are missing: ' + missingFields.join(', '));
+                return res.status(400).json({
+                    success: false,
+                    message: 'Required fields are missing: ' + missingFields.join(', '),
+                });
+            }
+            console.log('✅ All required fields validated.');
 
-  const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
-  const connection = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
+        }
+        catch (error) {
+        return handleErrorResponse(res, error as Error, 'Internal Server Error');
+        }
+            const payer = Keypair.generate();
+            let userPublicKeyInstance: PublicKey;
+            try {
+                userPublicKeyInstance = new PublicKey(userPublicKey);
+                console.log('✅ User public key validated:', userPublicKey);
+            } catch {
+                console.error('❌ Validation Error: Invalid user public key.');
+                return res.status(400).json({message: 'Invalid user public key.'});
+            }
+            const tokenRecipient = userPublicKeyInstance;
+            const API_KEY = process.env.HELIUS_API_KEY;
 
-  console.log(`🔗 Connected to Helius RPC at: ${RPC_ENDPOINT}`);
+            if (!API_KEY) {
+                throw new Error('❌ Missing Helius API key. Please set the HELIUS_API_KEY environment variable.');
+            }
 
-  // Define the number of decimals and desired total supply
-  const decimals = 9; // Number of decimal places for your token
-  const desiredTotalSupply = 1000; // Total tokens you want to mint
-  const amountToMint = desiredTotalSupply * Math.pow(10, decimals); // Calculate base units
+            const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
+            const connection = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
 
-  // Request airdrop for the payer
-  console.log("Requesting airdrop for the payer...");
-  await connection.requestAirdrop(payer.publicKey, 1e9);
+            console.log(`🔗 Connected to Helius RPC at: ${RPC_ENDPOINT}`);
 
-  // Wait before the next request to avoid rate limiting
-  await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
+            const amountToMint = desiredTotalSupply * Math.pow(10, decimals); // Calculate base units
 
-  // Request airdrop for the token recipient
-  console.log("Requesting airdrop for the token recipient...");
-  await connection.requestAirdrop(tokenRecipient.publicKey, 1e9);
+            // Request airdrop for the payer
+            console.log("Requesting airdrop for the payer...");
+            await connection.requestAirdrop(payer.publicKey, 1e9);
 
-  // Wait again
-  await new Promise((resolve) => setTimeout(resolve, 15000)); // Wait for 15 seconds
+            await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
-  // Create a compressed token mint
-  console.log("Creating a compressed token mint...");
-  const { mint, transactionSignature } = await createMint(
-    connection,
-    payer, // Fee payer and mint authority
-    payer.publicKey, // Mint authority public key
-    decimals // Number of decimals
-  );
+            console.log("Requesting airdrop for the token recipient...");
+            await connection.requestAirdrop(tokenRecipient, 1e9);
 
-  console.log(`Compressed token mint created! Mint address: ${mint.toBase58()}`);
-  console.log(`Transaction signature: ${transactionSignature}`);
+            await new Promise((resolve) => setTimeout(resolve, 15000)); // Wait for 15 seconds
 
-  // Confirm the mint transaction
-  await confirmTransactionWithBackoff(connection, transactionSignature);
+            console.log("Creating a compressed token mint...");
+            const {mint, transactionSignature} = await createMint(
+                connection,
+                payer, // Fee payer and mint authority
+                payer.publicKey, // Mint authority public key
+                decimals // Number of decimals
+            );
 
-  // Wait before the next operation
-  await new Promise((resolve) => setTimeout(resolve, 20000)); // Wait for 20 seconds
+            console.log(`Compressed token mint created! Mint address: ${mint.toBase58()}`);
+            console.log(`Transaction signature: ${transactionSignature}`);
 
-  // Mint the calculated amount to the payer's account
-  console.log(`Minting ${desiredTotalSupply} tokens to the payer's account...`);
-  const mintToTxId = await mintTo(
-    connection,
-    payer, // Fee payer
-    mint, // Mint address
-    payer.publicKey, // Destination address
-    payer, // Mint authority
-    amountToMint // Amount to mint (in base units)
-  );
+            await confirmTransactionWithBackoff(connection, transactionSignature);
 
-  console.log(`Minted ${desiredTotalSupply} tokens to ${payer.publicKey.toBase58()}`);
-  console.log(`MintTo transaction signature: ${mintToTxId}`);
+            await new Promise((resolve) => setTimeout(resolve, 20000)); // Wait for 20 seconds
 
-  // Confirm the mintTo transaction
-  await confirmTransactionWithBackoff(connection, mintToTxId);
+            console.log(`Minting ${desiredTotalSupply} tokens to the payer's account...`);
+            const mintToTxId = await mintTo(
+                connection,
+                payer,
+                mint,
+                payer.publicKey,
+                payer,
+                amountToMint
+            );
 
-  // Wait before transferring tokens
-  await new Promise((resolve) => setTimeout(resolve, 25000)); // Wait for 25 seconds
+            console.log(`Minted ${desiredTotalSupply} tokens to ${payer.publicKey.toBase58()}`);
+            console.log(`MintTo transaction signature: ${mintToTxId}`);
 
-  // Optionally, transfer tokens to the token recipient
-  const tokensToTransfer = desiredTotalSupply; // Number of tokens to transfer
-  const amountToTransfer = tokensToTransfer * Math.pow(10, decimals); // Calculate base units
-  console.log(`Transferring ${tokensToTransfer} tokens to the token recipient...`);
-  const transferTxId = await transfer(
-    connection,
-    payer, // Fee payer
-    mint, // Mint address
-    amountToTransfer, // Amount to transfer (in base units)
-    payer, // Owner of the tokens being transferred
-    tokenRecipient.publicKey // Recipient address
-  );
+            await confirmTransactionWithBackoff(connection, mintToTxId);
 
-  console.log(`Transferred ${tokensToTransfer} tokens to ${tokenRecipient.publicKey.toBase58()}`);
-  console.log(`Transfer transaction signature: ${transferTxId}`);
+            await new Promise((resolve) => setTimeout(resolve, 25000)); // Wait for 25 seconds
 
-  // Confirm the transfer transaction
-  await confirmTransactionWithBackoff(connection, transferTxId);
+            const tokensToTransfer = desiredTotalSupply;
+            const amountToTransfer = tokensToTransfer * Math.pow(10, decimals);
+
+            console.log(`Transferring ${tokensToTransfer} tokens to the token recipient...`);
+            const transferTxId = await transfer(
+                connection,
+                payer,
+                mint,
+                amountToTransfer,
+                payer,
+                new Keypair().publicKey
+            );
+
+            console.log(`Transferred ${tokensToTransfer} tokens to ${tokenRecipient.toBase58()}`);
+            console.log(`Transfer transaction signature: ${transferTxId}`);
+
+            await confirmTransactionWithBackoff(connection, transferTxId);
+
+            return {
+                mintAddress: mint.toBase58(),
+                transactionSignature,
+                transferTxId
+            };
+});
 }
 
-main().catch((err) => {
-  console.error("An error occurred:", err);
-});
+export default createCompressedTokenMint;

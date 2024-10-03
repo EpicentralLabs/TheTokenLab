@@ -7,20 +7,15 @@ function Compress({
     setZKChecked
   }) {
 
-
     const handleZKChange = () => {setZKChecked(!zkChecked)};
 
     const ZKbool = zkChecked ? 'true' : 'false'
 
-    
     function ZKWarningMessage() {
       return (
-        // Render a div with warning message and styling classes
-       
          <div className="zk-warning-message fade-in">
-            Enabling ZK Compression currently DOES NOT attatch metadeta upon initializing the token mint
+            Enabling ZK Compression currently DOES NOT attach metadata upon token initialization!
           </div>
-      
       )
     }
 

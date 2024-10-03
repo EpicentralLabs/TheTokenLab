@@ -70,25 +70,10 @@ function InitializeMint({
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleInitializeMint = (paymentType) => {
-    let hasError = false;
-
-    if (!tokenName.trim()) {
-      setIsTokenNameError(true)
-      hasError = true
-    }
-    if (!tokenSymbol.trim()) {
-      setIsTokenSymbolError(true)
-      hasError = true
-    }
-    if (!quantity.trim()) {
-      setIsQuantityError(true)
-      hasError = true
-    }
-    if (!decimals.trim()) {
-      setIsDecimalsError(true)
-      hasError = true
-    }
+  const handleMintClick = (paymentType) => {
+    setSelectedPaymentType(paymentType)
+    setShowConfirmPopup(true)
+  }
 
     if (hasError) {
       setShowError(true)
@@ -100,18 +85,33 @@ function InitializeMint({
     }
   }
 
+//   const handleConfirm = async () => {
+//     setIsLoading(true)
+//     try {
+//       if (selectedPaymentType === 'SOL') {
+//         await onSolMintClick()
+//       } else if (selectedPaymentType === 'LABS') {
+//         await onLabsMintClick()
+//       }
+//       setIsSuccess(true)
+//     } catch (error) {
+//       console.error('Minting failed:', error)
+//       setIsSuccess(false)
+      
   const handleConfirm = async () => {
     setIsLoading(true)
     try {
+      let result
       if (selectedPaymentType === 'SOL') {
-        await onSolMintClick()
+        result = await onSolMintClick()
       } else if (selectedPaymentType === 'LABS') {
-        await onLabsMintClick()
+        result = await onLabsMintClick()
       }
-      setIsSuccess(true)
+      // Close the confirmation popup after successful mint
+      setShowConfirmPopup(false)
     } catch (error) {
       console.error('Minting failed:', error)
-      setIsSuccess(false)
+      // Handle error (e.g., show error message to user)
     } finally {
       setIsLoading(false)
     }
@@ -138,28 +138,54 @@ function InitializeMint({
       <h2 className="initialize-mint-title">Initialize Mint:</h2>
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
-        <button className="initialize-mint-button" onClick={() => handleInitializeMint('SOL')}>
-          {solDisplayPrice} SOL
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(solDisplayPrice, solPrice)})</span>
+// <<<<<<< v1.8.1-beta
+//         <button className="initialize-mint-button" onClick={() => handleInitializeMint('SOL')}>
+//           {solDisplayPrice} SOL
+//           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(solDisplayPrice, solPrice)})</span>
+//         </button>
+//         <span className="initialize-mint-or-text">or</span>
+//         {/* LABS payment option */}
+//         <button className="initialize-mint-button" onClick={() => handleInitializeMint('LABS')}>
+//           <span>{labsDisplayPrice} LABS</span>
+//           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(labsDisplayPrice, labsPrice)})</span>
+// =======
+        <button className="initialize-mint-button" onClick={() => handleMintClick('SOL')}>
+          0.05 SOL
+          {/* Display approximate USD value for SOL payment */}
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
-        <button className="initialize-mint-button" onClick={() => handleInitializeMint('LABS')}>
-          <span>{labsDisplayPrice} LABS</span>
-          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(labsDisplayPrice, labsPrice)})</span>
+        <button className="initialize-mint-button" onClick={() => handleMintClick('LABS')}>
+          <span>5,000 LABS</span>
+          {/* Display approximate USD value for LABS payment */}
+          <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
         </button>
       </div>
+      {/* Display error message if there's an error */}
       {showError && <ErrorMessage />}
+      {/* Display success message if the operation was successful */}
       {showSuccess && <SuccessMessage />}
+// <<<<<<< v1.8.1-beta
+//       {showConfirmPopup && (
+//         <ConfirmMint
+//           paymentType={selectedPaymentType}
+//           cost={selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice}
+//           usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+//           onConfirm={handleConfirm}
+//           onCancel={handleCancel}
+//           isLoading={isLoading}
+//           isSuccess={isSuccess}
+// =======
+      {/* Display confirmation popup when showConfirmPopup is true */}
       {showConfirmPopup && (
         <ConfirmMint
           paymentType={selectedPaymentType}
-          cost={selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice}
-          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? solDisplayPrice : labsDisplayPrice, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
+          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           isLoading={isLoading}
-          isSuccess={isSuccess}
         />
       )}
     </div>

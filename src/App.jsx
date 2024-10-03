@@ -19,7 +19,7 @@ import Compress from './components/ZKcompress'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
-
+import Compress from './components/ZKcompress';
 
 function App() {
   // State for token details
@@ -40,6 +40,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
+  const [isMinting, setIsMinting] = useState(false);
   const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
@@ -53,11 +54,14 @@ function App() {
   const [immutableChecked, setImmutableChecked] = useState(false)
   // State to control the visibility of the warning message
   const [showWarning, setShowWarning] = useState(false)
+  // Add new state for ZK compression
+  const [zkChecked, setZKChecked] = useState(false)
 
   const [zkChecked, setZKChecked] = useState(false)
 
   let APP_ENV = process.env.REACT_APP_ENV || 'development';
   const network = APP_ENV === 'production' ? 'mainnet-beta' : 'devnet';
+
 
   // Function to handle wallet connection
   const handleWalletConnect = (publicKey) => {
@@ -100,6 +104,7 @@ function App() {
       alert('Please connect your wallet first');
       return;
     }
+    setIsMinting(true);
     console.log(`Initializing mint with ${paymentType} payment`);
 
     const imagePath = imageFile;
@@ -107,12 +112,7 @@ function App() {
       return;
     }
 
-    // Remove commas from quantity and convert to number
     const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
-
-    // Apply decimals to the quantity
-    const decimalPlaces = parseInt(decimals, 10);
-    const adjustedQuantity = sanitizedQuantity.toFixed(decimalPlaces);
 
 
     const mintData = new FormData();
@@ -138,8 +138,13 @@ function App() {
       imagePath,
     });
 
+
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`, {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,28 +167,28 @@ function App() {
       }
 
       const data = await response.json();
-      console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
-      console.log('mintAddress:', mintAddress);
-      console.log('tokenAccount:', tokenAccount);
-      console.log('metadataUploadOutput:', metadataUploadOutput);
-      const transactionLink = data.explorerLink;
-      console.log('transactionLink:', transactionLink);
 
+      console.log('Mint successful!', data);
+      
+      // Set mintSuccess data
       setMintSuccess({
-        mintAddress,
-        tokenAccount,
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
         quantity,
         decimals,
+
         metadataUploadOutput,
         totalCharged,
+        //metadataUploadOutput: data.metadataUploadOutput,
+        //totalCharged: data.totalCharged,
         paymentType,
-        transactionLink,
+        transactionLink: data.explorerLink,
       });
-      console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
+    } finally {
+      setIsMinting(false);
     }
   };
   function setInputErrors(errors) {
@@ -211,12 +216,24 @@ function App() {
     } catch (err) {
       console.error('Error during LABS minting:', err);
     }
-  };
+
+//   const handleSolMint = () => {
+//     return mintTokens('SOL');
+//   };
+
+//   const handleLabsMint = () => {
+//     return mintTokens('LABS');
+
+//   };
 
   const handleImageURIChange = (uri) => {
     setImageURI(uri)
     console.log('Image URI updated:', uri)
   }
+
+  const handleCloseMintSuccess = () => {
+    setMintSuccess(null);
+  };
 
   return (
     <div className="App" style={{
@@ -296,11 +313,15 @@ function App() {
               </h1>
 
 
+
               <Compress
               zkChecked={zkChecked}
               setZKChecked={setZKChecked}
               />
 
+
+              {/* Add ZKcompress component here */}
+              <Compress />
 
             </div>
           </section>
@@ -317,7 +338,8 @@ function App() {
           </div>
           
           {/* Conditional rendering of warning message */}
-          {(mintChecked || immutableChecked) && (
+
+          {(mintChecked || immutableChecked || zkChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
@@ -336,19 +358,33 @@ function App() {
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
             isCompressed={zkChecked}
+            zkChecked={zkChecked} 
           />
         </header>
+        {isMinting && <div className="minting-overlay">Minting in progress...</div>}
         {mintSuccess && (
-            <MintSuccessMessage
-                mintAddress={mintSuccess.mintAddress}
-                tokenAccount={mintSuccess.tokenAccount}
-                quantity={mintSuccess.quantity}
-                decimals={mintSuccess.decimals}
-                metadataUploadOutput={mintSuccess.metadataUploadOutput}
-                totalCharged={mintSuccess.totalCharged}
-                paymentType={mintSuccess.paymentType}
-                transactionLink={mintSuccess.transactionLink}
-            />
+            
+//           <MintSuccessMessage
+//                 mintAddress={mintSuccess.mintAddress}
+//                 tokenAccount={mintSuccess.tokenAccount}
+//                 quantity={mintSuccess.quantity}
+//                 decimals={mintSuccess.decimals}
+//                 metadataUploadOutput={mintSuccess.metadataUploadOutput}
+//                 totalCharged={mintSuccess.totalCharged}
+//                 paymentType={mintSuccess.paymentType}
+//                 transactionLink={mintSuccess.transactionLink}
+//             />
+          <MintSuccessMessage
+            mintAddress={mintSuccess.mintAddress}
+            tokenAccount={mintSuccess.tokenAccount}
+            quantity={mintSuccess.quantity}
+            decimals={mintSuccess.decimals}
+            metadataUploadOutput={mintSuccess.metadataUploadOutput}
+            totalCharged={mintSuccess.totalCharged}
+            paymentType={mintSuccess.paymentType}
+            transactionLink={mintSuccess.transactionLink}
+            onClose={handleCloseMintSuccess}
+          />
         )}
       </div>
       <Footer />

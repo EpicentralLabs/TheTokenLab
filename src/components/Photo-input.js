@@ -7,7 +7,7 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
     const [photo, setPhoto] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [error, setError] = useState('');
-    const [imagePath, setImagePath] = useState(''); // New state for storing image path
+    const [imagePath, setImagePath] = useState('');
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -103,33 +103,33 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
                 setError('Image maximum 1000 x 1000 pixels');
                 console.error('Image dimensions too large.');
             } else {
-                // If all checks pass, update state
                 setPhoto(file.name);
                 const fileURL = URL.createObjectURL(file);
                 setPreviewUrl(fileURL);
                 console.log('Image passed validation and preview URL set');
 
                 try {
-                    // Upload the image to the server
                     const result = await uploadFile(file);
                     console.log('File uploaded successfully:', result);
-                    console.log(imagePath)
 
-                    setImagePath(result.path);
-                    if (onFileUpload && result.path) {
-                        onFileUpload(result.path); // Assuming result contains the file path as `result.path`
-                    }
-                    console.log('File uploaded successfully:', result.path);
-                    console.log('Image path:', result.path);
-                    // Notify parent with image URI
-                    if (onImageURIChange) {
-                        onImageURIChange(fileURL);
+                    if (onFileUpload && result.publicUrl) {
+                        onFileUpload(result.publicUrl);
+                        if (onFileUpload && result.publicUrl) {
+                            onFileUpload(result.publicUrl);
+                        }
+
+                        console.log('Image path:', result.publicUrl);
+                        console.log(imagePath);
+                        if (onImageURIChange) {
+                            onImageURIChange(result.publicUrl);
+                        }
+                        setImagePath(result.publicUrl);
                     }
                 } catch (err) {
                     setError('Failed to upload file');
                     console.error('File upload error:', err);
                 } finally {
-                    URL.revokeObjectURL(fileURL); // Clean up object URL after upload
+                    URL.revokeObjectURL(fileURL);
                 }
             }
         };
@@ -144,12 +144,12 @@ function PhotoInput({ onFileUpload, onImageURIChange, pathToFileURL }) {
         setPhoto('');
         setPreviewUrl('');
         setError('');
-        setImagePath(''); // Clear the image path state
+        setImagePath('');
         if (fileInputRef.current) {
-            fileInputRef.current.value = null; // Reset file input correctly
+            fileInputRef.current.value = null;
         }
         if (onFileUpload) {
-            onFileUpload(null); // Notify parent component of removal
+            onFileUpload(null);
             console.log('Cleared photo in parent component');
         }
     };

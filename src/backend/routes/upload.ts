@@ -5,62 +5,96 @@ import { getStorage } from 'firebase-admin/storage';
 import * as admin from 'firebase-admin';
 import * as serviceAccount from './firebase_account.json';
 import 'dotenv/config';
+import path from 'path';
+import { Readable } from 'stream';
 
 const router = Router();
 
-// Initialize Firebase with service account
 initializeApp({
     credential: cert(serviceAccount as admin.ServiceAccount),
-    storageBucket: "epicentrallabs-93373.appspot.com", // Ensure this environment variable is set
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
 });
-const storage = getStorage(); // Get the storage service
-const bucket = storage.bucket(); // Get a reference to the storage bucket
+const storage = getStorage();
+const bucket = storage.bucket();
 
 console.log('✅ Firebase initialized successfully with service account.');
 
-// Set up multer for file uploads
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        const fileTypes = /jpeg|jpg|png|gif|pdf/;
+        const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimeType = fileTypes.test(file.mimetype);
 
-// Define the /upload route
+        if (extName && mimeType) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Error: File type not allowed!'));
+        }
+    },
+    limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+
 router.post('/', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     const file = req.file;
 
     if (file) {
-        const fileName = `${Date.now()}_${file.originalname}`; // Create a unique filename
-        const fileUpload = bucket.file(fileName); // Create a reference to the file location in the bucket
-
+        const fileName = `${Date.now()}_${file.originalname}`;
+        const fileUpload = bucket.file(fileName);
         console.log(`🚀 Uploading file to Firebase Storage with name: ${fileName}`);
 
         try {
-            // Upload the file to Firebase Storage
-            await fileUpload.save(file.buffer, {
-                metadata: { contentType: file.mimetype },
+            const stream = fileUpload.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype,
+                },
             });
 
-            const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
-            console.log(`✅ File uploaded successfully: ${file.originalname}`);
-            console.log(`📄 Public URL for uploaded file: ${publicUrl}`);
-            res.status(200).json({
-                message: 'File uploaded successfully!',
-                path: publicUrl,
+            stream.on('open', () => {
+                console.log(`✅ Stream opened for uploading: ${fileName}`);
             });
+
+            stream.on('data', (chunk) => {
+                console.log(`📦 Writing chunk of size: ${chunk.length} bytes`);
+            });
+
+            stream.on('finish', () => {
+                console.log(`✅ File upload finished: ${fileName}`);
+                const publicUrl = `https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${fileName}`;
+
+                res.status(200).json({
+                    message: `✅ File uploaded successfully: ${file.originalname}`,
+                    publicUrl: publicUrl,
+                });
+            });
+
+            stream.on('error', (err) => {
+                console.error('❌ Error uploading file:', err);
+                res.status(500).json({
+                    message: 'Failed to upload file.',
+                    error: err.message,
+                });
+            });
+
+            console.log(`🔄 Starting upload for: ${file.originalname}`);
+            stream.end(file.buffer);
         } catch (err) {
-            console.error('❌ Error uploading file:', err); // Log error details
-            console.log(`💡 Possible reasons for the error: Ensure the Firebase Storage bucket exists and has the correct permissions.`);
-            // @ts-ignore
-            res.status(500).json({ message: 'Failed to upload file.', error: err.message });
+            const errorMessage = (err as Error).message;
+            console.error('❌ Error uploading file:', errorMessage);
+            res.status(500).json({ message: 'Failed to upload file.', error: errorMessage });
         }
     } else {
-        console.error('❌ Error: File upload failed! No file found in request.'); // Log if no file was found
+        console.error('❌ Error: File upload failed! No file found in request.');
         res.status(400).json({ message: 'File upload failed! No file provided.' });
     }
 });
 
+
+
 // Error handling middleware
 router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
     console.error('❌ Error in middleware:', err);
-
-    // Check if the error is a Multer error
     if (err instanceof multer.MulterError) {
         console.error('🔴 Multer error details:', err);
         res.status(400).json({ message: err.message });

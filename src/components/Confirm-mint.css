@@ -32,6 +32,10 @@
   }
   
   .confirm-mint-overlay:hover .confirm-mint-popup {
+    text-align: center; /* Center the content */
+  }
+  
+  .confirm-mint-popup:hover {
     transform: scale(1);
     box-shadow: 0 0 20px rgba(0, 255, 163, 0.5);
   }
@@ -41,12 +45,52 @@
     font-weight: bold;
     margin: 15px 0;
     color: #00FFA3;
+  .confirm-mint-popup h2 {
+    font-family: "p-medium", sans-serif; /* Set font-family to p-medium */
+    margin-bottom: 15px; /* Add some space below the title */
+  }
+
+  .confirm-mint-popup p {
+    font-family: p-light;
+  }
+  
+  .confirm-mint-cost {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #00FFA3;
+    text-align: center;
   }
   
   .confirm-mint-usd-value {
     font-size: 0.8em;
     color: #999;
     margin-left: 5px;
+  }
+  
+  .cost-breakdown {
+    font-family: p-light, sans-serif;
+    color: rgb(140, 140, 140);
+    font-size: 0.9em;
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 5px 10px;
+    justify-content: center;
+    align-items: start;
+    padding-left: 20px; /* Add left padding to shift columns right */
+  }
+  
+  .cost-breakdown-item {
+    display: contents;
+  }
+  
+  .cost-breakdown-value {
+    text-align: right;
+    white-space: nowrap;
+  }
+  
+  .cost-breakdown-description {
+    text-align: left;
   }
   
   .confirm-mint-buttons {
@@ -84,6 +128,56 @@
   
   .confirm-mint-button.cancel:hover {
     background-color: #cc3333;
+
+    font-family: p-bold, sans-serif;
+    font-size: 0.8rem; /* Reduced from 1rem */
+    color: #000000;
+    letter-spacing: 1px;
+    border-radius: 0.4rem; /* Reduced from .50rem */
+    border: none;
+    background-size: 100% 100%;
+    padding: 0.32rem 0.64rem; /* Reduced from 0.4rem 0.8rem */
+    cursor: pointer;
+    white-space: nowrap;
+    text-transform: uppercase;
+    position: relative;
+    box-shadow: 1.6px 1.6px 4px rgba(0, 0, 0, 0.2); /* Reduced from 2px 2px 5px */
+    transition: background-image 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 128px; /* Reduced from 160px */
+    height: 40px; /* Reduced from 50px */
+    transform-origin: center center;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+  
+  .confirm-mint-button.confirm {
+    background-image: linear-gradient(to top right, #00A8CD, #00FFA3);
+  }
+  
+  .confirm-mint-button.cancel {
+    background-image: linear-gradient(to top right, #FF4444, #FF8888);
+  }
+  
+  .confirm-mint-button:hover {
+    transform: scale(1.08); /* Reduced from 1.1 */
+  }
+  
+  .confirm-mint-button:active {
+    box-shadow: 0.8px 0.8px 1.6px rgba(0, 0, 0, 0.2); /* Reduced from 1px 1px 2px */
+    transform: translateY(1.6px) scale(1.08); /* Reduced from 2px and 1.1 */
+  }
+  
+  .confirm-mint-button.confirm:hover {
+    background-image: linear-gradient(to bottom left, #00A8CD, #00FFA3);
+  }
+  
+  .confirm-mint-button.cancel:hover {
+    background-image: linear-gradient(to bottom left, #FF4444, #FF8888);
   }
   
   .confirm-mint-loading {
