@@ -12,7 +12,7 @@ function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoadi
           </div>
         ) : (
           <div>
-            <h2>Confirm Mint Initialization</h2>
+            <h2>Confirm Mint Initialization?</h2>
             <p>You are about to initialize a mint with the following cost:</p>
             <p className="confirm-mint-cost">
               {cost} {paymentType}
