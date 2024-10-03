@@ -29,6 +29,12 @@
     width: 100%;
     transform: scale(0.95);
     transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+    text-align: center; /* Center the content */
+  }
+  
+  .confirm-mint-popup h2 {
+    font-family: "p-medium", sans-serif; /* Set font-family to p-medium */
+    margin-bottom: 15px; /* Add some space below the title */
   }
   
   .confirm-mint-overlay:hover .confirm-mint-popup {
