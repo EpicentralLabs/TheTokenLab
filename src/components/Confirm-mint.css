@@ -59,6 +59,19 @@
     margin-left: 5px;
   }
   
+  .cost-breakdown {
+    font-family: p-light, sans-serif;
+    color: rgb(255, 255, 255);
+    font-size: 0.75em;
+    margin-top: 10px;
+    text-align: left;
+    display: inline-block;
+  }
+  
+  .cost-breakdown-item {
+    margin-bottom: 5px;
+  }
+  
   .confirm-mint-buttons {
     display: flex;
     justify-content: space-between;
