@@ -2,6 +2,14 @@ import React from 'react';
 import './Confirm-mint.css';
 
 function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoading }) {
+  const costBreakdown = [
+    { value: '-0.0151206', description: 'Create Metadata Account' },
+    { value: '-0.00204428', description: 'Create Token Account' },
+    { value: '-0.0014716', description: 'Mint Tokens' },
+    { value: '-0.000005', description: 'Token Transfer to User' },
+    { value: '-0.000005', description: 'Transfer Authority to User' },
+  ];
+
   return (
     <div className="confirm-mint-overlay">
       <div className="confirm-mint-popup">
@@ -19,11 +27,12 @@ function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoadi
               <span className="confirm-mint-usd-value">(≈ ${usdValue})</span>
             </p>
             <div className="cost-breakdown">
-              <div className="cost-breakdown-item">-0.0151206 SOL (Create Metadata Account)</div>
-              <div className="cost-breakdown-item">-0.00204428 SOL (Create Token Account)</div>
-              <div className="cost-breakdown-item">-0.0014716 SOL (Mint Tokens)</div>
-              <div className="cost-breakdown-item">-0.000005 SOL (Token Transfer to User)</div>
-              <div className="cost-breakdown-item">-0.000005 SOL (Transfer Authority to User)</div>
+              {costBreakdown.map((item, index) => (
+                <React.Fragment key={index}>
+                  <div className="cost-breakdown-value">{item.value} SOL</div>
+                  <div className="cost-breakdown-description">({item.description})</div>
+                </React.Fragment>
+              ))}
             </div>
             <div className="confirm-mint-buttons">
               <button className="confirm-mint-button confirm" onClick={onConfirm}>Confirm</button>

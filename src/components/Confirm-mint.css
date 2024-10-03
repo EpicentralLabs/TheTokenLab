@@ -51,6 +51,7 @@
     font-weight: bold;
     margin: 15px 0;
     color: #00FFA3;
+    text-align: center;
   }
   
   .confirm-mint-usd-value {
@@ -61,15 +62,27 @@
   
   .cost-breakdown {
     font-family: p-light, sans-serif;
-    color: rgb(255, 255, 255);
-    font-size: 0.75em;
-    margin-top: 10px;
-    text-align: left;
-    display: inline-block;
+    color: rgb(140, 140, 140);
+    font-size: 0.9em;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 10px;
+    justify-content: center;
+    align-items: start;
+    width: 100%;
   }
   
   .cost-breakdown-item {
-    margin-bottom: 5px;
+    display: contents;
+  }
+  
+  .cost-breakdown-value {
+    text-align: right;
+  }
+  
+  .cost-breakdown-description {
+    text-align: left;
   }
   
   .confirm-mint-buttons {
