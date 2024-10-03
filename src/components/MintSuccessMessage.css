@@ -20,7 +20,7 @@
     border-radius: 8px;
     border: 2px solid #00FFA3;
     box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
-    max-width: 800px; /* Increased to accommodate two columns */
+    max-width: 600px; /* Adjust this value as needed */
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
@@ -43,8 +43,8 @@
 
 .mint-success-details {
     display: grid;
-    grid-template-columns: auto auto;
-    gap: 10px 20px;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px 10px;
     justify-content: center;
     align-items: start;
     text-align: center;
@@ -55,12 +55,14 @@
     font-weight: bold;
     color: white;
     text-align: right;
+    grid-column: 1;
 }
 
 .detail-item {
     font-family: 'p-light', sans-serif;
     color: #ffffff;
     text-align: left;
+    grid-column: 3;
 }
 
 .detail-item a {

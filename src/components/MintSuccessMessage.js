@@ -47,27 +47,27 @@ function MintSuccessMessage({
             <div className="mint-success-message">
                 <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
                 <div className="mint-success-details">
-                    <span className="detail-label">✅ Mint Address:</span>
+                    <span className="detail-label">Mint Address:</span>
                     <span className="detail-item">
                         <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer" title={mintAddress}>
                             {truncateAddress(mintAddress)}
                         </a>
                     </span>
 
-                    <span className="detail-label">📦 Token Account:</span>
+                    <span className="detail-label">Token Account:</span>
                     <span className="detail-item">
                         <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer" title={tokenAccount}>
                             {truncateAddress(tokenAccount)}
                         </a>
                     </span>
 
-                    <span className="detail-label">🏷️ Quantity Minted:</span>
+                    <span className="detail-label">Quantity Minted:</span>
                     <span className="detail-item">{quantity} tokens</span>
 
-                    <span className="detail-label">🔢 Decimals:</span>
+                    <span className="detail-label">Decimals:</span>
                     <span className="detail-item">{decimals}</span>
 
-                    <span className="detail-label">📄 Metadata:</span>
+                    <span className="detail-label">Metadata:</span>
                     <span className="detail-item">
                         {metadataTransactionHash ? (
                             <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
@@ -78,10 +78,10 @@ function MintSuccessMessage({
                         )}
                     </span>
 
-                    <span className="detail-label">💰 Total Charged:</span>
+                    <span className="detail-label">Total Charged:</span>
                     <span className="detail-item">{totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}</span>
 
-                    <span className="detail-label">🔗 Explorer Link:</span>
+                    <span className="detail-label">Explorer Link:</span>
                     <span className="detail-item">
                         <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
                     </span>
