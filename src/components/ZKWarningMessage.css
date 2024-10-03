@@ -16,6 +16,7 @@
     position: relative; /* Add relative position */
     left: 20rem; /* Reset left position */
     bottom: 4.5rem;
+    margin-top: 0.5rem; /* Add a small margin top */
 }
 
 @media (max-width: 1500px) {
@@ -28,12 +29,13 @@
 }
 
 .zk-switch-text {
-  font-family: p-thin;
+  font-family: p-light, sans-serif; /* Add a fallback font */
   font-size: 1rem;
   letter-spacing: 1.5px;
   text-align: center;
   margin: 0 0 8px 0;
   width: 100%; /* Ensure full width */
+  color: #ffffff; /* Ensure text color contrasts with background */
 }
 
 .zk-switch{position: relative;
@@ -52,30 +54,31 @@
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(255, 165, 0, 0.1);
     transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
-    width: 350px;
-    opacity: 0;
-  }
+    width: 100%; /* Change width to 100% */
+    max-width: 350px; /* Add max-width */
+    opacity: 1; /* Change this to 1 to make it visible by default */
+}
 
-  /* Warning message header */
-  .zk-warning-message::before {
+/* Warning message header */
+.zk-warning-message::before {
     content: 'WARNING';
     display: block;
     font-family: p-thin, sans-serif;
     font-weight: bold;
     margin-bottom: 5px;
-  }
-  
-  /* Fade-in effect for warning message */
-  .zk-warning-message.fade-in {
-    opacity: 1; /* Fully visible when class is applied */
-  }
-  
-  /* Hover effect for warning message */
-  .zk-warning-message:hover {
-    box-shadow: 0 0 15px rgba(255, 165, 0, 0.2); /* Enhance glow on hover */
-  }
+}
 
-  .zk-slider{
+/* Fade-in effect for warning message */
+.zk-warning-message.fade-in {
+    opacity: 1; /* Fully visible when class is applied */
+}
+
+/* Hover effect for warning message */
+.zk-warning-message:hover {
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.2); /* Enhance glow on hover */
+}
+
+.zk-slider{
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -85,9 +88,9 @@
     background-color: #4b4b4b;
     transition: .4s;
     border-radius: 34px;
-  }
+}
 
-  .zk-slider:before {
+.zk-slider:before {
     position: absolute;
     content: "";
     height: 15px;
@@ -97,14 +100,14 @@
     background-color: white;
     transition: .4s;
     border-radius: 50%;
-  }
+}
 
-  input:checked + .zk-slider {
+input:checked + .zk-slider {
     background-color: #00FFA3;
     box-shadow: 0 0 10px #00FFA3; /* Add glow effect when checked */
-  }
-  
-  /* Move slider button when checked */
-  input:checked + .zk-slider:before {
+}
+
+/* Move slider button when checked */
+input:checked + .zk-slider:before {
     transform: translateX(26px);
-  }
+}
