@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "rootDir": "./src",
+    "rootDir": "./src/backend",
     "outDir": "./api",
     "typeRoots": ["./node_modules/@types", "./@types"]
   },
