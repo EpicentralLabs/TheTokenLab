@@ -49,7 +49,7 @@
   .confirm-mint-cost {
     font-size: 1.2em;
     font-weight: bold;
-    margin: 15px 0;
+    margin: 20px 0;
     color: #00FFA3;
     text-align: center;
   }
@@ -64,13 +64,12 @@
     font-family: p-light, sans-serif;
     color: rgb(140, 140, 140);
     font-size: 0.9em;
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: inline-grid;
+    grid-template-columns: auto auto;
     gap: 5px 10px;
     justify-content: center;
     align-items: start;
-    width: 100%;
+    padding-left: 20px; /* Add left padding to shift columns right */
   }
   
   .cost-breakdown-item {
@@ -79,6 +78,7 @@
   
   .cost-breakdown-value {
     text-align: right;
+    white-space: nowrap;
   }
   
   .cost-breakdown-description {
