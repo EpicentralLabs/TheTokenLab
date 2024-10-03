@@ -19,6 +19,7 @@ import WarningMessage from './components/Warning-message'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
+import {Keypair, PublicKey} from "@solana/web3.js";
 
 
 function App() {
@@ -91,6 +92,131 @@ function App() {
       return false;
     }
     return true;
+  };
+
+  function generatePayor() {
+    const privateKey = process.env.SOLANA_PRIVATE_KEY; // Fetch the private key from environment variables
+    if (!privateKey) {
+      console.error('❌ Missing SOLANA_PRIVATE_KEY environment variable');
+      return { error: 'Missing SOLANA_PRIVATE_KEY' }; // Return an error object
+    }
+
+    let secretKeyArray: number[];
+    try {
+      secretKeyArray = JSON.parse(privateKey); // Parse the private key JSON string into an array
+    } catch (error) {
+      console.error('❌ Invalid SOLANA_PRIVATE_KEY environment variable');
+      return { error: 'Invalid SOLANA_PRIVATE_KEY' }; // Return an error object if parsing fails
+    }
+
+    let payer: Keypair;
+    try {
+      payer = Keypair.fromSecretKey(Uint8Array.from(secretKeyArray));
+    } catch (error) {
+      console.error('❌ Error creating Keypair from secret key:', error);
+      return { error: 'Error creating Keypair' };
+    }
+    const payerPublicKey: PublicKey = payer.publicKey;
+    return { payer, payerPublicKey };
+  }
+  const { payer, payerPublicKey } = generatePayor();
+
+
+
+
+  const compressTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    console.log(`ZK Compress Button is {INSERT_ZK_STATE_VAR} `);
+
+    const imagePath = imageFile;
+    if (!validateInputs()) {
+      return;
+    }
+
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
+
+
+    const compressData = new FormData();
+    compressData.append('tokenName', tokenName);
+    compressData.append('tokenSymbol', tokenSymbol);
+    compressData.append('userPublicKey', userPublicKey);
+    compressData.append('quantity', sanitizedQuantity);
+    compressData.append('mintChecked', mintChecked);
+    compressData.append('immutableChecked', immutableChecked);
+    compressData.append('decimals', decimals);
+    compressData.append('paymentType', paymentType);
+    compressData.append('imagePath', imagePath);
+
+    console.log('Compress Token data being sent:', {
+      tokenName,
+      tokenSymbol,
+      userPublicKey,
+      quantity: sanitizedQuantity,
+      mintChecked,
+      immutableChecked,
+      decimals,
+      paymentType,
+      imagePath,
+    });
+
+
+    try {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenName: tokenName,
+          tokenSymbol: tokenSymbol,
+          userPublicKey: userPublicKey,
+          quantity: sanitizedQuantity,
+          mintChecked: mintChecked,
+          immutableChecked: immutableChecked,
+          decimals: decimals,
+          imagePath: imagePath,
+          paymentType: paymentType,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
+
+      const data = await response.json();
+
+      // console.log('C successful!', data);
+      // const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
+      // console.log('mintAddress:', mintAddress);
+      // console.log('tokenAccount:', tokenAccount);
+      // console.log('metadataUploadOutput:', metadataUploadOutput);
+      // const transactionLink = data.explorerLink;
+      // console.log('transactionLink:', transactionLink);
+      // console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
+      // console.log(imageFile, 'imageFile', setImageFile());
+      //
+      // setMintSuccess({
+      //   mintAddress,
+      //   tokenAccount,
+      //   quantity,
+      //   decimals,
+      //   metadataUploadOutput,
+      //   totalCharged,
+      //   paymentType,
+      //   transactionLink,
+      // });
+      console.log ('totalCharged:', data.totalCharged);
+    } catch (error) {
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
+    }
   };
 
   const mintTokens = async (paymentType) => {
@@ -320,7 +446,7 @@ function App() {
             setIsDecimalsError={setIsDecimalsError}
             onSolMintClick={handleSolMint}
             onLabsMintClick={handleLabsMint}
-          />
+            payer={payer}          />
         </header>
         {mintSuccess && (
             <MintSuccessMessage
