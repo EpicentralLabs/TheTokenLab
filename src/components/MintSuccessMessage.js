@@ -40,22 +40,24 @@ function MintSuccessMessage({
             <div className="mint-success-message">
                 <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
                 <div className="mint-success-details">
-                    <div className="detail-item">
-                        <span className="detail-label">✅ Mint Address:</span>
+                    <span className="detail-label">✅ Mint Address:</span>
+                    <span className="detail-item">
                         <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer">{mintAddress}</a>
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">📦 Token Account:</span>
+                    </span>
+
+                    <span className="detail-label">📦 Token Account:</span>
+                    <span className="detail-item">
                         <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer">{tokenAccount}</a>
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">🏷️ Quantity Minted:</span> {quantity} tokens
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">🔢 Decimals:</span> {decimals}
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">📄 Metadata:</span>
+                    </span>
+
+                    <span className="detail-label">🏷️ Quantity Minted:</span>
+                    <span className="detail-item">{quantity} tokens</span>
+
+                    <span className="detail-label">🔢 Decimals:</span>
+                    <span className="detail-item">{decimals}</span>
+
+                    <span className="detail-label">📄 Metadata:</span>
+                    <span className="detail-item">
                         {metadataTransactionHash ? (
                             <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
                                 View metadata transaction
@@ -63,14 +65,15 @@ function MintSuccessMessage({
                         ) : (
                             <span>No metadata transaction found</span>
                         )}
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">💰 Total Charged:</span> {totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}
-                    </div>
-                    <div className="detail-item">
-                        <span className="detail-label">🔗 Explorer Link:</span>
+                    </span>
+
+                    <span className="detail-label">💰 Total Charged:</span>
+                    <span className="detail-item">{totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}</span>
+
+                    <span className="detail-label">🔗 Explorer Link:</span>
+                    <span className="detail-item">
                         <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
-                    </div>
+                    </span>
                 </div>
                 <button className="mint-success-close" onClick={onClose}>Close</button>
             </div>
