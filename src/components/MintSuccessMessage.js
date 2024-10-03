@@ -61,7 +61,7 @@ function MintSuccessMessage({
                         </a>
                     </span>
 
-                    <span className="detail-label">Quantity Minted:</span>
+                    <span className="detail-label">Quantity:</span>
                     <span className="detail-item">{quantity} tokens</span>
 
                     <span className="detail-label">Decimals:</span>
@@ -71,7 +71,7 @@ function MintSuccessMessage({
                     <span className="detail-item">
                         {metadataTransactionHash ? (
                             <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
-                                View metadata transaction
+                                View transaction
                             </a>
                         ) : (
                             <span>No metadata transaction found</span>
@@ -79,9 +79,9 @@ function MintSuccessMessage({
                     </span>
 
                     <span className="detail-label">Total Charged:</span>
-                    <span className="detail-item">{totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}</span>
+                    <span className="detail-item">{totalCharged} {paymentType}</span>
 
-                    <span className="detail-label">Explorer Link:</span>
+                    <span className="detail-label">Explorer:</span>
                     <span className="detail-item">
                         <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
                     </span>
