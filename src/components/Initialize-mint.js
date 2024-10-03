@@ -62,49 +62,25 @@ function InitializeMint({
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleInitializeMint = (paymentType) => {
-    let hasError = false;
-
-    if (!tokenName.trim()) {
-      setIsTokenNameError(true)
-      hasError = true
-    }
-    if (!tokenSymbol.trim()) {
-      setIsTokenSymbolError(true)
-      hasError = true
-    }
-    if (!quantity.trim()) {
-      setIsQuantityError(true)
-      hasError = true
-    }
-    if (!decimals.trim()) {
-      setIsDecimalsError(true)
-      hasError = true
-    }
-
-    if (hasError) {
-      setShowError(true)
-      setShowSuccess(false)
-    } else {
-      setShowError(false)
-      setSelectedPaymentType(paymentType)
-      setShowConfirmPopup(true)
-    }
+  const handleMintClick = (paymentType) => {
+    setSelectedPaymentType(paymentType)
+    setShowConfirmPopup(true)
   }
 
   const handleConfirm = async () => {
     setIsLoading(true)
     setIsSuccess(false)
     try {
+      let result
       if (selectedPaymentType === 'SOL') {
-        await onSolMintClick()
+        result = await onSolMintClick()
       } else if (selectedPaymentType === 'LABS') {
-        await onLabsMintClick()
+        result = await onLabsMintClick()
       }
-      setIsSuccess(true)
+      // Don't set isSuccess here. We'll do it in the App component when MintSuccessMessage is ready.
     } catch (error) {
       console.error('Minting failed:', error)
-      // Optionally, you can set an error state here and display an error message
+      // Handle error (e.g., show error message to user)
     } finally {
       setIsLoading(false)
     }
@@ -112,8 +88,8 @@ function InitializeMint({
 
   const handleCancel = () => {
     setShowConfirmPopup(false)
-    setIsSuccess(false)
     setIsLoading(false)
+    setIsSuccess(false)
   }
 
   // Reset error and success states when inputs change
@@ -131,14 +107,14 @@ function InitializeMint({
       <h2 className="initialize-mint-title">Initialize Mint:</h2>
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
-        <button className="initialize-mint-button" onClick={() => handleInitializeMint('SOL')}>
+        <button className="initialize-mint-button" onClick={() => handleMintClick('SOL')}>
           0.05 SOL
           {/* Display approximate USD value for SOL payment */}
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
-        <button className="initialize-mint-button" onClick={() => handleInitializeMint('LABS')}>
+        <button className="initialize-mint-button" onClick={() => handleMintClick('LABS')}>
           <span>5,000 LABS</span>
           {/* Display approximate USD value for LABS payment */}
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
@@ -153,7 +129,6 @@ function InitializeMint({
         <ConfirmMint
           paymentType={selectedPaymentType}
           cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
-          // Calculate and display USD value based on selected payment type
           usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
           onConfirm={handleConfirm}
           onCancel={handleCancel}

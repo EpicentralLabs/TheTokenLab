@@ -1,7 +1,7 @@
 import React from 'react';
 import './Confirm-mint.css';
 
-function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoading, isSuccess }) {
+function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoading }) {
   return (
     <div className="confirm-mint-overlay">
       <div className="confirm-mint-popup">
@@ -9,14 +9,6 @@ function ConfirmMint({ paymentType, cost, usdValue, onConfirm, onCancel, isLoadi
           <div className="confirm-mint-loading">
             <div className="confirm-mint-spinner"></div>
             <p>Processing mint transaction...</p>
-          </div>
-        ) : isSuccess ? (
-          <div>
-            <h2>Mint Successful!</h2>
-            <p>Your token has been successfully minted.</p>
-            <div className="confirm-mint-buttons">
-              <button className="confirm-mint-button confirm" onClick={onCancel}>Close</button>
-            </div>
           </div>
         ) : (
           <div>

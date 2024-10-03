@@ -40,6 +40,7 @@ function App() {
 
   const [userPublicKey, setUserPublicKey] = useState('');
   const [onFileUpload, setOnFileUpload] = useState('');
+  const [isMinting, setIsMinting] = useState(false);
   const [mintSuccess, setMintSuccess] = useState(null);
   // Apply hover effect on component mount
   useEffect(() => {
@@ -98,6 +99,7 @@ function App() {
       alert('Please connect your wallet first');
       return;
     }
+    setIsMinting(true);
     console.log(`Initializing mint with ${paymentType} payment`);
 
     const imagePath = imageFile;
@@ -162,29 +164,23 @@ function App() {
       const data = await response.json();
 
       console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, metadataUploadOutput, totalCharged } = data;
-      console.log('mintAddress:', mintAddress);
-      console.log('tokenAccount:', tokenAccount);
-      console.log('metadataUploadOutput:', metadataUploadOutput);
-      const transactionLink = data.explorerLink;
-      console.log('transactionLink:', transactionLink);
-      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
-      console.log(imageFile, 'imageFile', setImageFile());
-
+      
+      // Set mintSuccess data
       setMintSuccess({
-        mintAddress,
-        tokenAccount,
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
         quantity,
         decimals,
-        metadataUploadOutput,
-        totalCharged,
+        metadataUploadOutput: data.metadataUploadOutput,
+        totalCharged: data.totalCharged,
         paymentType,
-        transactionLink,
+        transactionLink: data.explorerLink,
       });
-      console.log ('totalCharged:', data.totalCharged);
     } catch (error) {
       console.error(`${paymentType} minting failed:`, error);
       alert(`Minting failed: ${error.message}`);
+    } finally {
+      setIsMinting(false);
     }
   };
   function setInputErrors(errors) {
@@ -197,13 +193,11 @@ function App() {
 
 
   const handleSolMint = () => {
-    console.log('Current imageFile state:', imageFile);
-    mintTokens('SOL').catch(err => console.error('Error during SOL minting:', err));
+    return mintTokens('SOL');
   };
 
   const handleLabsMint = () => {
-    console.log('Current imageFile state:', imageFile);
-    mintTokens('LABS').catch(err => console.error('Error during LABS minting:', err));
+    return mintTokens('LABS');
   };
 
   const handleImageURIChange = (uri) => {
@@ -322,6 +316,7 @@ function App() {
             onLabsMintClick={handleLabsMint}
           />
         </header>
+        {isMinting && <div className="minting-overlay">Minting in progress...</div>}
         {mintSuccess && (
             <MintSuccessMessage
                 mintAddress={mintSuccess.mintAddress}
