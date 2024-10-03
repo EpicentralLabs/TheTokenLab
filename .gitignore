@@ -129,4 +129,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+.idea/
 
+./archive/backend/uploads/*
+./dist/*
+
+/api/
+
+build
+.vercel

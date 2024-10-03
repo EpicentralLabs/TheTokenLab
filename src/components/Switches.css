@@ -1,25 +1,36 @@
 /* Import custom fonts */
 @import url('./fonts/fonts.css');
 
-/* Container for the switch and its label */
+/* Container for all switches */
+.switches-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Container for individual switch and its label */
 .switch-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0; /* Remove right margin */
+  margin: 0 20px; /* Increased horizontal margin between switches */
   height: 100%;
   width: 100%; /* Ensure full width */
 }
 
 /* Styling for the switch label text */
 .switch-text {
-  font-family: p-thin;
+  font-family: p-light;
   font-size: 1rem;
   letter-spacing: 1.5px;
   text-align: center;
   margin: 0 0 8px 0;
   width: 100%; /* Ensure full width */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow text */
 }
 
 /* Base styling for the switch */
@@ -106,4 +117,15 @@ input:checked + .slider:before {
 /* Hover effect for warning message */
 .warning-message:hover {
   box-shadow: 0 0 15px rgba(255, 165, 0, 0.2); /* Enhance glow on hover */
+}
+
+/* New styles for the switch grid */
+.switch-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 300px; /* Adjust this value as needed */
+  margin: 0 auto;
+  margin-top: 15px;
 }

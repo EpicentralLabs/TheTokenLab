@@ -30,7 +30,7 @@ function TokenSymbolList({ tokenSymbol, setTokenSymbol, isError }) {
                         onChange={handleSymbolChange} 
                     />
                     <div className="info-bubble">
-                        <div className="tooltip">This is the "ticker symbol" (e.g., SOL, BONK, etc.).</div>
+                        <div className="tooltip">This is the "tokenSymbol symbol" (e.g., SOL, BONK, etc.).</div>
                     </div>
                 </div>
             </div>

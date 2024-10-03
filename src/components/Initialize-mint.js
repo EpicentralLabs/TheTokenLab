@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import './Initialize-mint.css'
 import ErrorMessage from './Error-message'
+import SuccessMessage from './InitalizingMint-message'
+import ConfirmMint from './Confirm-mint'
 
 function InitializeMint({ 
   tokenName, 
@@ -10,7 +12,9 @@ function InitializeMint({
   setIsTokenNameError, 
   setIsTokenSymbolError, 
   setIsQuantityError, 
-  setIsDecimalsError 
+  setIsDecimalsError,
+  onSolMintClick,
+  onLabsMintClick
 }) {
   // State to store the prices of SOL and LABS tokens
   const [solPrice, setSolPrice] = useState(null)
@@ -44,51 +48,58 @@ function InitializeMint({
   }, []) // Empty dependency array ensures this effect runs only once on mount
 
   // Helper function to calculate USD value
-  const calculateUsdValue = (amount, price) => {
+  const calculateUsdValue = (quantity, price) => {
     if (price) {
-      return (amount * price).toFixed(2) // Return USD value with 2 decimal places
+      return (quantity * price).toFixed(2) // Return USD value with 2 decimal places
     }
     return '...' // Return placeholder if price is not available
   }
 
   const [showError, setShowError] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false)
+  const [selectedPaymentType, setSelectedPaymentType] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleInitializeMint = () => {
-    let hasError = false;
+  const handleMintClick = (paymentType) => {
+    setSelectedPaymentType(paymentType)
+    setShowConfirmPopup(true)
+  }
 
-    if (!tokenName.trim()) {
-      setIsTokenNameError(true)
-      hasError = true
-    }
-    if (!tokenSymbol.trim()) {
-      setIsTokenSymbolError(true)
-      hasError = true
-    }
-    if (!quantity.trim()) {
-      setIsQuantityError(true)
-      hasError = true
-    }
-    if (!decimals.trim()) {
-      setIsDecimalsError(true)
-      hasError = true
-    }
-
-    if (hasError) {
-      setShowError(true)
-    } else {
-      setShowError(false)
-      // Proceed with minting logic here
-      console.log('Initializing mint...')
+  const handleConfirm = async () => {
+    setIsLoading(true)
+    try {
+      let result
+      if (selectedPaymentType === 'SOL') {
+        result = await onSolMintClick()
+      } else if (selectedPaymentType === 'LABS') {
+        result = await onLabsMintClick()
+      }
+      // Close the confirmation popup after successful mint
+      setShowConfirmPopup(false)
+    } catch (error) {
+      console.error('Minting failed:', error)
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  // Reset error states when inputs change
+  const handleCancel = () => {
+    setShowConfirmPopup(false)
+    setIsLoading(false)
+    setIsSuccess(false)
+  }
+
+  // Reset error and success states when inputs change
   useEffect(() => {
     setIsTokenNameError(false)
     setIsTokenSymbolError(false)
     setIsQuantityError(false)
     setIsDecimalsError(false)
     setShowError(false)
+    setShowSuccess(false)
   }, [tokenName, tokenSymbol, quantity, decimals])
 
   return (
@@ -96,18 +107,34 @@ function InitializeMint({
       <h2 className="initialize-mint-title">Initialize Mint:</h2>
       <div className="initialize-mint-button-container">
         {/* SOL payment option */}
-        <button className="initialize-mint-button" onClick={handleInitializeMint}>
+        <button className="initialize-mint-button" onClick={() => handleMintClick('SOL')}>
           0.05 SOL
+          {/* Display approximate USD value for SOL payment */}
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(0.05, solPrice)})</span>
         </button>
         <span className="initialize-mint-or-text">or</span>
         {/* LABS payment option */}
-        <button className="initialize-mint-button" onClick={handleInitializeMint}>
+        <button className="initialize-mint-button" onClick={() => handleMintClick('LABS')}>
           <span>5,000 LABS</span>
+          {/* Display approximate USD value for LABS payment */}
           <span className="initialize-mint-subtext">(≈ ${calculateUsdValue(5000, labsPrice)})</span>
         </button>
       </div>
+      {/* Display error message if there's an error */}
       {showError && <ErrorMessage />}
+      {/* Display success message if the operation was successful */}
+      {showSuccess && <SuccessMessage />}
+      {/* Display confirmation popup when showConfirmPopup is true */}
+      {showConfirmPopup && (
+        <ConfirmMint
+          paymentType={selectedPaymentType}
+          cost={selectedPaymentType === 'SOL' ? '0.05' : '5,000'}
+          usdValue={calculateUsdValue(selectedPaymentType === 'SOL' ? 0.05 : 5000, selectedPaymentType === 'SOL' ? solPrice : labsPrice)}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   )
 }
