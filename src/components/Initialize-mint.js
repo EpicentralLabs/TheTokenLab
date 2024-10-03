@@ -69,7 +69,6 @@ function InitializeMint({
 
   const handleConfirm = async () => {
     setIsLoading(true)
-    setIsSuccess(false)
     try {
       let result
       if (selectedPaymentType === 'SOL') {
@@ -77,7 +76,8 @@ function InitializeMint({
       } else if (selectedPaymentType === 'LABS') {
         result = await onLabsMintClick()
       }
-      // Don't set isSuccess here. We'll do it in the App component when MintSuccessMessage is ready.
+      // Close the confirmation popup after successful mint
+      setShowConfirmPopup(false)
     } catch (error) {
       console.error('Minting failed:', error)
       // Handle error (e.g., show error message to user)
@@ -133,7 +133,6 @@ function InitializeMint({
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           isLoading={isLoading}
-          isSuccess={isSuccess}
         />
       )}
     </div>
