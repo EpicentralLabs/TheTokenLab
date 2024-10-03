@@ -1,17 +1,17 @@
 import React from 'react';
 import './MintSuccessMessage.css';
 
-
 function MintSuccessMessage({
-                                mintAddress,
-                                tokenAccount,
-                                quantity,
-                                decimals,
-                                metadataUploadOutput,
-                                totalCharged,
-                                paymentType,
-                                transactionLink,
-                            }) {
+    mintAddress,
+    tokenAccount,
+    quantity,
+    decimals,
+    metadataUploadOutput,
+    totalCharged,
+    paymentType,
+    transactionLink,
+    onClose
+}) {
     const extractTransactionHash = (output) => {
         const regex = /\/tx\/([a-zA-Z0-9]+)/;
         const match = output.match(regex);
@@ -36,46 +36,43 @@ function MintSuccessMessage({
     }
 
     return (
-        <div className="mint-success-message fade-in">
-            <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
-            <div className="mint-success-details">
-                <div className="detail-item">
-                    <span className="detail-label">✅ Mint Address:</span>
-                    <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer">{mintAddress}</a>
+        <div className="mint-success-overlay">
+            <div className="mint-success-message">
+                <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
+                <div className="mint-success-details">
+                    <div className="detail-item">
+                        <span className="detail-label">✅ Mint Address:</span>
+                        <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer">{mintAddress}</a>
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">📦 Token Account:</span>
+                        <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer">{tokenAccount}</a>
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">🏷️ Quantity Minted:</span> {quantity} tokens
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">🔢 Decimals:</span> {decimals}
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">📄 Metadata:</span>
+                        {metadataTransactionHash ? (
+                            <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
+                                View metadata transaction
+                            </a>
+                        ) : (
+                            <span>No metadata transaction found</span>
+                        )}
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">💰 Total Charged:</span> {totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">🔗 Explorer Link:</span>
+                        <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
+                    </div>
                 </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">📦 Token Account:</span>
-                    <a href={constructTokenAccountURL(tokenAccount)} target="_blank" rel="noopener noreferrer">{tokenAccount}</a>
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">🏷️ Quantity Minted:</span> {quantity} tokens
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">🔢 Decimals:</span> {decimals}
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">📄 Metadata:</span>
-                    {metadataTransactionHash ? (
-                        <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
-                            Metadata created at: {constructMetadataURL(metadataTransactionHash)}
-                        </a>
-                    ) : (
-                        <span>No metadata transaction found</span>
-                    )}
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">💰 Total Charged:</span> {totalCharged} {paymentType === 'SOL' ? 'SOL' : 'LABS'}
-                </div>
-                <hr />
-                <div className="detail-item">
-                    <span className="detail-label">🔗 Explorer Link:</span>
-                    <a href={transactionLink} target="_blank" rel="noopener noreferrer">{transactionLink}</a>
-                </div>
+                <button className="mint-success-close" onClick={onClose}>Close</button>
             </div>
         </div>
     );

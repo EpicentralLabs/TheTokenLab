@@ -205,6 +205,10 @@ function App() {
     console.log('Image URI updated:', uri)
   }
 
+  const handleCloseMintSuccess = () => {
+    setMintSuccess(null);
+  };
+
   return (
     <div className="App" style={{
       backgroundImage: `url(${process.env.PUBLIC_URL}/TheTokenLab-App_BG-Transparent.svg)`,
@@ -318,16 +322,17 @@ function App() {
         </header>
         {isMinting && <div className="minting-overlay">Minting in progress...</div>}
         {mintSuccess && (
-            <MintSuccessMessage
-                mintAddress={mintSuccess.mintAddress}
-                tokenAccount={mintSuccess.tokenAccount}
-                quantity={mintSuccess.quantity}
-                decimals={mintSuccess.decimals}
-                metadataUploadOutput={mintSuccess.metadataUploadOutput}
-                totalCharged={mintSuccess.totalCharged}
-                paymentType={mintSuccess.paymentType}
-                transactionLink={mintSuccess.transactionLink}
-            />
+          <MintSuccessMessage
+            mintAddress={mintSuccess.mintAddress}
+            tokenAccount={mintSuccess.tokenAccount}
+            quantity={mintSuccess.quantity}
+            decimals={mintSuccess.decimals}
+            metadataUploadOutput={mintSuccess.metadataUploadOutput}
+            totalCharged={mintSuccess.totalCharged}
+            paymentType={mintSuccess.paymentType}
+            transactionLink={mintSuccess.transactionLink}
+            onClose={handleCloseMintSuccess}
+          />
         )}
       </div>
       <Footer />

@@ -1,22 +1,36 @@
+.mint-success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999999999;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
 .mint-success-message {
-    background-color: #003b26;
-    color: #00be79;
+    background-color: #121212;
+    color: white;
     padding: 20px;
     border-radius: 8px;
-    margin-top: 40px;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: 2px solid #00FFA3;
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
-.mint-success-message.fade-in {
-    opacity: 1;
-}
-
-.mint-success-message:hover {
-    box-shadow: 0 0 15px rgba(0, 255, 163, 0.7);
+.mint-success-overlay:hover .mint-success-message {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(0, 255, 163, 0.5);
 }
 
 .mint-success-title {
@@ -24,13 +38,7 @@
     font-size: 1.5rem;
     margin: 10px 0;
     color: #00FFA3;
-}
-
-.mint-success-subtitle {
-    font-family: 'p-light', sans-serif;
-    font-size: 1.2rem;
-    margin: 5px 0;
-    color: #2c3e50;
+    text-align: center;
 }
 
 .mint-success-details {
@@ -38,16 +46,34 @@
 }
 
 .detail-item {
-    margin: 5px 0;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #08d008;
+    margin: 10px 0;
+    font-size: 1rem;
+    color: #ffffff;
 }
 
 .detail-label {
     font-weight: bold;
     margin-right: 5px;
-    color: #000000;
+    color: #00FFA3;
+}
+
+.mint-success-close {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #00FFA3;
+    color: #121212;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.mint-success-close:hover {
+    background-color: #00cc82;
 }
 
 @keyframes fadeIn {
