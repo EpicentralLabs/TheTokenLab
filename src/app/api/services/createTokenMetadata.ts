@@ -5,22 +5,14 @@ import {
     PublicKey,
     Transaction,
     sendAndConfirmTransaction,
-    clusterApiUrl,
+    clusterApiUrl, Keypair,
 } from "@solana/web3.js";
+import {checkConnection} from "@/app/api/services/libs/tools/checkConnection";
 
 const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
 const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 
-async function checkConnection() {
-    try {
-        const version = await connection.getVersion();
-        console.log("Connected to Solana Devnet, version:", version);
-    } catch (error) {
-        console.error("Failed to connect to Devnet:", error);
-        throw error;
-    }
-}
 
 export async function createMetadata(
     tokenName: string,
@@ -28,14 +20,14 @@ export async function createMetadata(
     userPublicKeyInstance: PublicKey,
     updatedMetadataUri: string,
     payer: PublicKey,
-    parsedDecimals: number,
+    parsedDecimals: PublicKey,
     quantity: number,
     mintChecked: boolean,
-    immutableChecked: boolean,
+    immutableChecked: Keypair,
     tokenMintAccount: PublicKey
 ): Promise<string> {
     await checkConnection();
-
+    let createMetadataAccountInstruction;
     const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
     const metadataData = {
@@ -62,17 +54,12 @@ export async function createMetadata(
         console.log("Metadata account already exists at this address.");
         return "";
     }
-
     const transaction = new Transaction();
-
-    let createMetadataAccountInstruction;
     const updateAuthority = !immutableChecked ? user.publicKey : PublicKey.default;
-    // const mintAuthority = mintChecked ? PublicKey.default : user.publicKey;
     if (mintChecked || immutableChecked) {
         console.log("updateAuthority: ", updateAuthority);
         console.log("one of the options is checked; setting appropriate fields.");
         // @ts-ignore
-
         createMetadataAccountInstruction = CreateMetadataAccountV3Instruction(
             {
                 metadata: metadataPDA,
@@ -91,8 +78,6 @@ export async function createMetadata(
         );
         transaction.add(createMetadataAccountInstruction);
     } else {
-        // Add appropriate instruction for when none of the options are checked
-        // This part was missing in the original code
         // @ts-ignore
         createMetadataAccountInstruction = createCreateMetadataAccountV3Instruction(
             {
@@ -112,13 +97,11 @@ export async function createMetadata(
         );
         transaction.add(createMetadataAccountInstruction);
     }
-
     const transactionSignature = await sendAndConfirmTransaction(
         connection,
         transaction,
         [user]
     );
-
     const transactionLink = getExplorerLink(
         "transaction",
         transactionSignature,
