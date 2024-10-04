@@ -4,7 +4,17 @@ import fetch from 'node-fetch';
 const API_KEY = '4d9a32c538a44ddd8fb7ad6d14aadec5';
 const SOL_ADDRESS = 'So11111111111111111111111111111111111111112';
 const LABS_ADDRESS = 'LABSh5DTebUcUbEoLzXKCiXFJLecDFiDWiBGUU1GpxR';
-
+/**
+ * Fetches the current prices of SOL and LABS tokens from the Birdeye API.
+ *
+ * This function retrieves the prices of SOL and LABS tokens by making API
+ * calls to the Birdeye public API. It handles the API responses and logs
+ * relevant information throughout the process.
+ *
+ * @returns {Promise<{ solPrice: number; labsPrice: number }>} A promise that resolves to an
+ * object containing the SOL and LABS prices.
+ * @throws {Error} Throws an error if the price fetch process fails.
+ */
 export const fetchPrices = async () => {
     console.log('🌐 Starting price fetch process...');
 

@@ -1,6 +1,15 @@
 import winston from "winston";
 
-// @ts-ignore
+
+/**
+ * A custom logger instance using Winston for logging messages.
+ *
+ * This logger is configured to log messages to the console with
+ * a timestamp, log level, and message content. The log level is
+ * set to 'debug', allowing for verbose logging during development.
+ *
+ * @type {winston.Logger} The Winston logger instance.
+ */
 const logger = winston.createLogger({
     level: 'debug',
     format: winston.format.combine(

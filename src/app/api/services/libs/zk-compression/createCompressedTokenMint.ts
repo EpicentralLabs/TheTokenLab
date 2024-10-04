@@ -6,7 +6,18 @@ import {Keypair} from "@solana/web3.js";
 import dotenv from 'dotenv';
 dotenv.config();
 /**
- * Confirms a transaction with exponential backoff to handle rate limits.
+ * Confirms a transaction with exponential backoff retry logic.
+ *
+ * This function attempts to confirm a transaction on the Solana blockchain using
+ * the provided connection and signature. If the confirmation fails due to rate
+ * limits or other recoverable errors, it will retry up to a specified maximum
+ * number of attempts, doubling the wait time between each attempt.
+ *
+ * @param {Rpc} connection - The RPC connection to the Solana cluster.
+ * @param {string} signature - The transaction signature to confirm.
+ * @param {number} [maxRetries=10] - The maximum number of retry attempts (default is 10).
+ * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
+ * @throws {Error} Throws an error if the transaction cannot be confirmed after the maximum retries.
  */
 async function confirmTransactionWithBackoff(
   connection: Rpc,

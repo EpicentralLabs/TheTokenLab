@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
-import { mintToken } from '../services/createTokenMint';
-import {chargeMintingFee} from "../services/mintingFee";
+import { mintToken } from '../services/Minting/createTokenMint';
+import {chargeMintingFee} from "../services/Minting/mintingFee";
 import {fetchPrices} from "../services/libs/Prices/priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
 const router: Router = express.Router();
