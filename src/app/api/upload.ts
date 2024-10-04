@@ -3,7 +3,7 @@ import multer from 'multer';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 import * as admin from 'firebase-admin';
-import * as serviceAccount from './firebase_account.json';
+import * as serviceAccount from './services/libs/firebase_account.json';
 import 'dotenv/config';
 import path from 'path';
 // import { Readable } from 'stream';
