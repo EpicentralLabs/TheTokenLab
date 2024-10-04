@@ -1,0 +1,52 @@
+/* Import custom fonts */
+@import url('components/fonts/fonts.css');
+
+/* Reset default styles for main elements */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Set global styles for the body */
+body {
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
+  background-color: #121212; /* Dark background for the app */
+  color: #fff; /* Light text color for contrast */
+  font-family: 'p-thin', Verdana; /* Custom font with fallback */
+  cursor: default; /* Default cursor style */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  min-height: 100vh;
+}
+
+/* Customize scrollbar for Webkit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px; /* Set scrollbar width */
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e1e; /* Dark background for the scrollbar track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Darker color on hover for better visibility */
+}
+
+/* Customize scrollbar for Firefox */
+* {
+  scrollbar-width: thin; /* Use a thin scrollbar */
+  scrollbar-color: #333 #1e1e1e; /* Set thumb and track colors */
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

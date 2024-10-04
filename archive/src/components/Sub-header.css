@@ -1,0 +1,22 @@
+/* Import custom fonts */
+@import url('fonts/fonts.css');
+
+/* Styles for the sub-header h2 element */
+.Sub-header h2 {
+    font-family: p-thin; /* Use custom thin font */
+    opacity: 0.7; /* Set initial opacity */
+    font-size: 0.75rem;
+    letter-spacing: 0.5rem; /* Increase letter spacing for a spaced-out look */
+    margin-top: 5%;
+    margin-bottom: 0%;
+    /* Smooth transitions for hover effects */
+    transition: text-shadow 200ms ease-in-out;
+    transition: opacity 200ms ease-in-out;
+}
+
+/* Hover effects for the sub-header h2 element */
+.Sub-header h2:hover {
+    color: #ffffff; /* Change text color to white on hover */
+    opacity: 1; /* Full opacity on hover */
+    text-shadow: 0rem 0rem 0.4rem #ffffff; /* Add glow effect on hover */
+}

@@ -1,0 +1,111 @@
+.confirm-mint-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999999999;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .confirm-mint-popup {
+    background-color: #121212;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #00FFA3;
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+    max-width: 400px;
+    width: 100%;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  }
+  
+  .confirm-mint-overlay:hover .confirm-mint-popup {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(0, 255, 163, 0.5);
+  }
+  
+  .confirm-mint-cost {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 15px 0;
+    color: #00FFA3;
+  }
+  
+  .confirm-mint-usd-value {
+    font-size: 0.8em;
+    color: #999;
+    margin-left: 5px;
+  }
+  
+  .confirm-mint-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .confirm-mint-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+  }
+  
+  .confirm-mint-button:hover {
+    transform: translateY(-2px);
+  }
+  
+  .confirm-mint-button.confirm {
+    background-color: #00FFA3;
+    color: #121212;
+  }
+  
+  .confirm-mint-button.confirm:hover {
+    background-color: #00cc82;
+  }
+  
+  .confirm-mint-button.cancel {
+    background-color: #ff4444;
+    color: white;
+  }
+  
+  .confirm-mint-button.cancel:hover {
+    background-color: #cc3333;
+  }
+  
+  .confirm-mint-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .confirm-mint-spinner {
+    border: 4px solid rgba(0, 255, 163, 0.3);
+    border-top: 4px solid #00FFA3;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
