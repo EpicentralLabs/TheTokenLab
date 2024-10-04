@@ -10,7 +10,19 @@ import {
 import { TOKEN_PROGRAM_ID, getOrCreateAssociatedTokenAccount, transfer } from '@solana/spl-token';
 import dotenv from 'dotenv';
 dotenv.config();
-
+/**
+ * Charges the minting fee to the specified user account.
+ *
+ * @param {Connection} connection - The connection object to the Solana network.
+ * @param {Signer} payer - The account responsible for paying the transaction fees.
+ * @param {PublicKey} userPublicKey - The public key of the user account being charged.
+ * @param {string} paymentType - The type of payment being used (e.g., SOL or LABS).
+ * @param feeAmount
+ *
+ * @returns {Promise<number>} A promise that resolves to the total amount charged.
+ *
+ * @throws {Error} Throws an error if the payment cannot be processed.
+ */
 export async function chargeMintingFee(
     connection: Connection,
     payer: Keypair,

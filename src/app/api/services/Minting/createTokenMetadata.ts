@@ -13,17 +13,34 @@ const user = getKeypairFromEnvironment("SOLANA_PRIVATE_KEY");
 const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
 const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
 
-
+/**
+ * Creates metadata for a new token on the Solana blockchain.
+ *
+ * @param {string} tokenName - The name of the token to be minted.
+ * @param {string} tokenSymbol - The symbol representing the token.
+ * @param {PublicKey} userPublicKeyInstance - The public key of the user account receiving the minted tokens.
+ * @param {string} updatedMetadataUri - The URI pointing to the token's metadata.
+ * @param {PublicKey} payer - The public key of the payer for the transaction fees.
+ * @param {number} parsedDecimals - The number of decimal places for the token.
+ * @param {number} quantity - The quantity of tokens to mint.
+ * @param {boolean} mintChecked - Indicates whether minting should proceed or not.
+ * @param {boolean} immutableChecked - Indicates if the metadata should be immutable.
+ * @param {PublicKey} tokenMintAccount - The public key of the token mint account.
+ *
+ * @returns {Promise<string>} A promise that resolves to the transaction ID or metadata link.
+ *
+ * @throws {Error} Throws an error if the metadata creation fails.
+ */
 export async function createMetadata(
     tokenName: string,
     tokenSymbol: string,
     userPublicKeyInstance: PublicKey,
     updatedMetadataUri: string,
-    payer: PublicKey,
-    parsedDecimals: PublicKey,
+    payer: Keypair,
+    parsedDecimals: number,
     quantity: number,
     mintChecked: boolean,
-    immutableChecked: Keypair,
+    immutableChecked: boolean,
     tokenMintAccount: PublicKey
 ): Promise<string> {
     await checkConnection();

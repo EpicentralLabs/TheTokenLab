@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import fetch from 'node-fetch'; // Ensure this imports node-fetch@2
-import logger from './logger';
+import logger from '../libs/tools/logger';
 
 // Define interfaces for the responses from Pinata
 interface PinataFileResponse {
@@ -11,13 +11,25 @@ interface PinataJSONResponse {
     IpfsHash: string; // Required property for the uploaded JSON metadata's CID
 }
 
-// Helper function to assert and validate PinataFileResponse type
-function assertIsPinataFileResponse(data: any): asserts data is PinataFileResponse {
+/**
+ * Helper function to assert and validate PinataFileResponse type.
+ *
+ * @param {any} data - The data to be validated.
+ * @throws {Error} Throws an error if the data does not conform to PinataFileResponse.
+ */function assertIsPinataFileResponse(data: any): asserts data is PinataFileResponse {
     if (!data || typeof data.IpfsHash !== 'string') {
         throw new Error(`Invalid PinataFileResponse data: ${JSON.stringify(data)}`);
     }
 }
-
+/**
+ * Uploads an image to Pinata and returns its IPFS CID.
+ *
+ * @param {string} imageUrl - The URL of the image to upload.
+ * @param {string} pinataApiKey - The API key for Pinata.
+ * @param {string} pinataSecretApiKey - The secret API key for Pinata.
+ * @returns {Promise<string>} A promise that resolves to the IPFS CID of the uploaded image.
+ * @throws {Error} Throws an error if the upload process fails.
+ */
 export async function uploadImageToPinata(imageUrl: string, pinataApiKey: string, pinataSecretApiKey: string): Promise<string> {
     const formData = new FormData();
 
@@ -54,13 +66,30 @@ export async function uploadImageToPinata(imageUrl: string, pinataApiKey: string
     }
 }
 
-// Helper function to assert and validate PinataJSONResponse type
+/**
+ * Helper function to assert and validate PinataJSONResponse type.
+ *
+ * @param {any} data - The data to be validated.
+ * @throws {Error} Throws an error if the data does not conform to PinataJSONResponse.
+ */
 function assertIsPinataJSONResponse(data: any): asserts data is PinataJSONResponse {
     if (!data || typeof data.IpfsHash !== 'string') {
         throw new Error(`Invalid PinataJSONResponse data: ${JSON.stringify(data)}`);
     }
 }
-
+/**
+ * Uploads an image and corresponding JSON metadata to Pinata, returning the JSON's IPFS CID.
+ *
+ * @param {string} imagePath - The path or URL of the image to upload.
+ * @param {string} pinataApiKey - The API key for Pinata.
+ * @param {string} pinataSecretApiKey - The secret API key for Pinata.
+ * @param {string} bearerToken - The bearer token for authentication.
+ * @param {string} [name] - Optional name for the metadata.
+ * @param {string} [symbol] - Optional symbol for the metadata.
+ * @param {string} [description] - Optional description for the metadata.
+ * @returns {Promise<string>} A promise that resolves to the IPFS CID of the uploaded JSON metadata.
+ * @throws {Error} Throws an error if the upload process fails.
+ */
 export async function uploadImageAndPinJSON(
     imagePath: string,
     pinataApiKey: string,
