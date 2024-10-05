@@ -38,7 +38,7 @@ jobs:
     needs: starting-build-notification
     strategy:
       matrix:
-        node-version: [ 22.x ]
+        node-version: [20.x]  # Use the latest LTS version
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -50,7 +50,7 @@ jobs:
       - name: Run Lint and Capture Output
         run: |
           echo "Running lint..."
-          lint_output=$(npm run lint 2>&1) || true
+          npm run lint || true  # This will continue even if lint fails
           echo "$lint_output" > lint_output.${{ github.ref_name }}.${{ github.sha }}.txt
       - name: Send Lint Message to Discord
         uses: tsickert/discord-webhook@v5.3.0
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [20.x]  # Use the latest LTS version
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -87,23 +87,20 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
-      - name: Calculate Build Time
-        id: calculate_time
-        run: |
-          end_time=$(date +%s)
-          total_time=$(( end_time - start_time ))
-          echo "TOTAL_TIME=${total_time}" >> $GITHUB_ENV
+      # Remove the Calculate Build Time step as it won't work across jobs
 
   build_artifacts:
     runs-on: ubuntu-latest
     needs: build_and_test
     steps:
       - uses: actions/checkout@v4
+      - name: Build project
+        run: npm run build  # Make sure this creates the artifacts
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: dist
+          path: .next  # Adjust this to the correct build output directory
 
   build-complete-notification:
     runs-on: ubuntu-latest
