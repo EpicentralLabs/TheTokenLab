@@ -15,6 +15,11 @@
 
 # production
 /build
+build
+api
+dist
+.github
+.archive
 
 # misc
 .DS_Store
