@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="h-screen overflow-y-scroll scrollbar-hide">
         {/* Render child components within the body */}
         {children}
       </body>
