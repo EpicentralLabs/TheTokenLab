@@ -1,28 +1,22 @@
-// components/Layout.tsx
-import Navbar from "./components/NavBar";
-import Footer from "./components/Footer";
-import React from "react";
-interface LayoutProps {
-    children: React.ReactNode;
-    onWalletConnect: (publicKeyString: string) => void; // Type the onWalletConnect prop
-}
-const Layout: React.FC<LayoutProps> = ({ children, onWalletConnect }) => {
-    return (
-        <div
-            style={{
-                backgroundImage: `url('public/TheTokenLab-App_BG-Transparent.svg')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-                minHeight: '100vh',
-            }}
-        >
-            <Navbar onWalletConnect={onWalletConnect} />
-            <main>{children}</main>
-            <Footer />
-        </div>
-    );
-};
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
 
-export default Layout;
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'My Next.js App',
+  description: 'Created with Next.js',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  )
+}
