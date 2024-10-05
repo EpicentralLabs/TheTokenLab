@@ -1,5 +1,6 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 // Header component: Renders the top navigation bar and wallet connection button
 export function Header() {
@@ -8,7 +9,7 @@ export function Header() {
       {/* Left side of the header with logo and navigation */}
       <div className="flex items-center space-x-6">
         {/* Logo */}
-        <span className="text-2xl font-bold text-[#00FFA3]">E</span>
+        <Image src="/navbar-logo.png" alt="Epicentral Labs Logo" width={32} height={32} />
         {/* Navigation menu */}
         <nav>
           <ul className="flex space-x-4">

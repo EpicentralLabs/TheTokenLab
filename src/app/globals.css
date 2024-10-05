@@ -50,3 +50,12 @@ html, body {
   height: 100%;
   overflow: hidden;
 }
+
+/* Prevent cursor change on text hover, except for pointer elements */
+* {
+  cursor: default !important;
+}
+
+.cursor-pointer, button, a {
+  cursor: pointer !important;
+}
