@@ -15,7 +15,7 @@ export function InitializeMint() {
           // Button for each payment option
           <Button 
             key={label} 
-            className="bg-gradient-to-br from-[#00FFA3] to-cyan-400 text-black font-bold hover:from-[#00FFA3] hover:to-cyan-300 hover:shadow-lg transition-all duration-300"
+            className="bg-gradient-to-br from-[#00FFA3] to-cyan-400 text-black font-bold hover:from-[#00FFA3] hover:to-cyan-300 hover:shadow-lg transition-all duration-300 transform hover:scale-110"
           >
             {label}
             {/* Approximate USD value */}

@@ -21,7 +21,7 @@ export function Header() {
         </nav>
       </div>
       {/* Wallet connection button with gradient background and hover effects */}
-      <Button className="bg-gradient-to-br from-[#00FFA3] to-cyan-400 text-black font-bold hover:from-[#00FFA3] hover:to-cyan-300 hover:shadow-lg transition-all duration-300">
+      <Button className="bg-gradient-to-br from-[#00FFA3] to-cyan-400 text-black font-bold hover:from-[#00FFA3] hover:to-cyan-300 hover:shadow-lg transition-all duration-300 transform hover:scale-110">
         CONNECT WALLET
       </Button>
     </header>
