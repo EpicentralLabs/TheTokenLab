@@ -12,7 +12,7 @@ export function MainContent() {
       {/* Header section with title and description */}
       <div className="text-center mb-12">
         <h2 className="text-xl mb-2 font-p-regular">Epicentral Labs</h2>
-        <h2 className="text-sm mb-6 font-p-light">Presents</h2>
+        <h2 className="text-sm mb-6 font-p-black">Presents</h2>
         <h1 className="text-6xl font-p-bold mb-4 text-[#00FFA3]">The Token Lab</h1>
         <p className="text-gray-400 font-p-regular">Solana's Most Simple & Transparent Token Creator</p>
       </div>

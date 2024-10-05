@@ -59,3 +59,46 @@ html, body {
 .cursor-pointer, button, a {
   cursor: pointer !important;
 }
+
+/* Custom font faces */
+@font-face {
+  font-family: 'P-Light';
+  src: url('/fonts/P-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Regular';
+  src: url('/fonts/P-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Bold';
+  src: url('/fonts/P-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Black';
+  src: url('/fonts/P-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Medium';
+  src: url('/fonts/P-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Thin';
+  src: url('/fonts/P-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+}
