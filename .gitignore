@@ -18,7 +18,6 @@
 build
 api
 dist
-.archive
 
 # misc
 .DS_Store
