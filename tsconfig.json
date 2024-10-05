@@ -19,7 +19,17 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // Ensure consistent casing in file names across different operating systems
+    "forceConsistentCasingInFileNames": true,
+    // Report errors on unused local variables
+    "noUnusedLocals": true,
+    // Report errors on unused parameters in functions
+    "noUnusedParameters": true,
+    // Ensure all code paths in function return a value
+    "noImplicitReturns": true,
+    // Report errors for fallthrough cases in switch statements
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
