@@ -5,9 +5,11 @@ import { TokenOptions } from "@/components/TokenOptions"
 import { RevokeAuthority } from "@/components/RevokeAuthority"
 import { InitializeMint } from "@/components/InitializeMint"
 
+// MainContent component: Renders the main content of the token creation interface
 export function MainContent() {
   return (
     <main className="max-w-4xl mx-auto">
+      {/* Header section with title and description */}
       <div className="text-center mb-12">
         <h2 className="text-xl mb-2">Epicentral Labs</h2>
         <h2 className="text-sm mb-6">Presents</h2>
@@ -15,13 +17,16 @@ export function MainContent() {
         <p className="text-gray-400">Solana's Most Simple & Transparent Token Creator</p>
       </div>
 
+      {/* Main card containing token creation form and options */}
       <Card className="bg-gray-900 border-[#00FFA3] border-t-2">
         <CardContent className="p-6">
+          {/* Grid layout for token details and options */}
           <div className="grid grid-cols-2 gap-8">
             <TokenDetailsForm />
             <TokenOptions />
           </div>
 
+          {/* Additional components for authority management and minting */}
           <RevokeAuthority />
           <InitializeMint />
         </CardContent>
