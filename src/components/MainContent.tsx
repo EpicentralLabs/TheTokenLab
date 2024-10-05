@@ -9,7 +9,7 @@ import { InitializeMint } from "@/components/InitializeMint"
 export function MainContent() {
   return (
     <main className="max-w-4xl mx-auto">
-      {/* Header section with title and description */}
+      {/* Ensure no stray characters or elements are here */}
       <div className="text-center mb-12">
         <h2 className="text-xl mb-2 font-p-regular">Epicentral Labs</h2>
         <h2 className="text-sm mb-6 font-p-thin">Presents</h2>
