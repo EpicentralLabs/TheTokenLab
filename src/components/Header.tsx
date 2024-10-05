@@ -12,7 +12,7 @@ export function Header() {
         <Image src="/navbar-logo.png" alt="Epicentral Labs Logo" width={32} height={32} />
         {/* Navigation menu */}
         <nav>
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-4 font-p-medium">
             {/* Navigation items with hover effect */}
             <li className="hover:text-[#00FFA3] transition-colors">Home</li>
             <li className="hover:text-[#00FFA3] transition-colors">Docs</li>

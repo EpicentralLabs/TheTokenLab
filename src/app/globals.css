@@ -22,7 +22,7 @@
 /* Apply global styles to the body */
 body {
   /* Set the default font family */
-  font-family: 'YourCustomFont', sans-serif;
+  font-family: 'p-light', sans-serif;
   /* Set text color using the CSS variable */
   color: rgb(var(--foreground-rgb));
   /* Create a gradient background */
