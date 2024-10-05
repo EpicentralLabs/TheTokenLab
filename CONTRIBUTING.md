@@ -8,6 +8,8 @@ We appreciate your interest in contributing to The Token Lab! This document outl
 
 **Always create a new branch when making changes. This helps keep the main branch clean and allows for easier code reviews.**
 
+### DO NOT DELETE BRANCHES WHAT-SO-EVER, they will archived instead (A branch is archived when named: `archived-v1.0.0`)
+
 To create a new branch:
 
 1. Ensure you're on the latest version of the main branch:
@@ -21,36 +23,16 @@ To create a new branch:
    git checkout -b <type>/<description>
    ```
 
-### Branch Naming Convention
-
-We use a modified semantic versioning approach for branch names. The format is:
-
-`<type>/<description>`
-
-Where `<type>` is one of the following:
-
-- `feature`: A new feature or enhancement
-- `fix`: A bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, missing semi-colons, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding or modifying tests
-- `chore`: Maintenance tasks, dependency updates, etc.
-
-The `<description>` should be a brief, hyphenated description of the change. (Keep it to 3-4 words max for ease of understanding!)
-
-Examples:
-- `feature/add-user-authentication`
-- `fix/resolve-login-error`
-- `docs/update-api-documentation`
-
 ## Semantic Versioning
 
 Semantic Versioning (SemVer) is a versioning scheme that uses a three-part version number: MAJOR.MINOR.PATCH. Each part of the version number is incremented based on the type of changes made. Below are some examples:
 
 - MAJOR: Incompatible (non-backwards-compatible) API changes or features
+  ```1.0.0```
 - MINOR: Backwards-compatible new features
+  ```0.1.0```
 - PATCH: Backwards-compatible bug fixes
+  ```0.0.1```
 
 When contributing, consider how your changes might affect the project's version number.
 
@@ -67,6 +49,8 @@ When contributing, consider how your changes might affect the project's version 
 - Follow the existing code style and conventions used in the project.
 - Use consistent indentation (spaces or tabs as per project preference).
 - Write clear, self-explanatory code and add comments where necessary.
+- Do your best to ensure comments are also added on top of large or complex functions
+- If there are tasks that needs to be done in the code being committed, add TODOs.
 
 ## Testing
 
