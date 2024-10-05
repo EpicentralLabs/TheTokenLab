@@ -5,16 +5,13 @@ import { Label } from "@/components/ui/label"
 // RevokeAuthority component: Allows users to revoke minting authority and set token immutability
 export function RevokeAuthority() {
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center"> {/* Center the entire section */}
       <h3 className="mb-4 text-white">Revoke Authority:</h3>
-      <div className="flex justify-between max-w-xs">
-        {/* Map through authority options */}
+      <div className="flex justify-center space-x-12"> {/* Increase space between switches */}
         {['Mint', 'Immutable'].map((label) => (
-          <div key={label} className="flex items-center space-x-2">
-            {/* Switch component for toggling authority */}
-            <Switch id={label.toLowerCase()} />
-            {/* Label for the switch */}
+          <div key={label} className="flex flex-col items-center space-y-2"> {/* Center each switch and label */}
             <Label htmlFor={label.toLowerCase()} className="text-white">{label}</Label>
+            <Switch id={label.toLowerCase()} />
           </div>
         ))}
       </div>

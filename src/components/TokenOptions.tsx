@@ -5,8 +5,7 @@ import { FolderIcon } from "lucide-react"
 
 export function TokenOptions() {
   return (
-    <div className="space-y-6">
-      {/* Token Image Upload Section */}
+    <div className="space-y-6 text-center"> {/* Center the entire section */}
       <div>
         <Label className="text-white">Token Image:</Label>
         {/* Dropzone for image upload */}
@@ -15,10 +14,9 @@ export function TokenOptions() {
           <p className="text-white">Choose a file</p>
         </div>
       </div>
-      {/* ZK Compression Toggle */}
-      <div className="flex items-center space-x-2">
-        <Switch id="zkCompression" />
+      <div className="flex flex-col items-center space-y-2"> {/* Center the switch and label */}
         <Label htmlFor="zkCompression" className="text-white">Use ZK Compression</Label>
+        <Switch id="zkCompression" />
       </div>
     </div>
   )
