@@ -20,7 +20,7 @@ To create a new branch:
 
 2. Create a new branch with a descriptive name following semantic versioning:
    ```
-   git checkout -b <type>/<description>
+   git checkout -b <version[num.num.num]> (i.e. v1.0.0)
    ```
 
 ## Semantic Versioning
@@ -58,7 +58,7 @@ When contributing, consider how your changes might affect the project's version 
 
 ## Commit Messages
 
-Write clear commit messages that explain the changes made.
+Write clear commit messages that explain briefly the changes made seperated by `/`. **For example**: "package.json updated / .gitignore updated / switch component added".
 
 ## Documentation
 
