@@ -22,13 +22,11 @@ export function TokenOptions() {
       </div>
       <div className="flex flex-col items-center space-y-2">
         <Label htmlFor="zkCompression" className="text-white">Use ZK Compression</Label>
-        <Switch id="zkCompression" onToggle={handleZKToggle} />
-        {showZKWarning && (
-          <WarningLabel 
-            visible={true}
-            message="WARNING: Currently metadata for ZK Compressed tokens is not available."
-          />
-        )}
+        <Switch id="zkCompression" onCheckedChange={handleZKToggle} />
+        <WarningLabel 
+          visible={showZKWarning} 
+          message="WARNING: Currently metadata for ZK Compressed tokens is not available."
+        />
       </div>
     </div>
   )

@@ -18,7 +18,7 @@ export function RevokeAuthority() {
         {['Mint', 'Immutable'].map((label) => (
           <div key={label} className="flex flex-col items-center space-y-2"> {/* Center each switch and label */}
             <Label htmlFor={label.toLowerCase()} className="text-white">{label}</Label>
-            <Switch id={label.toLowerCase()} onToggle={handleToggle} />
+            <Switch id={label.toLowerCase()} onCheckedChange={handleToggle} />
           </div>
         ))}
       </div>
