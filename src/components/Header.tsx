@@ -13,10 +13,10 @@ export function Header() {
         {/* Navigation menu */}
         <nav>
           <ul className="flex space-x-4 font-p-medium">
-            {/* Navigation items with hover effect */}
-            <li className="hover:text-[#00FFA3] transition-colors">Home</li>
-            <li className="hover:text-[#00FFA3] transition-colors">Docs</li>
-            <li className="hover:text-[#00FFA3] transition-colors">DAO</li>
+            {/* Navigation items with enhanced hover and glow effect */}
+            <li className="text-white transition-all duration-300 hover:text-[#ffffff] hover:text-shadow-glow-smooth">Home</li>
+            <li className="text-white transition-all duration-300 hover:text-[#ffffff] hover:text-shadow-glow-smooth">Docs</li>
+            <li className="text-white transition-all duration-300 hover:text-[#ffffff] hover:text-shadow-glow-smooth">DAO</li>
           </ul>
         </nav>
       </div>

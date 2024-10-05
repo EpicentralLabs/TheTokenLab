@@ -28,9 +28,24 @@ const config: Config = {
         'p-thin': ['p-thin', 'sans-serif'],
         'p-thinitalic': ['p-thinitalic', 'sans-serif'],
       },
+      textShadow: {
+        'glow': '0 0 10px rgba(255, 255, 255, 0.8)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }: { addUtilities: any }) {
+      const newUtilities = {
+        '.text-shadow-glow': {
+          textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+        },
+        '.text-shadow-glow-smooth': {
+          textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3), 0 0 30px rgba(255, 255, 255, 0.2)',
+        },
+      }
+      addUtilities(newUtilities, ['hover'])
+    }
+  ],
 };
 
 export default config;
