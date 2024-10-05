@@ -43,7 +43,7 @@ export async function chargeMintingFee(
     console.log('🪙 Latest blockhash retrieved:', blockhash);
 
     let totalCharged: number = 0;
-    let totalFee: number = 0;
+    const totalFee: number = 0;
 
     let totalLamports;
     if (paymentType === 'SOL') {

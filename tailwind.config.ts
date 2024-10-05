@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         'custom': ['YourCustomFont', 'sans-serif'],
+        // more custom font here
       },
     },
   },

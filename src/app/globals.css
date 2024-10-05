@@ -2,17 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'YourCustomFont';
-  src: url('/fonts/YourCustomFont.woff2') format('woff2'),
-       url('/fonts/YourCustomFont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Repeat @font-face for each custom font you want to use */
-
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

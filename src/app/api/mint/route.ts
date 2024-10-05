@@ -53,15 +53,15 @@ export async function POST(req: NextRequest) {
     let fullPath: string;
     let payer: Keypair;
     let totalCharged: number;
-    let firebaseURL = imagePath;
+    const firebaseURL = imagePath;
     const rpcEndpoint = process.env.CUSTOM_RPC_ENDPOINT;
     const connection = new Connection(rpcEndpoint || clusterApiUrl('devnet'), 'confirmed');
     let userTokenAccount: PublicKey;
     let tokenMintAccount: PublicKey;
     let result: any;
     let transactionLink: any;
-    let res = NextResponse.json({message: 'Failed to set MintTokens authority.'}, {status: 500}) as any;
-    let filePath = extractFilePathFromFirebaseUrl(firebaseURL);
+    const res = NextResponse.json({message: 'Failed to set MintTokens authority.'}, {status: 500}) as any;
+    const filePath = extractFilePathFromFirebaseUrl(firebaseURL);
     console.log(`🔗 Connected to Solana RPC at: ${rpcEndpoint || clusterApiUrl('devnet')}`);
 
     try {
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
         let updatedMetadataUri: string;
         try {
             const description = `This is a token for ${tokenSymbol.toUpperCase()} with a total supply of ${quantity}.`;
-            let imageUrl = imagePath;
+            const imageUrl = imagePath;
             /**
              * Uploads an image to Pinata and pins the associated JSON metadata.
              *
