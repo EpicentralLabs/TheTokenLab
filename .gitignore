@@ -16,7 +16,6 @@
 # production
 /build
 build
-api
 dist
 
 # misc
