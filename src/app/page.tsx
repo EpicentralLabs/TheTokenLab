@@ -1,8 +1,11 @@
-// Import the TheTokenLab component from the components directory
 import TheTokenLab from '@/components/TheTokenLab'
+import { Metadata } from 'next'
 
-// Define the Home component as the default export
+export const metadata: Metadata = {
+  title: 'The Token Lab | Epicentral Labs',
+  description: "Solana's most simple no-code token creator",
+}
+
 export default function Home() {
-  // Render the TheTokenLab component
   return <TheTokenLab />
 }

@@ -4,8 +4,11 @@ import './globals.css'
 
 // Define metadata for the application
 export const metadata: Metadata = {
-  title: 'Epicentral Labs | The Token Lab',
-  description: "Solana's most simple no code token creator",
+  title: {
+    template: '%s | Epicentral Labs',
+    default: 'Epicentral Labs | The Token Lab',
+  },
+  description: "Solana's most simple no-code token creator",
   icons: {
     icon: '/favicon.ico',
   }
