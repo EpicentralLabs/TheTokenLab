@@ -1,13 +1,16 @@
+/* Import Tailwind CSS base styles, components, and utilities */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Define CSS variables for light mode */
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 }
 
+/* Override CSS variables for dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -16,13 +19,86 @@
   }
 }
 
+/* Apply global styles to the body */
 body {
-  font-family: 'YourCustomFont', sans-serif;
+  /* Set the default font family */
+  font-family: 'p-light', sans-serif;
+  /* Set text color using the CSS variable */
   color: rgb(var(--foreground-rgb));
+  /* Create a gradient background */
   background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Ensure the body takes up the full viewport height */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Prevent cursor change on text hover, except for pointer elements */
+* {
+  cursor: default !important;
+}
+
+.cursor-pointer, button, a {
+  cursor: pointer !important;
+}
+
+/* Custom font faces */
+@font-face {
+  font-family: 'P-Light';
+  src: url('/fonts/P-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Regular';
+  src: url('/fonts/P-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Bold';
+  src: url('/fonts/P-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Black';
+  src: url('/fonts/P-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Medium';
+  src: url('/fonts/P-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'P-Thin';
+  src: url('/fonts/P-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
 }
