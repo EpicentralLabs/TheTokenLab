@@ -96,89 +96,6 @@ function App() {
     return true;
   };
 
-  const compressTokens = async (paymentType) => {
-    if (!userPublicKey) {
-      alert('Please connect your wallet first');
-      return;
-    }
-    console.log(`ZK Compress Button is ${zkChecked}`);
-
-    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
-
-
-    const compressData = new FormData();
-  
-    compressData.append('userPublicKey', userPublicKey);
-    compressData.append('quantity', sanitizedQuantity);
-    compressData.append('mintChecked', mintChecked);
-    compressData.append('immutableChecked', immutableChecked);
-    compressData.append('decimals', decimals);
-    compressData.append('paymentType', paymentType);
-    compressData.append('zkChecked', zkChecked);
-
-    console.log('Compress Token data being sent:', {
-   
-      userPublicKey,
-      quantity: sanitizedQuantity,
-      mintChecked,
-      immutableChecked,
-      decimals,
-      paymentType,
-      zkChecked,
-    });
-
-
-    try {
-      const url = process.env.REACT_APP_APP_ENV === 'development'
-          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress-mint`
-          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress-mint`;
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userPublicKey: userPublicKey,
-          quantity: sanitizedQuantity,
-          mintChecked: mintChecked,
-          immutableChecked: immutableChecked,
-          decimals: decimals,
-          paymentType: paymentType,
-          zkChecked: zkChecked,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Minting failed');
-      }
-
-      const data = await response.json();
-
-      console.log('Mint successful!', data);
-      const { mintAddress, tokenAccount, totalCharged } = data;
-      console.log('mintAddress:', mintAddress);
-      console.log('tokenAccount:', tokenAccount);
-      const transactionLink = data.explorerLink;
-      console.log('transactionLink:', transactionLink);
-      console.log(onFileUpload, 'onFileUpload', setOnFileUpload());
-      console.log(imageFile, 'imageFile', setImageFile());
-      
-      setMintSuccess({
-        mintAddress,
-        tokenAccount,
-        quantity,
-        decimals,
-        totalCharged,
-        paymentType,
-        transactionLink,
-      });
-      console.log ('totalCharged:', data.totalCharged);
-    } catch (error) {
-      console.error(`${paymentType} minting failed:`, error);
-      alert(`Minting failed: ${error.message}`);
-    }
-  };
 
 
   const mintTokens = async (paymentType) => {
@@ -270,6 +187,90 @@ function App() {
       setIsMinting(false);
     }
   };
+
+  const mintCompressTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    setIsMinting(true);
+    console.log(`Initializing mint with ${paymentType} payment`);
+
+    const imagePath = imageFile;
+    if (!validateInputs()) {
+      return;
+    }
+
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
+
+
+    const mintData = new FormData();
+    
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', sanitizedQuantity);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+
+    console.log('Mint data being sent:', {
+
+
+      userPublicKey,
+      quantity: sanitizedQuantity,
+      mintChecked,
+      decimals,
+      paymentType,
+    });
+
+
+    try {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+
+          userPublicKey: userPublicKey,
+          quantity: sanitizedQuantity,
+          mintChecked: mintChecked,
+          decimals: decimals,
+          paymentType: paymentType,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
+
+      const data = await response.json();
+
+      console.log('Mint successful!', data);
+      
+      // Set mintSuccess data
+      setMintSuccess({
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
+        quantity,
+        decimals,
+        metadataUploadOutput: data.metadataUploadOutput,
+        totalCharged: data.totalCharged,
+        paymentType,
+        transactionLink: data.explorerLink,
+      });
+    } catch (error) {
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
+    } finally {
+      setIsMinting(false);
+    }
+  };
+
+
   function setInputErrors(errors) {
     setIsTokenNameError(errors.tokenName);
     setIsTokenSymbolError(errors.tokenSymbol);
@@ -280,10 +281,12 @@ function App() {
 
 
   const handleSolMint = () => {
+    if(zkChecked){return mintCompressTokens('SOL');}
     return mintTokens('SOL');
   };
 
   const handleLabsMint = () => {
+    if(zkChecked){return mintCompressTokens('LABS');}
     return mintTokens('LABS');
   };
 
@@ -331,6 +334,7 @@ function App() {
               {/* Token details inputs */}
               <h1 className="listSpacing">
                 <TokenNameList 
+                  zkChecked={zkChecked}
                   tokenName={tokenName} 
                   setTokenName={setTokenName} 
                   isError={isTokenNameError}
@@ -338,6 +342,7 @@ function App() {
               </h1>
               <h1 className="listSpacing">
                 <TokenSymbolList 
+                  zkChecked={zkChecked}
                   tokenSymbol={tokenSymbol} 
                   setTokenSymbol={setTokenSymbol} 
                   isError={isTokenSymbolError}
@@ -357,13 +362,13 @@ function App() {
                   isError={isDecimalsError}
                 />
               </h1>
-              <h1 className="listSpacing"><DescriptionInput /></h1>
+              <h1 className="listSpacing"><DescriptionInput zkChecked={zkChecked}/></h1>
             </div>
             <div className="Input-List">
               {/* Photo upload input */}
               <h1>
                 {/* PhotoInput component for uploading and handling image files */}
-                <PhotoInput
+                <PhotoInput zkChecked={zkChecked}
                     onFileUpload={(file) => {
                       console.log('File uploaded:', file);
                       setImageFile(file); // Update state with uploaded file path

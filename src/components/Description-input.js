@@ -2,7 +2,7 @@ import React from 'react'
 import './Input-list.css'
 
 // DescriptionInput component for handling token description input
-function DescriptionInput() {
+function DescriptionInput({zkChecked}) {
   // State to store the description value
   const [description, setDescription] = React.useState('')
 
@@ -16,6 +16,12 @@ function DescriptionInput() {
     // Note: If the input exceeds 80 characters, it's silently ignored
   }
 
+  let descriptionInputClass = "input-bubble";
+
+  if(zkChecked){
+    descriptionInputClass = "zkCompress-on-input-bubble";
+  }
+
   return (
     <h1 className="container">
       <div className="Input-bubble-box">
@@ -25,7 +31,7 @@ function DescriptionInput() {
             name="description"
             type="text"
             id="token-description"
-            className="input-bubble"
+            className={`${descriptionInputClass}`}
             value={description}
             onChange={handleChange}
             maxLength={80} // Enforce max length on the input element (HTML5 attribute)
