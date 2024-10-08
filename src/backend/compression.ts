@@ -56,11 +56,11 @@ async function logCurrentAuthorities(connection: Connection, tokenMintAccount: P
 
 
 
-// Define the /api/mint endpoint
+// Define the /api/compress endpoint
 // @ts-ignore
 router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response) => {
 
-    
+
     const {
         userPublicKey,
         quantity,
@@ -175,105 +175,56 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         }
 
 
-        let userTokenAccount: PublicKey;
         let tokenMintAccount: PublicKey;
         let result: any;
 
         try {
-            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance);
-            tokenMintAccount = result.tokenMint;
-            userTokenAccount = result.userTokenAccount;
+            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance.toBase58(), userPublicKey);
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
             return handleErrorResponse(res, error as Error, 'Failed to mint tokens.');
         }
-        let transactionLink: any;
 
-        try {
-            const actionsPerformed: string[] = [];
-            if (mintChecked) {
-                console.log('🔄 Starting process to set MintTokens authority...');
-                try {
-                    await setAuthority(
-                        connection,
-                        payer,
-                        tokenMintAccount,
-                        payer.publicKey,
-                        AuthorityType.MintTokens,
-                        null
-                    );
-                    actionsPerformed.push('Minting');
-                    console.log('✅ Successfully set MintTokens authority.');
-                } catch (error) {
-                    console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
-                    return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
-                }
-            } else {
-                console.log('ℹ️ mintChecked is false, skipping minting process.');
+        // Prepare response data
+        const { tokenMint, userTokenAccount } = result;
+
+        // If mintChecked is true, set the mint authority
+        if (mintChecked) {
+            console.log('🔄 Starting process to set MintTokens authority...');
+            try {
+                await setAuthority(
+                    connection,
+                    payer,
+                    tokenMint,
+                    payer.publicKey,
+                    AuthorityType.MintTokens,
+                    null
+                );
+                console.log('✅ Successfully set MintTokens authority.');
+            } catch (error) {
+                console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
+                return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
             }
-            await logCurrentAuthorities(connection, tokenMintAccount);
-
-        //      // Handle Freeze Authority, set it to null if checked
-        //      if (freezeChecked) {
-        //          console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
-        //          try {
-        //              const mintInfo = await getMint(connection, tokenMintAccount);
-        //              console.log("Current Mint Authority:", mintInfo.mintAuthority);
-        //              console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
-        //              await setAuthority(
-        //                 connection,
-        //                 payer,
-        //                 tokenMintAccount,
-        //                 payer.publicKey,
-        //                 AuthorityType.FreezeAccount,
-        //                 null
-        //             );
-        //             actionsPerformed.push('Freeze authority');
-        //             console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
-        //          } catch (error) {
-        //              console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
-        //              return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
-        // }
-        //      } else {
-        //          console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
-        //      }
-        //
-        //
-        //
-        //
-
-            // If we reach here, all actions were successful
-            return res.status(200).json({
-                message: `✅ Successfully completed: ${actionsPerformed.join(', ')}.`,
-                explorerLink: transactionLink,
-                mintAddress: tokenMintAccount.toString(),
-                tokenAccount: userTokenAccount?.toString(),
-                metadataUploadOutput: `Metadata created at: ${transactionLink}`,
-                totalCharged: totalCharged
-            });
-
-        } catch (error) {
-            const errorMessage = (error as Error).message || String(error);
-            const errorMapping: { [key: string]: string } = {
-                'mint': 'Failed to set mint authority.',
-                'freeze': 'Failed to set freeze authority.',
-                'AccountOwner': 'Failed to set immutable authority.',
-            };
-
-            const errorKey = Object.keys(errorMapping).find(key => errorMessage.includes(key));
-
-            if (errorKey) {
-                console.error(`❌ Error: ${errorMapping[errorKey]}:`, errorMessage);
-                return handleErrorResponse(res, error as Error, errorMapping[errorKey])
-            }
-            console.error('❌ Unexpected Error:', errorMessage);
-            return handleErrorResponse(res, error as Error, 'Internal Server Error');
-        } finally {
-            // Clean up HERE
+        } else {
+            console.log('ℹ️ mintChecked is false, skipping minting process.');
         }
+
+        // Log current authorities
+        await logCurrentAuthorities(connection, tokenMint);
+
+        // Successful response with token information
+        return res.status(200).json({
+            message: `✅ Tokens minted successfully.`,
+            explorerLink: `https://explorer.solana.com/tx/${result.tokenMint}?cluster=devnet`,
+            mintAddress: tokenMint,
+            tokenAccount: userTokenAccount,
+            totalCharged
+        });
+
     } catch (error) {
         return handleErrorResponse(res, error as Error, 'Internal Server Error');
-    }});
+    }
+});
 export default router;
 
