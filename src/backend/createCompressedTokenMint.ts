@@ -3,6 +3,7 @@ import {createRpc, Rpc,} from "@lightprotocol/stateless.js";
 // @ts-ignore
 import {createMint, mintTo, transfer,} from "@lightprotocol/compressed-token";
 import {Keypair} from "@solana/web3.js";
+// @ts-ignore
 import dotenv from 'dotenv';
 dotenv.config();
 /**
@@ -132,3 +133,11 @@ export async function main(): Promise<void> {
 main().catch((err) => {
   console.error("An error occurred:", err);
 });
+
+export class mintCompressedToken {
+    constructor() {
+        main().catch((err) => {
+        console.error("An error occurred:", err);
+        });
+    }
+}
