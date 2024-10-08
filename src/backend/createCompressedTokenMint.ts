@@ -159,9 +159,10 @@ export async function mintCompressedToken(
   console.log(`txId: ${transferTxId}`);
 
     // Return the mint address and user's token account
+    const a = userPublicKeyInstance.toBase58();
     return {
       tokenMint: mint.toBase58(),
-      userTokenAccount: user.toBase58(),
+      userTokenAccount: a,
     };
 
   } catch (err) {
@@ -180,11 +181,18 @@ export async function mintCompressedToken(
 export async function main(parsedDecimals: number, quantity: number, userPublicKeyInstance: PublicKey): Promise<void> {
   try {
     const userPublicKey = new PublicKey(userPublicKeyInstance);
+    console.log(`🔑 User Public Key: ${userPublicKey.toBase58()}`);
+    console.log(`💵 Minting ${quantity} tokens with ${parsedDecimals} decimals...`);
     const result = await mintCompressedToken(parsedDecimals, quantity, userPublicKey);
     console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
-    console.log(`Token Mint Account: ${result.tokenMint}`);
-    console.log(`User Token Account: ${result.userTokenAccount}`);
+    console.log(`🏗️ Token Mint Account: ${result.tokenMint}`);
+    console.log(`📦 User Token Account: ${result.userTokenAccount}`);
   } catch (error) {
     console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
+    if (error instanceof Error) {
+      console.error(`📅 Error Stack Trace: ${error.stack}`);
+    } else {
+      console.error(`⚠️ Unexpected error type: ${JSON.stringify(error)}`);
+    }
   }
 }

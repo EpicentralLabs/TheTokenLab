@@ -53,7 +53,7 @@ function MintSuccessMessage({
                 <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
                 <div className="mint-success-details">
                     <span className="detail-label">Mint Address:</span>
-                    <span className="detail-item">
+                    {/*<span className="detail-item">
                         <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer" title={mintAddress}>
                             {truncateAddress(mintAddress)}
                         </a>
@@ -89,7 +89,7 @@ function MintSuccessMessage({
                     <span className="detail-label">Explorer:</span>
                     <span className="detail-item">
                         <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
-                    </span>
+                        </span>*/}
                 </div>
                 <button className="mint-success-close" onClick={onClose}>Close</button>
             </div>

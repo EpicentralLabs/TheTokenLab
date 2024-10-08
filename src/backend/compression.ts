@@ -211,15 +211,14 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         }
 
         // Log current authorities
-        await logCurrentAuthorities(connection, tokenMint);
+        // await logCurrentAuthorities(connection, tokenMint);
 
         // Successful response with token information
         return res.status(200).json({
             message: `✅ Tokens minted successfully.`,
-            explorerLink: `https://explorer.solana.com/tx/${result.tokenMint}?cluster=devnet`,
-            mintAddress: tokenMint,
-            tokenAccount: userTokenAccount,
-            totalCharged
+            explorerLink: null,
+            mintAddress: null,
+            tokenAccount: null
         });
 
     } catch (error) {
