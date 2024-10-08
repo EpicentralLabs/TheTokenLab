@@ -3,7 +3,7 @@ import './Input-list.css';
 
 // Component for handling token name input
 function TokenNameList({ zkChecked ,tokenName, setTokenName, isError }) {
-    if(zkChecked){tokenName = null}
+    if(zkChecked){tokenName = ``}
     // Handler for token name input changes
     const handleNameChange = (e) => {
         let value = e.target.value;

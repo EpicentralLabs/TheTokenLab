@@ -14,8 +14,13 @@ function MintSuccessMessage({
 }) {
     const extractTransactionHash = (output) => {
         const regex = /\/tx\/([a-zA-Z0-9]+)/;
-        const match = output.match(regex);
-        return match ? match[1] : null;
+        if(output){
+            const match = output.match(regex);
+            return match ? match[1] : null;
+        }else{
+            return 'zk compression'
+        };
+        
     }
 
     const metadataTransactionHash = extractTransactionHash(metadataUploadOutput);

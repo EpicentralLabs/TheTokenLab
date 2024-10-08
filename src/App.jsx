@@ -87,9 +87,14 @@ function App() {
       decimals: !decimals,
     };
 
+    let zkErrors = {
+      quantity: !quantity,
+      decimals: !decimals,
+    }
+
     setInputErrors(errors);
 
-    if (Object.values(errors).includes(true)) {
+    if ((Object.values(errors).includes(true) && !zkChecked) || (zkChecked && Object.values(zkErrors).includes(true))) {
       alert('All fields are required.');
       return false;
     }
@@ -225,8 +230,8 @@ function App() {
 
     try {
       const url = process.env.REACT_APP_APP_ENV === 'development'
-          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/mint`
-          : `${process.env.REACT_APP_PUBLIC_URL}/api/mint`;
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress-mint`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress-mint`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -257,7 +262,6 @@ function App() {
         tokenAccount: data.tokenAccount,
         quantity,
         decimals,
-        metadataUploadOutput: data.metadataUploadOutput,
         totalCharged: data.totalCharged,
         paymentType,
         transactionLink: data.explorerLink,

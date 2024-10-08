@@ -5,7 +5,7 @@ import './Input-list.css';
 
 // Component for handling token symbol input
 function TokenSymbolList({ zkChecked, tokenSymbol, setTokenSymbol, isError }) {
-    if(zkChecked){tokenSymbol = null}
+    if(zkChecked){tokenSymbol = ``}
     // Handler for symbol input changes
     const handleSymbolChange = (e) => {
         let value = e.target.value;
@@ -18,7 +18,7 @@ function TokenSymbolList({ zkChecked, tokenSymbol, setTokenSymbol, isError }) {
 
         setTokenSymbol(value);
     }
-    
+
 let symbolInputClass = "input-bubble";
 
 if(zkChecked){
