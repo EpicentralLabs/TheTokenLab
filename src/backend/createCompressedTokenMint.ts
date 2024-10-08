@@ -8,7 +8,7 @@ dotenv.config();
 /**
  * Confirms a transaction with exponential backoff to handle rate limits.
  */
-async function confirmTransactionWithBackoff(
+export async function confirmTransactionWithBackoff(
   connection: Rpc,
   signature: string,
   maxRetries: number = 10
@@ -37,7 +37,7 @@ async function confirmTransactionWithBackoff(
   throw new Error("Transaction confirmation failed after maximum retries.");
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const payer = Keypair.generate();
   const tokenRecipient = Keypair.generate();
 
