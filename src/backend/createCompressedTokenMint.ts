@@ -159,10 +159,9 @@ export async function mintCompressedToken(
   console.log(`txId: ${transferTxId}`);
 
     // Return the mint address and user's token account
-    const a = userPublicKeyInstance.toBase58();
     return {
       tokenMint: mint.toBase58(),
-      userTokenAccount: a,
+      userTokenAccount: userPublicKeyInstance.toBase58(),
     };
 
   } catch (err) {
