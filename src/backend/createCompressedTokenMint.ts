@@ -3,7 +3,7 @@
 // @ts-ignore
 import { createRpc, Rpc } from "@lightprotocol/stateless.js";
 // @ts-ignore
-import { createMint, mintTo } from "@lightprotocol/compressed-token";
+import { createMint, mintTo, transfer } from "@lightprotocol/compressed-token";
 import { PublicKey, Keypair, Connection } from '@solana/web3.js';
 
 import dotenv from 'dotenv';
@@ -92,7 +92,8 @@ export async function mintCompressedToken(
 
     const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
     console.log(`🔗 Connecting to Helius RPC at: ${RPC_ENDPOINT}`);
-    const connection: Rpc = createRpc(RPC_ENDPOINT);
+    const COMPRESSION_RPC_ENDPOINT = RPC_ENDPOINT;
+    const connection: Rpc = createRpc(RPC_ENDPOINT, COMPRESSION_RPC_ENDPOINT)
 
     // Validate minting amount
     const amountToMint = quantity * Math.pow(10, parsedDecimals); // Calculate base units
@@ -114,10 +115,11 @@ export async function mintCompressedToken(
 
     // Create a compressed token mint
     console.log('🏗️ Creating a compressed token mint...');
+    // console.log(connection, payer, user, parsedDecimals);
     const { mint, transactionSignature } = await createMint(
         connection,
         payer, // Fee payer and mint authority
-        user, // Mint authority public key
+        payer.publicKey, // Mint authority public key
         parsedDecimals // Number of decimals
     );
     console.log(`✅ Compressed token mint created: ${mint.toBase58()}`);
@@ -127,18 +129,34 @@ export async function mintCompressedToken(
 
     // Mint tokens to the user
     console.log(`🎉 Minting ${quantity} tokens to ${user.toBase58()}...`);
+    const amount = amountToMint + Math.E + parsedDecimals;
+    console.log(amount)
     const mintToTxId = await mintTo(
         connection,
         payer, // Fee payer
         mint, // Mint address
-        user, // Destination address
+        payer.publicKey, // Destination address
         payer, // Mint authority
-        amountToMint // Amount to mint (in base units)
+        amount // Amount to mint (in base units)
+        
     );
     console.log(`✅ Minted ${quantity} tokens to ${user.toBase58()}`);
     console.log(`✅ MintTo transaction signature: ${mintToTxId}`);
     await confirmTransactionWithBackoff(connection, mintToTxId);
     console.log('✅ MintTo transaction confirmed.');
+
+    /// Transfer compressed tokens from payer to tokenRecipient's pubkey
+  const transferTxId = await transfer(
+    connection,
+    payer,
+    mint,
+    amount, // Amount
+    payer, // Owner
+    user // To address
+  );
+
+  console.log(`Transfer of ${amount} ${mint} to ${user} was a success!`);
+  console.log(`txId: ${transferTxId}`);
 
     // Return the mint address and user's token account
     return {
