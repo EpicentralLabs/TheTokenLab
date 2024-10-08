@@ -68,7 +68,7 @@ export async function mintCompressedToken(
 
     // Request airdrop for the payer
     console.log("Requesting airdrop for the payer...");
-    const airdropSignature = await connection.requestAirdrop(payer, 1e9);
+    const airdropSignature = await connection.requestAirdrop(user, 1e9);
     console.log(`Airdrop transaction signature: ${airdropSignature}`);
 
     // Confirm the airdrop transaction
@@ -96,7 +96,7 @@ export async function mintCompressedToken(
         payer, // Fee payer
         mint, // Mint address
         user, // Destination address
-        user, // Mint authority
+        payer, // Mint authority
         amountToMint // Amount to mint (in base units)
     );
 
