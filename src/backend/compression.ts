@@ -179,7 +179,7 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         let result: any;
 
         try {
-            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance.toBase58(), userPublicKey);
+            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance);
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
