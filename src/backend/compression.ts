@@ -41,17 +41,11 @@ async function logCurrentAuthorities(connection: Connection, tokenMintAccount: P
     }
 
     const { data } = mintAccountInfo.value;
-
     // Check if data is a Buffer or ParsedAccountData
     if (isBuffer(data)) {
         console.error('❌ Error: Received Buffer instead of ParsedAccountData.');
         return;
     }
-
-    // Now we know data is of type ParsedAccountData
-    console.log('Current Mint Authority:', data.parsed.info.mintAuthority);
-    console.log('Current Freeze Authority:', data.parsed.info.freezeAuthority);
-    console.log('Current Owner:', data.parsed.info.owner);
 }
 
 
@@ -181,45 +175,44 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         try {
             result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance);
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
-        } catch (error) {
-            console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
-            return handleErrorResponse(res, error as Error, 'Failed to mint tokens.');
-        }
 
-        // Prepare response data
-        const { tokenMint, userTokenAccount } = result;
+            const {tokenMint, userTokenAccount} = result;
 
-        // If mintChecked is true, set the mint authority
-        if (mintChecked) {
-            console.log('🔄 Starting process to set MintTokens authority...');
-            try {
-                await setAuthority(
-                    connection,
-                    payer,
-                    tokenMint,
-                    payer.publicKey,
-                    AuthorityType.MintTokens,
-                    null
-                );
-                console.log('✅ Successfully set MintTokens authority.');
-            } catch (error) {
-                console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
-                return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
+            if (mintChecked) {
+                console.log('🔄 Starting process to set MintTokens authority...');
+                try {
+                    // Set the mint authority
+                    await setAuthority(
+                        connection,
+                        payer,
+                        tokenMint,
+                        payer.publicKey,
+                        AuthorityType.MintTokens,
+                        null
+                    );
+                    console.log('✅ Successfully set MintTokens authority.');
+                } catch (error) {
+                    console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
+                    return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
+                }
+            } else {
+                console.log('ℹ️ mintChecked is false, skipping minting authority process.');
             }
-        } else {
-            console.log('ℹ️ mintChecked is false, skipping minting authority process.');
+
+            // Log current authorities
+            await logCurrentAuthorities(connection, tokenMint);
+
+            // Successful response with token information
+            return res.status(200).json({
+                message: `✅ Tokens minted successfully.`,
+                explorerLink: `https://explorer.solana.com/tx/${result.tokenMint}?cluster=devnet`,
+                mintAddress: result.tokenMint,
+                tokenAccount: result.userTokenAccount,
+            });
+        } catch (error) {
+            console.error('❌ Error: Failed to mint tokens.', (error as Error).message || error);
+            return handleErrorResponse(res, error as Error, 'Failed to mint tokens');
         }
-
-        // Log current authorities
-        // await logCurrentAuthorities(connection, tokenMint);
-
-        // Successful response with token information
-        return res.status(200).json({
-            message: `✅ Tokens minted successfully.`,
-            explorerLink: null,
-            mintAddress: null,
-            tokenAccount: null
-        });
 
     } catch (error) {
         return handleErrorResponse(res, error as Error, 'Internal Server Error');
