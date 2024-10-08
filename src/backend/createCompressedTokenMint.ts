@@ -2,7 +2,7 @@
 import { createRpc, Rpc } from "@lightprotocol/stateless.js";
 // @ts-ignore
 import { createMint, mintTo } from "@lightprotocol/compressed-token";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,11 +18,11 @@ async function confirmTransactionWithBackoff(
     try {
       const result = await connection.confirmTransaction(signature);
       if (result && result.value && result.value.err === null) {
-        return;
+        return; // Transaction confirmed successfully
       }
     } catch (error: any) {
       if (error.code !== -32601 && error.code !== 429) {
-        throw error;
+        throw error; // Re-throw unexpected errors
       }
       console.log(`Rate limit hit or method not found, retrying in ${delay / 1000} seconds...`);
     }
@@ -38,66 +38,84 @@ export async function mintCompressedToken(
     quantity: number,
     userPublicKeyInstance: PublicKey
 ): Promise<{ tokenMint: string; userTokenAccount: string }> {
-  const payer = userPublicKeyInstance;
-  const API_KEY = process.env.HELIUS_API_KEY;
+  const privateKey = process.env.SOLANA_PRIVATE_KEY;
 
-  if (!API_KEY) {
-    throw new Error('❌ Missing Helius API key. Please set the HELIUS_API_KEY environment variable.');
+  if (!privateKey) {
+    console.error('❌ Missing SOLANA_PRIVATE_KEY environment variable');
+    throw new Error('Missing SOLANA_PRIVATE_KEY');
   }
 
-  const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
-  const connection = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
-  console.log(`🔗 Connected to Helius RPC at: ${RPC_ENDPOINT}`);
+  let secretKeyArray: number[];
 
-  const amountToMint = quantity * Math.pow(10, parsedDecimals); // Calculate base units
+  try {
+    secretKeyArray = JSON.parse(privateKey);
+    const payer = Keypair.fromSecretKey(Uint8Array.from(secretKeyArray));
+    console.log('✅ Payer keypair initialized:', payer.publicKey.toBase58());
 
-  // Request airdrop for the payer
-  console.log("Requesting airdrop for the payer...");
-  const airdropSignature = await connection.requestAirdrop(payer, 1e9);
-  console.log(`Airdrop transaction signature: ${airdropSignature}`);
+    const user = userPublicKeyInstance;
+    const API_KEY = process.env.HELIUS_API_KEY;
 
-  // Confirm the airdrop transaction
-  await confirmTransactionWithBackoff(connection, airdropSignature);
+    if (!API_KEY) {
+      throw new Error('❌ Missing Helius API key. Please set the HELIUS_API_KEY environment variable.');
+    }
 
-  // Create a compressed token mint
-  console.log("Creating a compressed token mint...");
-  const { mint, transactionSignature } = await createMint(
-      connection,
-      payer, // Fee payer and mint authority
-      payer, // Mint authority public key
-      parsedDecimals // Number of decimals
-  );
+    const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
+    const connection = createRpc(RPC_ENDPOINT, RPC_ENDPOINT);
+    console.log(`🔗 Connected to Helius RPC at: ${RPC_ENDPOINT}`);
 
-  console.log(`Compressed token mint created! Mint address: ${mint.toBase58()}`);
-  console.log(`Transaction signature: ${transactionSignature}`);
+    const amountToMint = quantity * Math.pow(10, parsedDecimals); // Calculate base units
 
-  // Confirm the mint transaction
-  await confirmTransactionWithBackoff(connection, transactionSignature);
+    // Request airdrop for the payer
+    console.log("Requesting airdrop for the payer...");
+    const airdropSignature = await connection.requestAirdrop(payer, 1e9);
+    console.log(`Airdrop transaction signature: ${airdropSignature}`);
 
-  // Mint the calculated amount to the user's account
-  console.log(`Minting ${quantity} tokens to the payer's account...`);
-  const mintToTxId = await mintTo(
-      connection,
-      payer, // Fee payer
-      mint, // Mint address
-      payer, // Destination address
-      payer, // Mint authority
-      amountToMint // Amount to mint (in base units)
-  );
+    // Confirm the airdrop transaction
+    await confirmTransactionWithBackoff(connection, airdropSignature);
 
-  console.log(`Minted ${quantity} tokens to ${payer.toBase58()}`);
-  console.log(`MintTo transaction signature: ${mintToTxId}`);
+    // Create a compressed token mint
+    console.log("Creating a compressed token mint...");
+    const { mint, transactionSignature } = await createMint(
+        connection,
+        payer, // Fee payer and mint authority
+        user, // Mint authority public key
+        parsedDecimals // Number of decimals
+    );
 
-  // Confirm the mintTo transaction
-  await confirmTransactionWithBackoff(connection, mintToTxId);
+    console.log(`Compressed token mint created! Mint address: ${mint.toBase58()}`);
+    console.log(`Transaction signature: ${transactionSignature}`);
 
-  return {
-    tokenMint: mint.toBase58(),
-    userTokenAccount: payer.toBase58(),
-  };
+    // Confirm the mint transaction
+    await confirmTransactionWithBackoff(connection, transactionSignature);
+
+    // Mint the calculated amount to the user's account
+    console.log(`Minting ${quantity} tokens to ${user.toBase58()}...`);
+    const mintToTxId = await mintTo(
+        connection,
+        payer, // Fee payer
+        mint, // Mint address
+        user, // Destination address
+        user, // Mint authority
+        amountToMint // Amount to mint (in base units)
+    );
+
+    console.log(`Minted ${quantity} tokens to ${user.toBase58()}`);
+    console.log(`MintTo transaction signature: ${mintToTxId}`);
+
+    // Confirm the mintTo transaction
+    await confirmTransactionWithBackoff(connection, mintToTxId);
+
+    return {
+      tokenMint: mint.toBase58(),
+      userTokenAccount: user.toBase58(),
+    };
+  } catch (err) {
+    console.error('❌ Error: Failed to initialize payer keypair or mint tokens.', (err as Error).message || err);
+    throw err; // Rethrow to handle upstream
+  }
 }
 
-export async function main(parsedDecimals: number, quantity: number, userPublicKeyInstance: string): Promise<void> {
+export async function main(parsedDecimals: number, quantity: number, userPublicKeyInstance: PublicKey): Promise<void> {
   try {
     const userPublicKey = new PublicKey(userPublicKeyInstance);
     const result = await mintCompressedToken(parsedDecimals, quantity, userPublicKey);
