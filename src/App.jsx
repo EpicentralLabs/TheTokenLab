@@ -230,8 +230,8 @@ function App() {
 
     try {
       const url = process.env.REACT_APP_APP_ENV === 'development'
-          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress-mint`
-          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress-mint`;
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress`;
 
       const response = await fetch(url, {
         method: 'POST',

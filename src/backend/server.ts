@@ -64,7 +64,7 @@ app.use(logRequest);
 // Routes
 app.use('/api/mint', mintRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/compress-mint', compressionRoutes);
+app.use('/api/compress', compressionRoutes);
 
 // Health check route
 app.get('/api/health', async (req: Request, res: Response) => {
