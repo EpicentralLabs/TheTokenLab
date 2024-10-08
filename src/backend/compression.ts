@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
-import { mintToken } from './createTokenMint';
+import { mintCompressedToken } from './createCompressedTokenMint';
 import {chargeMintingFee} from "./mintingFee";
 import {fetchPrices} from "./priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
@@ -93,9 +93,6 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
 
 
 
-
-
-
         const missingFields = validateRequiredFields(req.body);
         if (missingFields.length > 0) {
             console.error('❌ Validation Error: Required fields are missing: ' + missingFields.join(', '));
@@ -183,7 +180,7 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         let result: any;
 
         try {
-            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
+            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance);
             tokenMintAccount = result.tokenMint;
             userTokenAccount = result.userTokenAccount;
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
