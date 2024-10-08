@@ -1,7 +1,8 @@
-// @ts-ignore
+
+// TODO: MAYBE ADD THESE PACKAGES TO THE PACKAGE.JSON???
 import { createRpc, Rpc } from "@lightprotocol/stateless.js";
-// @ts-ignore
 import { createMint, mintTo } from "@lightprotocol/compressed-token";
+
 import { Keypair, PublicKey } from "@solana/web3.js";
 import dotenv from 'dotenv';
 
