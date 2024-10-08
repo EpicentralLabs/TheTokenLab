@@ -33,6 +33,15 @@ function isBuffer(data: any): data is Buffer {
     return Buffer.isBuffer(data);
 }
 async function logCurrentAuthorities(connection: Connection, tokenMintAccount: PublicKey) {
+    // Log the type of tokenMintAccount
+    console.log('🔍 Type of tokenMintAccount:', typeof tokenMintAccount);
+
+    // Check if tokenMintAccount is a valid PublicKey
+    if (!(tokenMintAccount instanceof PublicKey)) {
+        console.error('❌ Error: tokenMintAccount is not a valid PublicKey.');
+        return;
+    }
+
     const mintAccountInfo = await connection.getParsedAccountInfo(tokenMintAccount);
 
     if (!mintAccountInfo.value) {
@@ -46,6 +55,9 @@ async function logCurrentAuthorities(connection: Connection, tokenMintAccount: P
         console.error('❌ Error: Received Buffer instead of ParsedAccountData.');
         return;
     }
+
+    // If you need to log the mint account info, add that here
+    console.log('✅ Mint Account Info:', mintAccountInfo.value);
 }
 
 
@@ -202,13 +214,14 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
             // Log current authorities
             await logCurrentAuthorities(connection, tokenMint);
 
-            // Successful response with token information
-            return res.status(200).json({
+            const responseData = {
                 message: `✅ Tokens minted successfully.`,
                 explorerLink: `https://explorer.solana.com/tx/${result.tokenMint}?cluster=devnet`,
                 mintAddress: result.tokenMint,
                 tokenAccount: result.userTokenAccount,
-            });
+            };
+            console.log('🔄 Response Data:', responseData);
+            return res.status(200).json(responseData);
         } catch (error) {
             console.error('❌ Error: Failed to mint tokens.', (error as Error).message || error);
             return handleErrorResponse(res, error as Error, 'Failed to mint tokens');
