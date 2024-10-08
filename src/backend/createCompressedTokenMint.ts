@@ -4,8 +4,8 @@
 import { createRpc, Rpc } from "@lightprotocol/stateless.js";
 // @ts-ignore
 import { createMint, mintTo } from "@lightprotocol/compressed-token";
+import { PublicKey, Keypair, Connection } from '@solana/web3.js';
 
-import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -92,7 +92,7 @@ export async function mintCompressedToken(
 
     const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${API_KEY}`;
     console.log(`🔗 Connecting to Helius RPC at: ${RPC_ENDPOINT}`);
-    const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+    const connection: Rpc = createRpc(RPC_ENDPOINT);
 
     // Validate minting amount
     const amountToMint = quantity * Math.pow(10, parsedDecimals); // Calculate base units
@@ -132,7 +132,7 @@ export async function mintCompressedToken(
         payer, // Fee payer
         mint, // Mint address
         user, // Destination address
-        user, // Mint authority
+        payer, // Mint authority
         amountToMint // Amount to mint (in base units)
     );
     console.log(`✅ Minted ${quantity} tokens to ${user.toBase58()}`);
