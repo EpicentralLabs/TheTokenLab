@@ -10,7 +10,8 @@ function MintSuccessMessage({
     totalCharged,
     paymentType,
     transactionLink,
-    onClose
+    onClose,
+    zkChecked
 }) {
     const extractTransactionHash = (output) => {
         const regex = /\/tx\/([a-zA-Z0-9]+)/;
@@ -53,7 +54,7 @@ function MintSuccessMessage({
                 <h3 className="mint-success-title">🎉 Mint Successful! 🎉</h3>
                 <div className="mint-success-details">
                     <span className="detail-label">Mint Address:</span>
-                    {/*<span className="detail-item">
+                    <span className="detail-item">
                         <a href={constructMintURL(mintAddress)} target="_blank" rel="noopener noreferrer" title={mintAddress}>
                             {truncateAddress(mintAddress)}
                         </a>
@@ -73,23 +74,19 @@ function MintSuccessMessage({
                     <span className="detail-item">{decimals}</span>
 
                     <span className="detail-label">Metadata:</span>
-                    <span className="detail-item">
-                        {metadataTransactionHash ? (
-                            <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
-                                View transaction
-                            </a>
-                        ) : (
-                            <span>No metadata transaction found</span>
-                        )}
-                    </span>
-
+                    <span className="detail-item">{zkChecked ? (
+                                                     metadataTransactionHash ? (
+                          <a href={constructMetadataURL(metadataTransactionHash)} target="_blank" rel="noopener noreferrer">
+                View transaction</a>) : (
+              <span>ZK Compression is not compatible with Metadata presently.</span>)) : null}
+                </span>
                     <span className="detail-label">Total Charged:</span>
                     <span className="detail-item">{totalCharged} {paymentType}</span>
 
                     <span className="detail-label">Explorer:</span>
                     <span className="detail-item">
                         <a href={transactionLink} target="_blank" rel="noopener noreferrer">View transaction</a>
-                        </span>*/}
+                        </span>
                 </div>
                 <button className="mint-success-close" onClick={onClose}>Close</button>
             </div>

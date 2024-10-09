@@ -438,6 +438,7 @@ function App() {
             paymentType={mintSuccess.paymentType}
             transactionLink={mintSuccess.transactionLink}
             onClose={handleCloseMintSuccess}
+            zkChecked={zkChecked}
           />
         )}
       </div>
