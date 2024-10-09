@@ -1,8 +1,11 @@
 import React from 'react';
 import './Input-list.css';
 
+
+
 // Component for handling token symbol input
-function TokenSymbolList({ tokenSymbol, setTokenSymbol, isError }) {
+function TokenSymbolList({ zkChecked, tokenSymbol, setTokenSymbol, isError }) {
+    if(zkChecked){tokenSymbol = ``}
     // Handler for symbol input changes
     const handleSymbolChange = (e) => {
         let value = e.target.value;
@@ -16,6 +19,11 @@ function TokenSymbolList({ tokenSymbol, setTokenSymbol, isError }) {
         setTokenSymbol(value);
     }
 
+let symbolInputClass = "input-bubble";
+
+if(zkChecked){
+    symbolInputClass = "zkCompress-on-input-bubble";
+}
     return (
         <h1 className="container">
             <div className="Input-bubble-box">
@@ -25,7 +33,7 @@ function TokenSymbolList({ tokenSymbol, setTokenSymbol, isError }) {
                         name="tokenSymbol" 
                         type="text"
                         id="token-symbol" 
-                        className={`input-bubble ${isError ? 'error' : ''}`}
+                        className={`${symbolInputClass} ${isError ? 'error' : ''}`}
                         value={tokenSymbol}
                         onChange={handleSymbolChange} 
                     />

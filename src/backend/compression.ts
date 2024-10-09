@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import { Connection, clusterApiUrl, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
-import { mintToken } from './createTokenMint';
+import { mintCompressedToken } from './createCompressedTokenMint';
 import {chargeMintingFee} from "./mintingFee";
 import {fetchPrices} from "./priceService";
 import {AuthorityType, getMint, setAuthority} from "@solana/spl-token";
@@ -33,6 +33,15 @@ function isBuffer(data: any): data is Buffer {
     return Buffer.isBuffer(data);
 }
 async function logCurrentAuthorities(connection: Connection, tokenMintAccount: PublicKey) {
+    // Log the type of tokenMintAccount
+    console.log('🔍 Type of tokenMintAccount:', typeof tokenMintAccount);
+
+    // Check if tokenMintAccount is a valid PublicKey
+    if (!(tokenMintAccount instanceof PublicKey)) {
+        console.error('❌ Error: tokenMintAccount is not a valid PublicKey.');
+        return;
+    }
+
     const mintAccountInfo = await connection.getParsedAccountInfo(tokenMintAccount);
 
     if (!mintAccountInfo.value) {
@@ -41,26 +50,23 @@ async function logCurrentAuthorities(connection: Connection, tokenMintAccount: P
     }
 
     const { data } = mintAccountInfo.value;
-
     // Check if data is a Buffer or ParsedAccountData
     if (isBuffer(data)) {
         console.error('❌ Error: Received Buffer instead of ParsedAccountData.');
         return;
     }
 
-    // Now we know data is of type ParsedAccountData
-    console.log('Current Mint Authority:', data.parsed.info.mintAuthority);
-    console.log('Current Freeze Authority:', data.parsed.info.freezeAuthority);
-    console.log('Current Owner:', data.parsed.info.owner);
+    // If you need to log the mint account info, add that here
+    console.log('✅ Mint Account Info:', mintAccountInfo.value);
 }
 
 
 
-// Define the /api/mint endpoint
+// Define the /api/compress endpoint
 // @ts-ignore
 router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response) => {
 
-    
+
     const {
         userPublicKey,
         quantity,
@@ -90,9 +96,6 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
 
 
     try {
-
-
-
 
 
 
@@ -178,105 +181,55 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
         }
 
 
-        let userTokenAccount: PublicKey;
         let tokenMintAccount: PublicKey;
         let result: any;
 
         try {
-            result = await mintToken(parsedDecimals, quantity, userPublicKeyInstance);
-            tokenMintAccount = result.tokenMint;
-            userTokenAccount = result.userTokenAccount;
+            result = await mintCompressedToken(parsedDecimals, quantity, userPublicKeyInstance);
             console.log('✅ Tokens minted:', quantity, 'Decimals:', parsedDecimals);
-        } catch (error) {
-            console.error('❌ Error: Failed to mint tokens:', (error as Error).message || error);
-            return handleErrorResponse(res, error as Error, 'Failed to mint tokens.');
-        }
-        let transactionLink: any;
 
-        try {
-            const actionsPerformed: string[] = [];
+            const {tokenMint, userTokenAccount} = result;
+
             if (mintChecked) {
                 console.log('🔄 Starting process to set MintTokens authority...');
                 try {
+                    // Set the mint authority
                     await setAuthority(
                         connection,
                         payer,
-                        tokenMintAccount,
+                        tokenMint,
                         payer.publicKey,
                         AuthorityType.MintTokens,
                         null
                     );
-                    actionsPerformed.push('Minting');
                     console.log('✅ Successfully set MintTokens authority.');
                 } catch (error) {
                     console.error('❌ Error setting MintTokens authority:', (error as Error).message || error);
                     return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
                 }
             } else {
-                console.log('ℹ️ mintChecked is false, skipping minting process.');
+                console.log('ℹ️ mintChecked is false');
             }
-            await logCurrentAuthorities(connection, tokenMintAccount);
 
-        //      // Handle Freeze Authority, set it to null if checked
-        //      if (freezeChecked) {
-        //          console.log('🔄 Starting process to set freezeAccount (freeze) authority...');
-        //          try {
-        //              const mintInfo = await getMint(connection, tokenMintAccount);
-        //              console.log("Current Mint Authority:", mintInfo.mintAuthority);
-        //              console.log("Current Freeze Authority:", mintInfo.freezeAuthority);
-        //              await setAuthority(
-        //                 connection,
-        //                 payer,
-        //                 tokenMintAccount,
-        //                 payer.publicKey,
-        //                 AuthorityType.FreezeAccount,
-        //                 null
-        //             );
-        //             actionsPerformed.push('Freeze authority');
-        //             console.log('✅ Successfully set FreezeAccount Authority (Freeze) authority to null.');
-        //          } catch (error) {
-        //              console.error('❌ Error setting FreezeAccount authority:', (error as Error).message || error);
-        //              return handleErrorResponse(res, error as Error, 'Failed to set FreezeAccount authority');
-        // }
-        //      } else {
-        //          console.log('ℹ️ freezeChecked is false, skipping mint authority process.');
-        //      }
-        //
-        //
-        //
-        //
+            // Log current authorities
+            await logCurrentAuthorities(connection, tokenMint);
 
-            // If we reach here, all actions were successful
-            return res.status(200).json({
-                message: `✅ Successfully completed: ${actionsPerformed.join(', ')}.`,
-                explorerLink: transactionLink,
-                mintAddress: tokenMintAccount.toString(),
-                tokenAccount: userTokenAccount?.toString(),
-                metadataUploadOutput: `Metadata created at: ${transactionLink}`,
-                totalCharged: totalCharged
-            });
-
-        } catch (error) {
-            const errorMessage = (error as Error).message || String(error);
-            const errorMapping: { [key: string]: string } = {
-                'mint': 'Failed to set mint authority.',
-                'freeze': 'Failed to set freeze authority.',
-                'AccountOwner': 'Failed to set immutable authority.',
+            const responseData = {
+                message: `✅ Tokens minted successfully.`,
+                explorerLink: `https://explorer.solana.com/tx/${result.tokenMint}?cluster=devnet`,
+                mintAddress: result.tokenMint,
+                tokenAccount: result.userTokenAccount,
             };
-
-            const errorKey = Object.keys(errorMapping).find(key => errorMessage.includes(key));
-
-            if (errorKey) {
-                console.error(`❌ Error: ${errorMapping[errorKey]}:`, errorMessage);
-                return handleErrorResponse(res, error as Error, errorMapping[errorKey])
-            }
-            console.error('❌ Unexpected Error:', errorMessage);
-            return handleErrorResponse(res, error as Error, 'Internal Server Error');
-        } finally {
-            // Clean up HERE
+            console.log('🔄 Response Data:', responseData);
+            return res.status(200).json(responseData);
+        } catch (error) {
+            console.error('❌ Error: Failed to mint tokens.', (error as Error).message || error);
+            return handleErrorResponse(res, error as Error, 'Failed to mint tokens');
         }
+
     } catch (error) {
         return handleErrorResponse(res, error as Error, 'Internal Server Error');
-    }});
+    }
+});
 export default router;
 

@@ -2,7 +2,8 @@ import React from 'react';
 import './Input-list.css';
 
 // Component for handling token name input
-function TokenNameList({ tokenName, setTokenName, isError }) {
+function TokenNameList({ zkChecked ,tokenName, setTokenName, isError }) {
+    if(zkChecked){tokenName = ``}
     // Handler for token name input changes
     const handleNameChange = (e) => {
         let value = e.target.value;
@@ -16,6 +17,12 @@ function TokenNameList({ tokenName, setTokenName, isError }) {
         setTokenName(value);
     }
 
+    let nameInputClass = "input-bubble";
+
+if(zkChecked){
+    nameInputClass = "zkCompress-on-input-bubble";
+}
+
     return (
         <h1 className="container">
             <div className="Input-bubble-box">
@@ -25,7 +32,7 @@ function TokenNameList({ tokenName, setTokenName, isError }) {
                         name="tokenName" 
                         type="text"
                         id="token-name" 
-                        className={`input-bubble ${isError ? 'error' : ''}`}
+                        className={`${nameInputClass} ${isError ? 'error' : ''}`}
                         value={tokenName}
                         onChange={handleNameChange} 
                     />

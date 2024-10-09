@@ -15,6 +15,7 @@ import PhotoInput from './components/Photo-input'
 import MintSwitch from './components/Mint-switch'
 import ImmutableSwitch from './components/Immutable-switch'
 import WarningMessage from './components/Warning-message'
+import ZKWarningMessage from './components/ZKWarningMessage'
 import InitializeMint from './components/Initialize-mint'
 import Footer from './components/Footer'
 import MintSuccessMessage from './components/MintSuccessMessage';
@@ -86,14 +87,21 @@ function App() {
       decimals: !decimals,
     };
 
+    let zkErrors = {
+      quantity: !quantity,
+      decimals: !decimals,
+    }
+
     setInputErrors(errors);
 
-    if (Object.values(errors).includes(true)) {
+    if ((Object.values(errors).includes(true) && !zkChecked) || (zkChecked && Object.values(zkErrors).includes(true))) {
       alert('All fields are required.');
       return false;
     }
     return true;
   };
+
+
 
   const mintTokens = async (paymentType) => {
     if (!userPublicKey) {
@@ -184,6 +192,89 @@ function App() {
       setIsMinting(false);
     }
   };
+
+  const mintCompressTokens = async (paymentType) => {
+    if (!userPublicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    setIsMinting(true);
+    console.log(`Initializing mint with ${paymentType} payment`);
+
+    const imagePath = imageFile;
+    if (!validateInputs()) {
+      return;
+    }
+
+    const sanitizedQuantity = parseFloat(quantity.replace(/,/g, ''));
+
+
+    const mintData = new FormData();
+    
+    mintData.append('userPublicKey', userPublicKey);
+    mintData.append('quantity', sanitizedQuantity);
+    mintData.append('mintChecked', mintChecked);
+    mintData.append('decimals', decimals);
+    mintData.append('paymentType', paymentType);
+
+    console.log('Mint data being sent:', {
+
+
+      userPublicKey,
+      quantity: sanitizedQuantity,
+      mintChecked,
+      decimals,
+      paymentType,
+    });
+
+
+    try {
+      const url = process.env.REACT_APP_APP_ENV === 'development'
+          ? `${process.env.REACT_APP_PUBLIC_URL}:${process.env.REACT_APP_BACKEND_PORT}/api/compress`
+          : `${process.env.REACT_APP_PUBLIC_URL}/api/compress`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+
+          userPublicKey: userPublicKey,
+          quantity: sanitizedQuantity,
+          mintChecked: mintChecked,
+          decimals: decimals,
+          paymentType: paymentType,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Minting failed');
+      }
+
+      const data = await response.json();
+
+      console.log('Mint successful!', data);
+      
+      // Set mintSuccess data
+      setMintSuccess({
+        mintAddress: data.mintAddress,
+        tokenAccount: data.tokenAccount,
+        quantity,
+        decimals,
+        totalCharged: data.totalCharged,
+        paymentType,
+        transactionLink: data.explorerLink,
+      });
+    } catch (error) {
+      console.error(`${paymentType} minting failed:`, error);
+      alert(`Minting failed: ${error.message}`);
+    } finally {
+      setIsMinting(false);
+    }
+  };
+
+
   function setInputErrors(errors) {
     setIsTokenNameError(errors.tokenName);
     setIsTokenSymbolError(errors.tokenSymbol);
@@ -194,10 +285,12 @@ function App() {
 
 
   const handleSolMint = () => {
+    if(zkChecked){return mintCompressTokens('SOL');}
     return mintTokens('SOL');
   };
 
   const handleLabsMint = () => {
+    if(zkChecked){return mintCompressTokens('LABS');}
     return mintTokens('LABS');
   };
 
@@ -245,6 +338,7 @@ function App() {
               {/* Token details inputs */}
               <h1 className="listSpacing">
                 <TokenNameList 
+                  zkChecked={zkChecked}
                   tokenName={tokenName} 
                   setTokenName={setTokenName} 
                   isError={isTokenNameError}
@@ -252,6 +346,7 @@ function App() {
               </h1>
               <h1 className="listSpacing">
                 <TokenSymbolList 
+                  zkChecked={zkChecked}
                   tokenSymbol={tokenSymbol} 
                   setTokenSymbol={setTokenSymbol} 
                   isError={isTokenSymbolError}
@@ -271,13 +366,13 @@ function App() {
                   isError={isDecimalsError}
                 />
               </h1>
-              <h1 className="listSpacing"><DescriptionInput /></h1>
+              <h1 className="listSpacing"><DescriptionInput zkChecked={zkChecked}/></h1>
             </div>
             <div className="Input-List">
               {/* Photo upload input */}
               <h1>
                 {/* PhotoInput component for uploading and handling image files */}
-                <PhotoInput
+                <PhotoInput zkChecked={zkChecked}
                     onFileUpload={(file) => {
                       console.log('File uploaded:', file);
                       setImageFile(file); // Update state with uploaded file path
@@ -287,7 +382,14 @@ function App() {
                 />
               </h1>
               {/* Add ZKcompress component here */}
-              <Compress />
+              <Compress 
+              isChecked={zkChecked}
+              setIsChecked={setZKChecked}
+              />
+              <div className="zk-warning-box">
+              {(zkChecked) && (<ZKWarningMessage className={showWarning ? 'fade-in' : ''} />)}
+              </div>
+
             </div>
           </section>
           
@@ -303,7 +405,7 @@ function App() {
           </div>
           
           {/* Conditional rendering of warning message */}
-          {(mintChecked || immutableChecked || zkChecked) && (
+          {(mintChecked || immutableChecked) && (
             <WarningMessage className={showWarning ? 'fade-in' : ''} />
           )}
           
@@ -336,6 +438,7 @@ function App() {
             paymentType={mintSuccess.paymentType}
             transactionLink={mintSuccess.transactionLink}
             onClose={handleCloseMintSuccess}
+            zkChecked={zkChecked}
           />
         )}
       </div>
