@@ -208,7 +208,7 @@ router.post('/', async (req: Request<{}, {}, CompressedMintBody>, res: Response)
                     return handleErrorResponse(res, error as Error, 'Failed to set MintTokens authority');
                 }
             } else {
-                console.log('ℹ️ mintChecked is false, skipping minting authority process.');
+                console.log('ℹ️ mintChecked is false');
             }
 
             // Log current authorities
