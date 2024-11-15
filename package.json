@@ -48,7 +48,7 @@
     "debug": "node --trace-warnings --trace-deprecation  server.mjs"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.8",
+    "@babel/core": "^7.26.0",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/plugin-transform-runtime": "^7.25.4",
     "@babel/preset-env": "^7.25.4",
